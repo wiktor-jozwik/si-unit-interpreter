@@ -1,4 +1,4 @@
-namespace si_unit_compiler;
+namespace si_unit_interpreter;
 
 public interface IInputHandler
 {

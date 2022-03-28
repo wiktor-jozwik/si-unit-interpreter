@@ -1,6 +1,6 @@
 using Xunit;
 
-namespace si_unit_compiler.spec;
+namespace si_unit_interpreter.spec;
 
 public class UnitTest1
 {
