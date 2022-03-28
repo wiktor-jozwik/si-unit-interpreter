@@ -1,0 +1,20 @@
+// Energia kinetyczna - Ek = mv^2 / 2 
+
+unit J: [kg*m^2/s^2]
+
+num energy: [J]
+num speed: [m/s]
+
+num mass: [kg] = 10
+
+num duration: [s] = 10
+num distance: [m] = 20
+
+num constModifier: [] = 2
+
+speed = distance / duration
+energy = mass * speed^2 / constModifier
+
+string printoutString = "Energy equals: "
+print(printoutString)
+print(energy) // Should print Energy equals: ... J
