@@ -2,19 +2,16 @@
 
 unit J: [kg*m^2/s^2]
 
-num energy: [J]
-num speed: [m/s]
+let mass: [kg] = 10
 
-num mass: [kg] = 10
+let duration: [s] = 10
+let distance: [m] = 20
 
-num duration: [s] = 10
-num distance: [m] = 20
+let constModifier: [] = 2
 
-num constModifier: [] = 2
+let speed: [m/s] = distance / duration
+let energy: [J] = mass * speed^2 / constModifier
 
-speed = distance / duration
-energy = mass * speed^2 / constModifier
-
-string printoutString = "Energy equals: "
+let printoutString: string = "Energy equals: "
 print(printoutString)
 print(energy) // Should print Energy equals: ... J
