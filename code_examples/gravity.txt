@@ -1,5 +1,5 @@
-unit N: [kg*m/s^2]
-num G: [N*m^2/kg^2] = 6.6732e-11
+unit N: [kg*m*s^-2]
+let G: [N*m^2*kg^-2] = 6.6732e-11
 
 fn calculateGForce(m1: [kg], m2: [kg], distance: [m]) -> [N] {
     return G * earthMass * sunMass / earthSunDistance^2
@@ -18,11 +18,11 @@ fn printGForceInLoop(gForce: [N], i: [], shouldPrint: bool, printText: string) -
 }
 
 
-num earthMass: [kg] = 5.9722e24
-num sunMass: [kg] = 1.989e30
-num earthSunDistance: [m] = 149.24e9
+let earthMass: [kg] = 5.9722e24
+let sunMass: [kg] = 1.989e30
+let earthSunDistance: [m] = 149.24e9
 
-num gForce: [N] = calculateGForce(earthMass, sunMass, earthSunDistance)
+let gForce: [N] = calculateGForce(earthMass, sunMass, earthSunDistance)
 
 let i: [] = 10
 let shouldPrint: bool = true
