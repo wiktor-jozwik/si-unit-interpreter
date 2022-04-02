@@ -14,9 +14,9 @@
   - **[K]** - temperatura
   - **[mol]** - liczność materii
   - **[cd]** - światłość źródła światła
-  - **[]** - brak jednostki
+  - **[]** - brak jednostki(zmienna skalarna)
 
-- Typy:
+- Typy danych:
   - unit
   - string
   - bool
@@ -123,7 +123,7 @@
   let G: [N*m^2*kg^-2] = 6.6732e-11
   
   fn calculateGForce(m1: [kg], m2: [kg], distance: [m]) -> [N] {
-    return G * earthMass * sunMass / earthSunDistance^2
+    return G * earthMass * sunMass / (earthSunDistance * earthSunDistance)
   }
   
   fn printGForceInLoop(gForce: [N], i: [], shouldPrint: bool, printText: string) -> void {
@@ -156,7 +156,7 @@
   let duration: [s] = 5
   let length: [m] = 10
     
-  let speed: [m*s^-1] = duration / length // TypeError: 'duration / length' leads to [m*s^-1] type and does not match required [s*m^-1] type.
+  let speed: [m*s^-1] = duration / length // TypeError: 'duration / length' leads to [s*m^-1] type and does not match required [m*s^-1] type.
   ```
 - ```
   let s1: [m] = 20
@@ -167,7 +167,7 @@
 - ```
   fn calculateVelocityDelta(v1, v2) -> [m*s^-1] {
     return v2 - v1 
-  } // SyntaxError: v1 and v2 types are not specified.
+  } // SyntaxError: 'v1' and 'v2' types in function declaration are not specified.
   ```
 - ```
   fn calculateVelocityDelta(v1: [m/s], v2: [m/s]) {
@@ -218,28 +218,26 @@
   let x: string = "abc"
   let y: string = "xyz"
   
-  let z: string = x * y // OperationError: unsupported operand '/' for string and string
+  let z: string = x / y // OperationError: unsupported operand '/' for string and string
   ```
--  ```
+- ```
    let x: [] = 5
    
    let z: [] = x * y // IdentifierError: 'y' is not defined
-   ```
--  ```
+  ```
+- ```
    let z: [] = fun() // IdentifierError: 'fun' is not defined
-   ```
--  ```
+  ```
+- ```
    let x: string = "str"
    let y: string "rts"
    
    let z: bool = x > y // OperationError: unsupported operand '>' for string and string
-   ```
+  ```
+- ```
+   unit N: [kg*m/s^2] // SyntaxError: while defining unit use only identifier, '*', '^' and digits
+  ```
 ## Formalny opis gramatyki
-
-https://docs.python.org/3/reference/grammar.html
-https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/grammar
-https://github.com/frenchy64/typescript-parser/blob/master/typescript.ebnf
-https://kotlinlang.org/docs/reference/grammar.html#expression
 
 ```bash
 --- STATEMENTS, KEYWORDS
@@ -267,7 +265,7 @@ statement                   = assign_statement    |
                               if_statement        | 
                               while_statement;
           
-return_statement            = "return", expression;
+return_statement            = "return", [ expression ];
 
 if_statement                = "if", "(" expression, ")", block, [ "else", if_statement_or_block];
 
@@ -317,7 +315,7 @@ comment                     = "//", { character };
 
 --- FUNCTION
 
-function_statement          = "fn", "(", parameters, ")", "->", return_type, block;
+function_statement          = "fn", identifier, "(", parameters, ")", "->", return_type, block;
 
 parameters                  = [ parameter, { ",", parameter } ];
 
@@ -400,7 +398,9 @@ unit_type                   = "[" unit_value "]";
 
 unit_value                  = [ unit_expression ];
 
-unit_expression             = identifier, [ unit_power ],  [ "*", unit_expression ];
+unit_expression             = unit_unary_expression, { "*", unit_unary_expression };
+
+unit_unary_expression       = identifier, [ unit_power ]
 
 unit_power                  = "^", [ "-" ], decimal_digits;
 ```
@@ -422,7 +422,7 @@ np.
 
 Wejściem programu będzie ścieżka do pliku z kodem w wyżej zdefiniowanym języku,
 a wyjściem będzie konsola, ukazany wynik będzie zależał od tego co znajdzie się w kodzie dostarczonym przez użytkownika.
-Błędy obsłużone przez interpreter również będą rzucane na konsole.
+Błędy obsłużone przez interpreter również będą pokazywane w konsoli.
 
 ### Opis testowania
 - Zależności służące do uruchamiania testów: **xUnit**, **Microsoft.NET.Test.Sdk**, **xunit.runner.visualstudio**
@@ -434,7 +434,7 @@ Błędy obsłużone przez interpreter również będą rzucane na konsole.
 #### Językowe
 - silne i statyczne typowanie
 - parametry przekazywane do funkcji przez wartość
-- zmienne widoczne w danym scopie
+- zmienne widoczne tylko w danym scopie
 
 #### Błędy
 - SyntaxError
@@ -448,9 +448,10 @@ Błędy obsłużone przez interpreter również będą rzucane na konsole.
 #### Działania na jednostkach
 - Dodawanie i odejmowanie nie wpływa na jednostki 5 m*s^-1 + 5 m*s^-1 = 10 m*s^-1. 
 - Nie można odejmować ani dodawać zmiennych z różnymi jednostkami.
-- Mnożenie jednostek sprawia, że jednostka podnoszona jest do potęgi np. 5 m * 5 m = 25 m^2
-- Dzielenie jednostek sprawia, że jednostka jest redukowana np. 10 m / 10 m = 1
-- Potęgowanie zmiennej i skalara: (5 m)^3 = 125 m^3
+- Dzielenie i mnożenie jednostek odbywa się na takich samych zasadach jak dzielenie i mnożenie wartości skalarnych
+np. 5 m / 5 s = 1 m*s^-1 lub 1 m*s^-1 * 10 s = 10 m)
+- Mnożenie takich samych jednostek sprawia, że jednostka podnoszona jest do potęgi np. 5 m * 5 m = 25 m^2
+- Dzielenie takich samych jednostek sprawia, że jednostka jest redukowana np. 10 m / 10 m = 1
 
 #### Zapis jednostek
 Zastosowany został zapis w stylu `unit N: [kg*m*s^-2]` a nie `unit N: [kg*m/s^2]`, ponieważ jednostki fizyczne 

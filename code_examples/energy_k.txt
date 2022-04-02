@@ -1,16 +1,14 @@
 // Energia kinetyczna - Ek = mv^2 / 2 
 
-unit J: [kg*m^2/s^2]
+unit J: [kg*m^2*s^-2]
 
 let mass: [kg] = 10
 
 let duration: [s] = 10
 let distance: [m] = 20
 
-let constModifier: [] = 2
-
-let speed: [m/s] = distance / duration
-let energy: [J] = mass * speed^2 / constModifier
+let speed: [m*s^-1] = distance / duration
+let energy: [J] = mass * speed * speed / 2
 
 let printoutString: string = "Energy equals: "
 print(printoutString)
