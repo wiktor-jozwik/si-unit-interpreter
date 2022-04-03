@@ -162,7 +162,7 @@
   let s1: [m] = 20
   let t1: [s] = 10
     
-  let v: [] = s1 - t1 // OperationError: unsupported operand '+' for [m] and [s].
+  let v: [] = s1 - t1 // OperationError: unsupported operand '-' for [m] and [s].
   ```
 - ```
   fn calculateVelocityDelta(v1, v2) -> [m*s^-1] {
@@ -241,8 +241,6 @@
 
 ```bash
 --- STATEMENTS, KEYWORDS
-top_level_statement         = { statement };
-
 keyword                     = "let"     | 
                               "string"  | 
                               "bool"    | 
@@ -255,7 +253,8 @@ keyword                     = "let"     |
                               "while"   | 
                               "true"    | 
                               "false";
-         
+                  
+top_level_statement         = { statement };
 
 statement                   = assign_statement    | 
                               unit_declaration    | 
@@ -278,6 +277,7 @@ block                       = "{" statements "}";
             
 statements                  = statement, { statement };
 
+
 --- LITERALS
 
 literal                     = bool_literal  | 
@@ -294,8 +294,11 @@ int_or_float_literal        = int_literal   |
 
 int_literal                 = decimal_digits;
 
-float_literal               = decimal_digits, '.', decimal_digits, [ float_exponent ] | 
-                              decimal_digits, float_exponent;
+float_literal               = decimal_digits, float_dot_part_or_exponent
+
+float_dot_part_or_exponent  = float_dot_part | float_exponent
+                              
+float_dot_part              = '.', decimal_digits, [ float_exponent ]
 
 float_exponent              = "e", [ "-" ], decimal_digits;
 
@@ -414,13 +417,23 @@ C# .NET 6
 
 Komenda służąca do uruchomienia:
 
-`dotnet run nazwa_pliku`
+`dotnet run method nazwa_pliku/code_string`
+
+Metoda:
+- 0 - wejście przy użyciu ścieżki
+- 1 - wejście przy użyciu stringa
 
 np.
 
-`dotnet run code_examples/gravity.txt`
+- `dotnet run 0 code_examples/gravity.txt`
 
-Wejściem programu będzie ścieżka do pliku z kodem w wyżej zdefiniowanym języku,
+
+- `dotnet run 1 "let x: [] = 5...let y: [] = 10...let s = x * y...let s: string = \"string test\""`
+
+Argument z kodem powinien być opakowany w '"' , znak oddzielający linie: '...', 
+cudzysłowie mogą być wykorzystywane np. w deklaracji stringa, aczkolwiek muszą być escapowane w sposób '\"'
+
+Wejściem programu będzie ścieżka do pliku lub kod podany na wejście z kodem w wyżej zdefiniowanym języku,
 a wyjściem będzie konsola, ukazany wynik będzie zależał od tego co znajdzie się w kodzie dostarczonym przez użytkownika.
 Błędy obsłużone przez interpreter również będą pokazywane w konsoli.
 
@@ -428,13 +441,22 @@ Błędy obsłużone przez interpreter również będą pokazywane w konsoli.
 - Zależności służące do uruchamiania testów: **xUnit**, **Microsoft.NET.Test.Sdk**, **xunit.runner.visualstudio**
 - Katalog, w którym będą znajdować się testy: **spec/**
 - Do uruchomienia testów służy komenda: **dotnet test**
+- Każdy z elementów systemu Lexer, Parser oraz sam Interpreter będą testowane jednostkowo - w izolacji od innych elementów
+- Docelowo zostanie zaimplementowane kilka testów akceptacyjnych, które będą testować wszystkie elementy systemu
+- Testy będą pokrywać zarówno pozytywne przypadki jak i niegatywne(te gdzie powinny być rzucane błędy)
 
+### Opis elementów systemu:
+- Lexer - tworzy tokeny na podstawie dostarczonych znaków
+- Parser - otrzymuje kolejne tokeny dostarczając znaki Lexerowi, weryfikuje poprawność składniową,
+buduje strukture obiektów wykorzystywaną w kolejnych krokach interpretacji
+- Interpreter - realizuje funkcjonalności języka na podstawie dostarczonej struktury obiektów przez Parser
 
 ### Założenia techniczne
 #### Językowe
 - silne i statyczne typowanie
 - parametry przekazywane do funkcji przez wartość
 - zmienne widoczne tylko w danym scopie
+- zmienne mutowalne
 
 #### Błędy
 - SyntaxError
