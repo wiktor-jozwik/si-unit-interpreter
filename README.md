@@ -46,21 +46,19 @@
   - ```
     let t1: [s] = 5
     let s1: [m] = 12
-    let v1: [m*s^-1] = length / duration
+    let v1: [m*s^-1] = s1 / t1
     let v2: [m*s^-1] = 10
     let deltaV = v2 - v1
     ```
   - ```
     unit J: [kg*m^2*s^-2]
       
-    let energy: [J]
-    let speed: [m*s^-1]
     let mass: [kg] = 10
     let duration: [s] = 10
     let distance: [m] = 20
       
     let speed: [m*s^-1] = length / duration
-    let energy: [J] = mass * speed^2 / 2
+    let energy: [J] = mass * speed*speed / 2
 
     ```
 ### Instrukcje warunkowe
@@ -240,21 +238,8 @@
 ## Formalny opis gramatyki
 
 ```bash
---- STATEMENTS, KEYWORDS
-keyword                     = "let"     | 
-                              "string"  | 
-                              "bool"    | 
-                              "unit"    | 
-                              "fn"      | 
-                              "void"    | 
-                              "return"  | 
-                              "if"      | 
-                              "else"    | 
-                              "while"   | 
-                              "true"    | 
-                              "false";
-                  
-top_level_statement         = { statement };
+--- STATEMENTS
+program                     = { statement };
 
 statement                   = assign_statement    | 
                               unit_declaration    | 
@@ -276,54 +261,6 @@ while_statement             = "while", "(" expression, ")" block;
 block                       = "{" statements "}";
             
 statements                  = statement, { statement };
-
-
---- LITERALS
-
-literal                     = bool_literal  | 
-                              num_literal   | 
-                              string_literal;
-
-bool_literal                = "true" | 
-                              "false";
-                              
-num_literal                 = int_or_float_literal, [ ":", unit_type ]
-
-int_or_float_literal        = int_literal   | 
-                              float_literal;
-
-int_literal                 = decimal_digits;
-
-float_literal               = decimal_digits, float_dot_part_or_exponent
-
-float_dot_part_or_exponent  = float_dot_part | float_exponent
-                              
-float_dot_part              = '.', decimal_digits, [ float_exponent ]
-
-float_exponent              = "e", [ "-" ], decimal_digits;
-
-decimal_digits              = digit, { digit };
-
-digit                       = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
-
-string_literal              = """, { string_literal_character } """;
-
-string_literal_character    = character | escape_character;
-
-character                   = ~["\\\u000D\u000A\u0085\u2028\u2029];     // anything but ", \, and New_Line_Character: : \u000D - carriage return, \u000A - line feed, \u0085 - next line, \u2028 - line separator, \u2029 - paragraph separator
-
-escape_character            =  "\"" | "\n" | "\t" | "\\";
-
-comment                     = "//", { character };
-
---- FUNCTION
-
-function_statement          = "fn", identifier, "(", parameters, ")", "->", return_type, block;
-
-parameters                  = [ parameter, { ",", parameter } ];
-
-return_type                 = variable_type | 
-                              void_type;
 
 
 --- EXPRESSION
@@ -362,24 +299,28 @@ primary_expression          = literal                     |
 
 identifier_or_function_call = identifier, [ "(", args, ")" ];
 
-function_call               = identifier, "(", args, ")";
-
 args                        = [ arg, { ",", arg } ];
 
 arg                         = expression;
 
 
---- ASSIGNMENT VARIABLES
+--- FUNCTION
+
+function_call               = identifier, "(", args, ")";
+
+function_statement          = "fn", identifier, "(", parameters, ")", "->", return_type, block;
+
+parameters                  = [ parameter, { ",", parameter } ];
+
+return_type                 = variable_type | 
+                              void_type;
+                              
+                              
+--- VARIABLES ASSIGNMENT
 
 assign_statement            = "let", parameter, "=" expression;
 
 parameter                   = identifier, ":", variable_type;
-
-identifier                  = letter_character, { identifier_character }; 
-
-identifier_character        = letter_character | "_" | digit;
-
-letter_character            = [a-zA-Z];
 
 
 --- VARIABLE TYPES
@@ -406,6 +347,71 @@ unit_expression             = unit_unary_expression, { "*", unit_unary_expressio
 unit_unary_expression       = identifier, [ unit_power ]
 
 unit_power                  = "^", [ "-" ], decimal_digits;
+
+
+--- LITERALS
+
+literal                     = bool_literal  | 
+                              num_literal   | 
+                              string_literal;
+
+bool_literal                = "true" | 
+                              "false";
+                              
+num_literal                 = int_or_float_literal, [ ":", unit_type ]
+
+int_or_float_literal        = int_literal   | 
+                              float_literal;
+
+int_literal                 = non_zero_digit, { decimal_digits };
+
+float_literal               = decimal_digits, float_dot_part_or_exponent
+
+float_dot_part_or_exponent  = float_dot_part | float_exponent
+                              
+float_dot_part              = '.', decimal_digits, [ float_exponent ]
+
+float_exponent              = "e", [ "-" ], decimal_digits;
+
+decimal_digits              = digit, { digit };
+
+digit                       = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
+
+non_zero_digit              = "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
+
+string_literal              = """, { string_literal_character } """;
+
+string_literal_character    = character | escape_character;
+
+character                   = ~["\\\u000D\u000A\u0085\u2028\u2029];     // anything but ", \, and New_Line_Character: : \u000D - carriage return, \u000A - line feed, \u0085 - next line, \u2028 - line separator, \u2029 - paragraph separator
+
+escape_character            =  "\"" | "\n" | "\t" | "\\";
+
+
+--- IDENTIFIER
+
+identifier                  = letter_character, { identifier_character }; 
+
+identifier_character        = letter_character | "_" | digit;
+
+letter_character            = [a-zA-Z];
+
+comment                     = "//", { character };
+
+--- KEYWORD
+
+keyword                     = "let"     | 
+                              "string"  | 
+                              "bool"    | 
+                              "unit"    | 
+                              "fn"      | 
+                              "void"    | 
+                              "return"  | 
+                              "if"      | 
+                              "else"    | 
+                              "while"   | 
+                              "true"    | 
+                              "false";
 ```
 
 ## Opis realizacji
@@ -417,23 +423,14 @@ C# .NET 6
 
 Komenda służąca do uruchomienia:
 
-`dotnet run method nazwa_pliku/code_string`
-
-Metoda:
-- 0 - wejście przy użyciu ścieżki
-- 1 - wejście przy użyciu stringa
+`dotnet run nazwa_pliku`
 
 np.
 
-- `dotnet run 0 code_examples/gravity.txt`
+- `dotnet run code_examples/gravity.txt`
 
 
-- `dotnet run 1 "let x: [] = 5...let y: [] = 10...let s = x * y...let s: string = \"string test\""`
-
-Argument z kodem powinien być opakowany w '"' , znak oddzielający linie: '...', 
-cudzysłowie mogą być wykorzystywane np. w deklaracji stringa, aczkolwiek muszą być escapowane w sposób '\"'
-
-Wejściem programu będzie ścieżka do pliku lub kod podany na wejście z kodem w wyżej zdefiniowanym języku,
+Wejściem programu będzie ścieżka do pliku z kodem w wyżej zdefiniowanym języku,
 a wyjściem będzie konsola, ukazany wynik będzie zależał od tego co znajdzie się w kodzie dostarczonym przez użytkownika.
 Błędy obsłużone przez interpreter również będą pokazywane w konsoli.
 
@@ -445,7 +442,7 @@ Błędy obsłużone przez interpreter również będą pokazywane w konsoli.
 - Docelowo zostanie zaimplementowane kilka testów akceptacyjnych, które będą testować wszystkie elementy systemu
 - Testy będą pokrywać zarówno pozytywne przypadki jak i niegatywne(te gdzie powinny być rzucane błędy)
 
-### Opis elementów systemu:
+### Opis elementów systemu
 - Lexer - tworzy tokeny na podstawie dostarczonych znaków
 - Parser - otrzymuje kolejne tokeny dostarczając znaki Lexerowi, weryfikuje poprawność składniową,
 buduje strukture obiektów wykorzystywaną w kolejnych krokach interpretacji

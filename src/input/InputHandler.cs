@@ -2,27 +2,20 @@ namespace si_unit_interpreter.input;
 
 public class InputHandler : IInputHandler
 {
-    public IEnumerable<string> GetInput(string method, string pathOrCode)
+    public IEnumerable<string> GetInput(string path)
     {
-        var inputMethod = GetInputMethod(method);
-
-        return inputMethod.GetLines(pathOrCode);
-    }
-
-    private static IInputProvider GetInputMethod(string method)
-    {
-        var result = int.TryParse(method, out var intMethod);
-
-        if (!result)
+        try
         {
-            throw new ArgumentException("Please provide number as method.");
+            var lines = File.ReadAllLines(path);
+            return lines;
         }
-
-        return intMethod switch
+        catch(Exception ex)
         {
-            0 => new PathInputProvider(),
-            1 => new StringInputProvider(),
-            _ => throw new ArgumentException("Please provide 0 or 1 as method.")
-        };
+            if (ex is FileNotFoundException or DirectoryNotFoundException)
+            {
+                Console.WriteLine($"File or directory {path} was not found.");
+            }
+            throw;
+        }
     }
 }
