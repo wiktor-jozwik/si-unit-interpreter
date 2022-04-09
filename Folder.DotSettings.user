@@ -1,7 +1,92 @@
 ﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
 	<s:String x:Key="/Default/CodeInspection/PencilsConfiguration/ActualSeverity/@EntryValue">INFO</s:String>
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=48f59422_002D3f78_002D403f_002D9cc7_002D98e190622770/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="UnitTest1" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=0e3256e8_002Da340_002D4121_002Da813_002D2cb5728ace59/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="TestGetCommentToken #2" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
   &lt;TestAncestor&gt;
-    &lt;TestId&gt;xUnit::136C2680-9C03-8806-CB3D-26AFA1EFDEEF::net6.0::si_unit_interpreter.test.UnitTest1&lt;/TestId&gt;
+    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.LexerUnitTest.TestGetCommentToken&lt;/TestId&gt;
+  &lt;/TestAncestor&gt;
+&lt;/SessionState&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=48f59422_002D3f78_002D403f_002D9cc7_002D98e190622770/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="UnitTest1" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;TestAncestor&gt;
+    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.LexerUnitTest&lt;/TestId&gt;
+  &lt;/TestAncestor&gt;
+&lt;/SessionState&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=55af9b1c_002D0907_002D423e_002D9aa0_002Dd523388e45a8/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="LexerUnitTest #2" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;TestAncestor&gt;
+    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.LexerUnitTest&lt;/TestId&gt;
+  &lt;/TestAncestor&gt;
+&lt;/SessionState&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=7089ada0_002Df760_002D42be_002Db751_002Df0245a18e56f/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="LexerUnitTest #3" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;TestAncestor&gt;
+    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.LexerUnitTest&lt;/TestId&gt;
+  &lt;/TestAncestor&gt;
+&lt;/SessionState&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=71324360_002Ded76_002D49d7_002D93b2_002Ddcbc0686920c/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="TestGetCommentToken #3" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;TestAncestor&gt;
+    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.LexerUnitTest.TestGetCommentToken&lt;/TestId&gt;
+  &lt;/TestAncestor&gt;
+&lt;/SessionState&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=73bfc3a8_002Dcacc_002D4d0c_002Db685_002Dcc3a016b26f8/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="TestGetCommentTokenType" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;TestAncestor&gt;
+    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.LexerUnitTest.TestGetCommentTokenType&lt;/TestId&gt;
+  &lt;/TestAncestor&gt;
+&lt;/SessionState&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=8ae215b2_002D17d9_002D4ef1_002Db0c4_002Dfb15123d7aa6/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="TestGetEtxTokenType #4" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;TestAncestor&gt;
+    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.LexerUnitTest.TestGetEtxTokenType&lt;/TestId&gt;
+  &lt;/TestAncestor&gt;
+&lt;/SessionState&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=90396761_002Dc181_002D4da7_002Db019_002D402291570bfc/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="TestGetEtxTokenType #6" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;TestAncestor&gt;
+    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.LexerUnitTest.TestGetEtxTokenType&lt;/TestId&gt;
+    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.LexerUnitTest.TestGetCommentTokenType&lt;/TestId&gt;
+  &lt;/TestAncestor&gt;
+&lt;/SessionState&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=91460fd3_002D0af8_002D40f5_002D9808_002D7aac00f69626/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="LexerUnitTest" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;TestAncestor&gt;
+    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.LexerUnitTest&lt;/TestId&gt;
+  &lt;/TestAncestor&gt;
+&lt;/SessionState&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=a8e48f54_002D03dc_002D4df1_002Dba60_002Dd15d1f813377/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="TestGetCommentToken #4" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;TestAncestor&gt;
+    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.LexerUnitTest&lt;/TestId&gt;
+  &lt;/TestAncestor&gt;
+&lt;/SessionState&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=c5751d55_002Dd93b_002D4b05_002Dac02_002Dc1b8188f3a2b/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="TestGetCommentToken" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;TestAncestor&gt;
+    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.LexerUnitTest.TestGetCommentToken&lt;/TestId&gt;
+  &lt;/TestAncestor&gt;
+&lt;/SessionState&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=ceb11f45_002D8891_002D47e1_002D8021_002D0f3096b878de/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="TestGetEtxTokenType #5" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;TestAncestor&gt;
+    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.LexerUnitTest.TestGetEtxTokenType&lt;/TestId&gt;
+  &lt;/TestAncestor&gt;
+&lt;/SessionState&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=d12bdad7_002D9cac_002D4b9e_002D97ea_002D2fedcc4f0994/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="TestGetEtxTokenType" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;TestAncestor&gt;
+    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.LexerUnitTest.TestGetEtxTokenType&lt;/TestId&gt;
+  &lt;/TestAncestor&gt;
+&lt;/SessionState&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=db9d7f2c_002Daa22_002D4f99_002Dbb6e_002D5cc260a7e648/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="TestGetEtxTokenType #2" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;TestAncestor&gt;
+    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.LexerUnitTest.TestGetEtxTokenType&lt;/TestId&gt;
+    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.LexerUnitTest.TestGetTokensFromVariableAssignment&lt;/TestId&gt;
+    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.LexerUnitTest.TestGetCommentTokenType&lt;/TestId&gt;
+  &lt;/TestAncestor&gt;
+&lt;/SessionState&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=de4d37ca_002D5ed1_002D48e9_002D9b96_002D9c146ed4d1da/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="TestGetEtxTokenType #3" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;TestAncestor&gt;
+    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.LexerUnitTest.TestGetEtxTokenType&lt;/TestId&gt;
+  &lt;/TestAncestor&gt;
+&lt;/SessionState&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=e593354d_002Dc216_002D4612_002D9803_002Dd059e068b504/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="LetKeyword" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;TestAncestor&gt;
+    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.LexerUnitTest.LetKeyword&lt;/TestId&gt;
+  &lt;/TestAncestor&gt;
+&lt;/SessionState&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=f5315fe5_002D34c2_002D4a08_002D8b10_002Deb4f2680777e/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="TestGetDivisionTokenType" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;TestAncestor&gt;
+    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.LexerUnitTest.TestGetDivisionTokenType&lt;/TestId&gt;
+    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.LexerUnitTest.TestGetLetKeywordTokenType&lt;/TestId&gt;
+    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.LexerUnitTest.TestGetCommentTokenType&lt;/TestId&gt;
   &lt;/TestAncestor&gt;
 &lt;/SessionState&gt;</s:String></wpf:ResourceDictionary>
