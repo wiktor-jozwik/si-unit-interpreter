@@ -3,19 +3,19 @@ namespace si_unit_interpreter;
 public struct Token
 {
     public TokenType Type { get; }
-    public TokenPosition TokenPosition { get; }
+    public TokenPosition Position { get; }
     public dynamic? Value { get; }
 
     public Token(TokenType type, TokenPosition position, dynamic value)
     {
         Type = type;
-        TokenPosition = position;
+        Position = position;
         Value = value;
     }
     public Token(TokenType type, TokenPosition position)
     {
         Type = type;
-        TokenPosition = position;
+        Position = position;
         Value = null;
     }
 }
@@ -23,12 +23,6 @@ public struct Token
 public struct TokenPosition
 {
     public int RowNumber, ColumnNumber;
-
-    public TokenPosition(int rowNumber, int columnNumber)
-    {
-        ColumnNumber = columnNumber;
-        RowNumber = rowNumber;
-    }
 }
 
 public enum TokenType
@@ -88,8 +82,14 @@ public enum TokenType
     STRING,
     BOOL,
     
+    // Types
+    STRING_TYPE,
+    BOOL_TYPE,
+    VOID_TYPE,
+
     // End of file/text
     ETX,
     
+    INVALID,
     UNKNOWN
 }

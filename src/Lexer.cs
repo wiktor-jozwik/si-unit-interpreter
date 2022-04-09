@@ -9,7 +9,7 @@ public class Lexer
 {
     public Token Token;
 
-    private TokenPosition _position;
+    private TokenPosition _currentPosition;
     private readonly Dictionary<string, TokenType> _keywordDictionary;
     private readonly StreamReader _streamReader; 
     private char _character;
@@ -17,6 +17,9 @@ public class Lexer
     public Lexer(StreamReader streamReader)
     {
         _streamReader = streamReader;
+
+        _currentPosition.ColumnNumber = 0;
+        _currentPosition.RowNumber = 1;
 
         _keywordDictionary = new Dictionary<string, TokenType>
         {
@@ -27,14 +30,9 @@ public class Lexer
             ["if"] = TokenType.IF,
             ["else"] = TokenType.ELSE,
             ["while"] = TokenType.WHILE,
-            
-            // TODO
-            // ["string"] = TokenType.STRING_TYPE,
-            // ["bool"] = TokenType.STRING_BOOL,
-            // ["void"] = TokenType.STRING_VOID,
-            //
-            // ["true"] = TokenType.BOOL,
-            // ["false"] = TokenType.BOOL,
+            ["string"] = TokenType.STRING_TYPE,
+            ["bool"] = TokenType.BOOL_TYPE,
+            ["void"] = TokenType.VOID_TYPE,
         };
     }
     
@@ -46,18 +44,30 @@ public class Lexer
         if (TryBuildEtx()) return;
 
         if (TryBuildCommentOrDivideOperator()) return;
+        
+        if (TryBuildText()) return;
+
+        if (TryBuildNumber()) return;
+        
+        // if (TryBuildBoolean()) return;
 
         if (TryBuildIdentifierOrKeyword()) return;
         
         
-        
 
-        Token = new Token(TokenType.UNKNOWN, _position, "");
+        Token = new Token(TokenType.UNKNOWN, _currentPosition, "");
     }
 
     private void GetNextCharacter()
     {
         _character = (char)_streamReader.Read();
+        _currentPosition.ColumnNumber++;
+
+        if (_character == '\n')
+        {
+            _currentPosition.ColumnNumber = 0;
+            _currentPosition.RowNumber++;
+        }
     }
 
     private void SkipWhites()
@@ -72,7 +82,7 @@ public class Lexer
     {
         if (!_streamReader.EndOfStream) return false;
         
-        Token = new Token(TokenType.ETX, _position);
+        Token = new Token(TokenType.ETX, _currentPosition);
         return true;
     }
 
@@ -81,6 +91,8 @@ public class Lexer
         if (_character != '/') return false;
         
         GetNextCharacter();
+
+        var commentPosition = _currentPosition;
 
         if (_character == '/')
         {
@@ -94,12 +106,12 @@ public class Lexer
                 value.Append(_character);
             }
                 
-            Token = new Token(TokenType.COMMENT, _position, value.ToString());
+            Token = new Token(TokenType.COMMENT, commentPosition, value.ToString());
             return true;
         }
-        
-        // TODO this._position - 1 because we took next char already 
-        Token = new Token(TokenType.DIVISION_OPERATOR, _position, '/');
+
+        commentPosition.ColumnNumber--;
+        Token = new Token(TokenType.DIVISION_OPERATOR, commentPosition, '/');
         return true;
 
     }
@@ -107,6 +119,8 @@ public class Lexer
     private bool TryBuildIdentifierOrKeyword()
     {
         if (!char.IsLetter(_character)) return false;
+
+        var identifierOrKeywordPosition = _currentPosition;
         
         var value = new StringBuilder();
         while (char.IsLetter(_character))
@@ -119,22 +133,105 @@ public class Lexer
 
         if (_keywordDictionary.ContainsKey(stringValue))
         {
-            Token = new Token(_keywordDictionary[stringValue], _position, stringValue);
+            Token = new Token(_keywordDictionary[stringValue], identifierOrKeywordPosition, stringValue);
 
             return true;
         }
 
-        Token = new Token(TokenType.IDENTIFIER, _position, stringValue);
+        Token = new Token(TokenType.IDENTIFIER, identifierOrKeywordPosition, stringValue);
         return true;
     }
 
     private bool TryBuildText()
     {
-        throw new NotImplementedException();
+        if (_character != '\"') return false;
+
+        var text = new StringBuilder();
+
+        var textPosition = _currentPosition;
+
+        GetNextCharacter();
+        while (_character != '\"')
+        {
+            text.Append(_character);
+            if (_streamReader.EndOfStream)
+            {
+                Token = new Token(TokenType.INVALID, textPosition, text.ToString());
+                return true;
+            }
+            
+            GetNextCharacter();
+        }
+
+        Token = new Token(TokenType.STRING, textPosition, text.ToString());
+
+        return true;
     }
 
     private bool TryBuildNumber()
     {
+        if (!char.IsDigit(_character)) return false; //should be is digit but no 0
+
+        long intPart = 0;
+
+        var position = _currentPosition; 
+
+        if (_character != '0')
+        {
+            intPart += _character - '0';
+            
+            GetNextCharacter();
+
+            while (char.IsDigit(_character))
+            {
+                intPart = intPart * 10 + _character - '0';
+                GetNextCharacter();
+            }
+        }
+
+        if (_character == '.')
+        {
+            long fractionPart = 0;
+            int decimalPlaces = 0;
+            
+            int exponentPart = 0;
+            
+            
+            GetNextCharacter();
+
+            while (char.IsDigit(_character))
+            {
+                fractionPart = fractionPart * 10 + _character - '0';
+                decimalPlaces++;
+                GetNextCharacter();
+            }
+
+            // TODO
+            if (_character == 'e')
+            {
+                GetNextCharacter();
+
+                while (char.IsDigit(_character))
+                {
+                    exponentPart = exponentPart * 10 + _character - '0';
+                }
+                
+                // TODO
+                // Token = 
+                return true;
+            }
+
+            Token = new Token(TokenType.FLOAT, position, intPart + fractionPart / Math.Pow(10, decimalPlaces));
+            return true;
+        }
+
+        Token = new Token(TokenType.INT, position, intPart);
+        return true;
+    }
+
+    private bool TryBuildBoolean()
+    {
+        // Token = new Token(TokenType.BOOL, position, boolValue);
         throw new NotImplementedException();
     }
 
