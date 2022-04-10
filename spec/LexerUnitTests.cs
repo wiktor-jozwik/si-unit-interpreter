@@ -393,13 +393,12 @@ public class LexerUnitTests
     [Trait("Category", "Float")]
     public void TestFloatWithExponentToken()
     {
-        const double floatValue = 0.25e5;
-        var stringText = $"{floatValue}";
+        const string stringText = "0.25e5";
         
         var token = GetSingleTokenFromLexerByText(stringText);
         
         Assert.Equal(TokenType.FLOAT, token.Type);        
-        Assert.Equal(floatValue, token.Value, 5);
+        Assert.Equal(0.25e5, token.Value, 5);
     }
     
     [Fact]
@@ -407,13 +406,38 @@ public class LexerUnitTests
     [Trait("Category", "Float")]
     public void TestFloatWithMinusExponentToken()
     {
-        const double floatValue = 4e-5;
-        var stringText = $"{floatValue}";
+        const string stringText = "3.8e-2";
         
         var token = GetSingleTokenFromLexerByText(stringText);
         
         Assert.Equal(TokenType.FLOAT, token.Type);        
-        Assert.Equal(floatValue, token.Value, 5);
+        Assert.Equal(3.8e-2, token.Value, 5);
+    }
+    
+    [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "Float")]
+    public void TestFloatWithoutFractionPartWithMinusExponentToken()
+    {
+        const string stringText = "4e-5";
+
+        var token = GetSingleTokenFromLexerByText(stringText);
+        
+        Assert.Equal(TokenType.FLOAT, token.Type);        
+        Assert.Equal(4e-5, token.Value, 5);
+    }
+    
+    [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "Float")]
+    public void TestFloatWithoutFractionPartExponentToken()
+    {
+        const string stringText = "2e3";
+
+        var token = GetSingleTokenFromLexerByText(stringText);
+        
+        Assert.Equal(TokenType.FLOAT, token.Type);        
+        Assert.Equal(2e3, token.Value, 5);
     }
 
 
@@ -776,8 +800,146 @@ public class LexerUnitTests
         var token = GetSingleTokenFromLexerByText(operatorText);
         
         Assert.Equal(TokenType.UNKNOWN, token.Type);        
-    }    
+    }
     
+    // Examples from gitlab code examples
+
+    [Fact]
+    [Trait("Category", "MultiToken")]
+    [Trait("Category", "TokenPosition")]
+    [Trait("Category", "Core")]
+    public void TestIntScalarAssignmentTokens()
+    {
+        const string code = "let x: [] = 5";
+
+        var tokens = GetAllTokensFromLexerByText(code);
+        
+    }
+    
+    [Fact]
+    [Trait("Category", "MultiToken")]
+    [Trait("Category", "TokenPosition")]
+    [Trait("Category", "Core")]
+    public void TestFloatScalarAssignmentTokens()
+    {
+        const string code = "let x: [] = 5.2";
+
+        var tokens = GetAllTokensFromLexerByText(code);
+        
+    }
+    
+    [Fact]
+    [Trait("Category", "MultiToken")]
+    [Trait("Category", "TokenPosition")]
+    [Trait("Category", "Core")]
+    public void TestSiUnitAssignmentTokens()
+    {
+        const string code = "let duration: [s] = 5";
+
+        var tokens = GetAllTokensFromLexerByText(code);
+        
+    }
+    
+    [Fact]
+    [Trait("Category", "MultiToken")]
+    [Trait("Category", "TokenPosition")]
+    [Trait("Category", "Core")]
+    public void TestStringAssignmentTokens()
+    {
+        const string code = "let myString: string = \"my string\"";
+
+        var tokens = GetAllTokensFromLexerByText(code);
+        
+    }
+    
+    [Fact]
+    [Trait("Category", "MultiToken")]
+    [Trait("Category", "TokenPosition")]
+    [Trait("Category", "Core")]
+    public void TestBoolAssignmentTokens()
+    {
+        const string code = "let isDigit: bool = true";
+
+        var tokens = GetAllTokensFromLexerByText(code);
+        
+    }
+    
+    [Fact]
+    [Trait("Category", "MultiToken")]
+    [Trait("Category", "TokenPosition")]
+    [Trait("Category", "Core")]
+    public void TestUnitDeclarationTokens()
+    {
+        const string code = "unit N: [kg*m*s^-2]";
+
+        var tokens = GetAllTokensFromLexerByText(code);
+        
+    }
+    
+    [Fact]
+    [Trait("Category", "MultiToken")]
+    [Trait("Category", "TokenPosition")]
+    [Trait("Category", "Core")]
+    public void TestComplexExpressionTokens()
+    {
+        const string code = "let x: bool = (firstFn(y, z) > secondFn(o)) || thirdFn() && fourthFn(m)";
+
+        var tokens = GetAllTokensFromLexerByText(code);
+        
+    }
+    
+    [Fact]
+    [Trait("Category", "MultiToken")]
+    [Trait("Category", "TokenPosition")]
+    [Trait("Category", "Core")]
+    public void TestComplexLiteralExpressionTokens()
+    {
+        const string code = "let x: [] = (5 + 2) / 14 * 2.5";
+
+        var tokens = GetAllTokensFromLexerByText(code);
+        
+    }
+    
+    [Fact]
+    [Trait("Category", "MultiToken")]
+    [Trait("Category", "TokenPosition")]
+    [Trait("Category", "Core")]
+    public void TestIfBlockTokens()
+    {
+        const string code = "if (speed > 5: [m*s^-1]) " +
+                            "{\n\tlet x: [] = 5 } " +
+                            "else if (speed <= 0: [m*s^-1]) " +
+                            "{\n\tlet y: [m] = 2 } else {\n}";
+
+        var tokens = GetAllTokensFromLexerByText(code);
+        
+    }
+    
+    [Fact]
+    [Trait("Category", "MultiToken")]
+    [Trait("Category", "TokenPosition")]
+    [Trait("Category", "Core")]
+    public void TestWhileTokens()
+    {
+        const string code = "while (i > 0) {\n\tlet speed: [m*s^-1] = 10 * i\n}";
+
+        var tokens = GetAllTokensFromLexerByText(code);
+        
+    }
+    
+    [Fact]
+    [Trait("Category", "MultiToken")]
+    [Trait("Category", "TokenPosition")]
+    [Trait("Category", "Core")]
+    public void TestFunctionTokens()
+    {
+        const string code = "fn calculateVelocityData(v1: [m*s^-1], v2: [m*s^-1], scalar: []) -> [m*s^-1] {" +
+                            "\n\treturn (v2-v1) * scalar";
+
+        var tokens = GetAllTokensFromLexerByText(code);
+        
+    }
+
 
     [Fact]
     [Trait("Category", "MultiToken")]

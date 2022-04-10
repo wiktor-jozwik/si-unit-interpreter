@@ -233,6 +233,11 @@ public class Lexer
                 GetNextCharacter();
             }
         }
+        else
+        {
+            // if 0 is present
+            GetNextCharacter();
+        }
 
         if (_character == '.')
         {
@@ -251,22 +256,54 @@ public class Lexer
                 GetNextCharacter();
             }
 
-            // TODO
             if (_character == 'e')
             {
                 GetNextCharacter();
 
+                var minusFactor = 1;
+
+                if (_character == '-')
+                {
+                    minusFactor = -1;
+                    GetNextCharacter();
+                }
+
                 while (char.IsDigit(_character))
                 {
                     exponentPart = exponentPart * 10 + _character - '0';
+                    GetNextCharacter();
                 }
                 
-                // TODO
-                // Token = 
+                Token = new Token(TokenType.FLOAT, position,
+                    (intPart + fractionPart / Math.Pow(10, decimalPlaces)) * Math.Pow(10, minusFactor * exponentPart));
                 return true;
             }
 
             Token = new Token(TokenType.FLOAT, position, intPart + fractionPart / Math.Pow(10, decimalPlaces));
+            return true;
+        }
+        
+        if (_character == 'e')
+        {
+            int exponentPart = 0;
+
+            GetNextCharacter();
+
+            var minusFactor = 1;
+
+            if (_character == '-')
+            {
+                minusFactor = -1;
+                GetNextCharacter();
+            }
+
+            while (char.IsDigit(_character))
+            {
+                exponentPart = exponentPart * 10 + _character - '0';
+                GetNextCharacter();
+            }
+                
+            Token = new Token(TokenType.FLOAT, position, intPart * Math.Pow(10, minusFactor * exponentPart));
             return true;
         }
 

@@ -1,6 +1,26 @@
 ﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
 	<s:String x:Key="/Default/CodeInspection/PencilsConfiguration/ActualSeverity/@EntryValue">INFO</s:String>
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=594fd6ba_002D1e2e_002D4962_002Da65a_002Df4c21b221ee4/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="All tests in category 'Identifier'" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=1cc25c29_002Df57a_002D48ac_002D92d8_002D9357dccd2c76/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="TestFloatWithExponentToken" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;TestAncestor&gt;
+    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.LexerUnitTests.TestFloatWithExponentToken&lt;/TestId&gt;
+  &lt;/TestAncestor&gt;
+&lt;/SessionState&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=6e2b0249_002Db6af_002D4dce_002D9cb5_002Dfa06998cbf19/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="LexerUnitTests" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;TestAncestor&gt;
+    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.LexerUnitTests&lt;/TestId&gt;
+  &lt;/TestAncestor&gt;
+&lt;/SessionState&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=b9d451f7_002D0fef_002D4a50_002D8cb3_002Dc7709fbbf22b/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="TestFloatWithExponentToken #2" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;TestAncestor&gt;
+    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.LexerUnitTests.TestFloatWithExponentToken&lt;/TestId&gt;
+  &lt;/TestAncestor&gt;
+&lt;/SessionState&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=e5fd7a4e_002Dc5ae_002D467e_002D9af7_002D12d1be43455f/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="TestFloatWithoutFractionPartWithMinusExponentToken" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;TestAncestor&gt;
+    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.LexerUnitTests&lt;/TestId&gt;
+  &lt;/TestAncestor&gt;
+&lt;/SessionState&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=e6a176d4_002Dd3de_002D4a18_002Dbd8b_002Db04bf8f55742/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="All tests in category 'SingleToken'" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
   &lt;TestAncestor&gt;
     &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.LexerUnitTests&lt;/TestId&gt;
   &lt;/TestAncestor&gt;
@@ -18,24 +38,6 @@
 	
 	
 	
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=8a7a17c3_002D63ea_002D4d6d_002D9eb6_002Dd2ec72551914/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="TestTextWithoutEndingQuoteToken #5" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
-  &lt;TestAncestor&gt;
-    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.LexerUnitTests.TestTextWithoutEndingQuoteToken&lt;/TestId&gt;
-  &lt;/TestAncestor&gt;
-&lt;/SessionState&gt;</s:String>
-	
-	
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=8ae215b2_002D17d9_002D4ef1_002Db0c4_002Dfb15123d7aa6/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="TestGetEtxTokenType #4" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
-  &lt;TestAncestor&gt;
-    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.LexerUnitTest.TestGetEtxTokenType&lt;/TestId&gt;
-  &lt;/TestAncestor&gt;
-&lt;/SessionState&gt;</s:String>
-	
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=91460fd3_002D0af8_002D40f5_002D9808_002D7aac00f69626/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="LexerUnitTest" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
-  &lt;TestAncestor&gt;
-    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.LexerUnitTest&lt;/TestId&gt;
-  &lt;/TestAncestor&gt;
-&lt;/SessionState&gt;</s:String>
 	
 	
 	
@@ -43,27 +45,18 @@
 	
 	
 	
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=ceb11f45_002D8891_002D47e1_002D8021_002D0f3096b878de/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="TestGetEtxTokenType #5" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
-  &lt;TestAncestor&gt;
-    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.LexerUnitTest.TestGetEtxTokenType&lt;/TestId&gt;
-  &lt;/TestAncestor&gt;
-&lt;/SessionState&gt;</s:String>
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=d12bdad7_002D9cac_002D4b9e_002D97ea_002D2fedcc4f0994/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="TestGetEtxTokenType" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
-  &lt;TestAncestor&gt;
-    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.LexerUnitTest.TestGetEtxTokenType&lt;/TestId&gt;
-  &lt;/TestAncestor&gt;
-&lt;/SessionState&gt;</s:String>
 	
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=de4d37ca_002D5ed1_002D48e9_002D9b96_002D9c146ed4d1da/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="TestGetEtxTokenType #3" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
-  &lt;TestAncestor&gt;
-    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.LexerUnitTest.TestGetEtxTokenType&lt;/TestId&gt;
-  &lt;/TestAncestor&gt;
-&lt;/SessionState&gt;</s:String>
 	
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=fbf793ba_002D07b3_002D4687_002D8a75_002D291d8bd2a259/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="TestUnknownMultiCharacterOperatorToken" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
-  &lt;TestAncestor&gt;
-    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.LexerUnitTests.TestUnknownMultiCharacterOperatorToken&lt;/TestId&gt;
-  &lt;/TestAncestor&gt;
-&lt;/SessionState&gt;</s:String>
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	</wpf:ResourceDictionary>
