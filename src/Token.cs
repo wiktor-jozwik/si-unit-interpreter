@@ -38,30 +38,22 @@ public enum TokenType
     LET,
     UNIT,
     
-    // = + - / * ^ !
+    // Single char
+    
+    // = + - / * > < ^ !
     ASSIGNMENT_OPERATOR,
     PLUS_OPERATOR,
     MINUS_OPERATOR,
     DIVISION_OPERATOR,
     MULTIPLICATION_OPERATOR,
-    UNIT_POWER_OPERATOR,
+    GREATER_THAN_OPERATOR,
+    SMALLER_THAN_OPERATOR,
+    POWER_OPERATOR,
     NEGATE_OPERATOR,
     
-    // || && > < >= <= == != ->
-    OR,
-    AND,
-    GREATER_THAN,
-    SMALLER_THAN,
-    GREATER_EQUAL_THAN,
-    SMALLER_EQUAL_THAN,
-    EQUAL,
-    NOT_EQUAL,
-    
-    RETURN_ARROW,
-    
     // () [] {}
-    LEFT_PARANTHESIS,
-    RIGHT_PARANTHESIS,
+    LEFT_PARENTHESES,
+    RIGHT_PARENTHESES,
 
     LEFT_SQUARE_BRACKET,
     RIGHT_SQUARE_BRACKET,
@@ -73,6 +65,18 @@ public enum TokenType
     COLON,
     COMMA,
     
+    // Multi char
+    
+    // || && >= <= == != ->
+    OR_OPERATOR,
+    AND_OPERATOR,
+    GREATER_EQUAL_THAN_OPERATOR,
+    SMALLER_EQUAL_THAN_OPERATOR,
+    EQUAL_OPERATOR,
+    NOT_EQUAL_OPERATOR,
+    
+    RETURN_ARROW,
+
     // '//'
     COMMENT,
 

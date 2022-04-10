@@ -7,10 +7,11 @@ namespace si_unit_interpreter.spec;
 
 public class LexerUnitTests
 {
-    // SINGLE TOKEN TESTS
 
     // TryBuildEtx
     [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "ETX")]
     public void TestGetEtxToken()
     {
         const string commentText = "";
@@ -21,6 +22,8 @@ public class LexerUnitTests
     
     // TryBuildCommentOrDivideOperator
     [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "Comment")]
     public void TestGetCommentToken()
     {
         const string comment = "let x";
@@ -33,23 +36,11 @@ public class LexerUnitTests
         Assert.Equal(1, token.Position.RowNumber);
         Assert.Equal(2, token.Position.ColumnNumber);
     }
-    
-    [Fact]
-    public void TestGetDivisionToken()
-    {
-        const string divisionText = "/ 5";
-        
-        var token = GetSingleTokenFromLexerByText(divisionText);
-        
-        Assert.Equal(TokenType.DIVISION_OPERATOR, token.Type);        
-        Assert.Equal('/', token.Value);
-        Assert.Equal(1, token.Position.RowNumber);
-        Assert.Equal(1, token.Position.ColumnNumber);
-    }
-    
+
     // TryBuildIdentifierOrKeyword
-    
     [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "Identifier")]
     public void TestGetIdentifierToken()
     {
         const string identifierName = "myVariable";
@@ -64,9 +55,11 @@ public class LexerUnitTests
     }
     
     [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "Keyword")]
     public void TestGetLetKeywordToken()
     {
-        const string letText = "let x";
+        const string letText = "let";
         
         var token = GetSingleTokenFromLexerByText(letText);
         
@@ -77,9 +70,11 @@ public class LexerUnitTests
     }
 
     [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "Keyword")]
     public void TestGetUnitKeywordToken()
     {
-        const string unitText = "unit N";
+        const string unitText = "unit";
         
         var token = GetSingleTokenFromLexerByText(unitText);
         
@@ -88,9 +83,11 @@ public class LexerUnitTests
     }
    
     [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "Keyword")]
     public void TestGetFunctionKeywordToken()
     {
-        const string functionText = "fn x(a: [])";
+        const string functionText = "fn";
         
         var token = GetSingleTokenFromLexerByText(functionText);
         
@@ -99,9 +96,11 @@ public class LexerUnitTests
     }
     
     [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "Keyword")]
     public void TestGetReturnKeywordToken()
     {
-        const string returnText = "return 5";
+        const string returnText = "return";
         
         var token = GetSingleTokenFromLexerByText(returnText);
         
@@ -110,9 +109,11 @@ public class LexerUnitTests
     }
     
     [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "Keyword")]
     public void TestGetIfKeywordToken()
     {
-        const string ifText = "if (x > 5)";
+        const string ifText = "if";
         
         var token = GetSingleTokenFromLexerByText(ifText);
         
@@ -121,9 +122,11 @@ public class LexerUnitTests
     }
     
     [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "Keyword")]
     public void TestGetElseKeywordToken()
     {
-        const string elseText = "else {}";
+        const string elseText = "else";
         
         var token = GetSingleTokenFromLexerByText(elseText);
         
@@ -132,9 +135,11 @@ public class LexerUnitTests
     }
 
     [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "Keyword")]
     public void TestGetWhileKeywordToken()
     {
-        const string whileText = "while (true)";
+        const string whileText = "while";
         
         var token = GetSingleTokenFromLexerByText(whileText);
         
@@ -143,40 +148,74 @@ public class LexerUnitTests
     }
     
     [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "Keyword")]
     public void TestGetStringTypeToken()
     {
-        const string whileText = "string";
+        const string stringTypeText = "string";
 
-        var token = GetSingleTokenFromLexerByText(whileText);
+        var token = GetSingleTokenFromLexerByText(stringTypeText);
         
         Assert.Equal(TokenType.STRING_TYPE, token.Type);        
         Assert.Equal("string", token.Value);
     }
 
     [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "Keyword")]
     public void TestGetBoolTypeToken()
     {
-        const string whileText = "bool";
+        const string boolTypeText = "bool";
         
-        var token = GetSingleTokenFromLexerByText(whileText);
+        var token = GetSingleTokenFromLexerByText(boolTypeText);
         
         Assert.Equal(TokenType.BOOL_TYPE, token.Type);        
         Assert.Equal("bool", token.Value);
     }
     
     [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "Keyword")]
     public void TestGetVoidTypeToken()
     {
-        const string whileText = "void";
+        const string voidTypeText = "void";
         
-        var token = GetSingleTokenFromLexerByText(whileText);
+        var token = GetSingleTokenFromLexerByText(voidTypeText);
         
         Assert.Equal(TokenType.VOID_TYPE, token.Type);        
         Assert.Equal("void", token.Value);
     }
     
-    // Some edge case
     [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "Bool")]
+    public void TestFalseToken()
+    {
+        const string boolText = "false";
+
+        var token = GetSingleTokenFromLexerByText(boolText);
+        
+        Assert.Equal(TokenType.BOOL, token.Type);        
+        Assert.Equal(false, token.Value);
+    }
+    
+    [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "Bool")]
+    public void TestTrueToken()
+    {
+        const string boolText = "true";
+        
+        var token = GetSingleTokenFromLexerByText(boolText);
+        
+        Assert.Equal(TokenType.BOOL, token.Type);        
+        Assert.Equal(true, token.Value);
+    }
+
+    [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "Identifier")]
+    [Trait("Category", "EdgeCase")]
     public void TestIffIdentifierToken()
     {
         const string iffText = "iff";
@@ -188,6 +227,9 @@ public class LexerUnitTests
     }
     
     [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "Identifier")]
+    [Trait("Category", "EdgeCase")]
     public void TestLettIdentifierToken()
     {
         const string lettText = "lett";
@@ -199,6 +241,9 @@ public class LexerUnitTests
     }
 
     [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "Identifier")]
+    [Trait("Category", "EdgeCase")]
     public void TestCaseSensitivityOfKeyword()
     {
         const string notKeywordText = "While";
@@ -209,8 +254,38 @@ public class LexerUnitTests
         Assert.Equal(notKeywordText, token.Value);
     }
     
+    [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "Identifier")]
+    [Trait("Category", "EdgeCase")]
+    public void TestBooleanCaseSensitivity()
+    {
+        const string notBoolText = "False";
+
+        var token = GetSingleTokenFromLexerByText(notBoolText);
+        
+        Assert.Equal(TokenType.IDENTIFIER, token.Type);        
+        Assert.Equal(notBoolText, token.Value);
+    }
+    
+    [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "Identifier")]
+    [Trait("Category", "EdgeCase")]
+    public void TestBooleanNotCompletedToken()
+    {
+        const string notBoolText = "fals";
+
+        var token = GetSingleTokenFromLexerByText(notBoolText);
+        
+        Assert.Equal(TokenType.IDENTIFIER, token.Type);        
+        Assert.Equal(notBoolText, token.Value);
+    }
+    
     // TryBuildText
     
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "String")]
     [Fact]
     public void TestTextToken()
     {
@@ -226,6 +301,23 @@ public class LexerUnitTests
     }
     
     [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "String")]
+    public void TestTextWithEscapingCharsToken()
+    {
+        const string s = "escaped\\\" string \\\" with \\\n and \\\t and \\\\ \\\\";
+        const string stringText = $"\"{s}\"";
+        
+        var token = GetSingleTokenFromLexerByText(stringText);
+        
+        Assert.Equal(TokenType.STRING, token.Type);        
+        Assert.Equal("escaped\" string \" with \n and \t and \\ \\", token.Value);
+    }
+    
+    [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "String")]
+    [Trait("Category", "Invalid")]
     public void TestTextWithoutEndingQuoteToken()
     {
         const string s = "my string ";
@@ -242,6 +334,8 @@ public class LexerUnitTests
     // TryBuildNumber
     
     [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "Int")]
     public void TestIntToken()
     {
         const int intValue = 25;
@@ -254,6 +348,8 @@ public class LexerUnitTests
     }
     
     [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "Int")]
     public void TestIntTokenWithCharacterAfterwards()
     {
         const int intValue = 5556;
@@ -265,18 +361,22 @@ public class LexerUnitTests
         Assert.Equal(intValue, token.Value);
     }
     
-    // public void TestIntWithLeadingZerosToken()
-    // {
-    //     const int intValue = 25;
-    //     var stringText = $"000{intValue}";
-    //     
-    //     var token = GetSingleTokenFromLexerByText(stringText);
-    //     
-    //     Assert.Equal(TokenType.INT, token.Type);        
-    //     Assert.Equal(intValue, token.Value);
-    // }
+    [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "Int")]
+    public void TestIntWithLeadingZerosToken()
+    {
+        const int intValue = 25;
+        var stringText = $"000{intValue}";
+        
+        var token = GetSingleTokenFromLexerByText(stringText);
+        
+        Assert.Equal(TokenType.INVALID, token.Type);        
+    }
     
     [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "Float")]
     public void TestFloatToken()
     {
         const double floatValue = 25.55;
@@ -289,6 +389,8 @@ public class LexerUnitTests
     }
     
     [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "Float")]
     public void TestFloatWithExponentToken()
     {
         const double floatValue = 0.25e5;
@@ -301,6 +403,8 @@ public class LexerUnitTests
     }
     
     [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "Float")]
     public void TestFloatWithMinusExponentToken()
     {
         const double floatValue = 4e-5;
@@ -311,70 +415,373 @@ public class LexerUnitTests
         Assert.Equal(TokenType.FLOAT, token.Type);        
         Assert.Equal(floatValue, token.Value, 5);
     }
-    
-    // TryBuildBoolean
+
+
+    // Multi char operators
     
     [Fact]
-    public void TestTrueToken()
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "MultiCharOperator")]
+    public void TestOrOperatorToken()
     {
-        const bool boolValue = true;
-        var stringText = $"{boolValue}";
+        const string operatorText = "||";
         
-        var token = GetSingleTokenFromLexerByText(stringText);
+        var token = GetSingleTokenFromLexerByText(operatorText);
         
-        Assert.Equal(TokenType.BOOL, token.Type);        
-        Assert.Equal(boolValue, token.Value);
+        Assert.Equal(TokenType.OR_OPERATOR, token.Type);        
+        Assert.Equal(operatorText, token.Value);
+    }    
+    
+    [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "MultiCharOperator")]
+    public void TestAndOperatorToken()
+    {
+        const string operatorText = "&&";
+        
+        var token = GetSingleTokenFromLexerByText(operatorText);
+        
+        Assert.Equal(TokenType.AND_OPERATOR, token.Type);        
+        Assert.Equal(operatorText, token.Value);
+    }    
+    
+    [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "MultiCharOperator")]
+    public void TestGreaterEqualThanOperatorToken()
+    {
+        const string operatorText = ">=";
+        
+        var token = GetSingleTokenFromLexerByText(operatorText);
+        
+        Assert.Equal(TokenType.GREATER_EQUAL_THAN_OPERATOR, token.Type);        
+        Assert.Equal(operatorText, token.Value);
+    }    
+    
+    [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "MultiCharOperator")]
+    public void TestSmallerEqualThanOperatorToken()
+    {
+        const string operatorText = "<=";
+        
+        var token = GetSingleTokenFromLexerByText(operatorText);
+        
+        Assert.Equal(TokenType.SMALLER_EQUAL_THAN_OPERATOR, token.Type);        
+        Assert.Equal(operatorText, token.Value);
+    }    
+    
+    [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "MultiCharOperator")]
+    public void TestEqualOperatorToken()
+    {
+        const string operatorText = "==";
+        
+        var token = GetSingleTokenFromLexerByText(operatorText);
+        
+        Assert.Equal(TokenType.EQUAL_OPERATOR, token.Type);        
+        Assert.Equal(operatorText, token.Value);
+    }    
+    
+    [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "MultiCharOperator")]
+    public void TestNotEqualOperatorToken()
+    {
+        const string operatorText = "!=";
+        
+        var token = GetSingleTokenFromLexerByText(operatorText);
+        
+        Assert.Equal(TokenType.NOT_EQUAL_OPERATOR, token.Type);        
+        Assert.Equal(operatorText, token.Value);
+    }    
+    
+    [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "MultiCharOperator")]
+    public void TestReturnArrowToken()
+    {
+        const string operatorText = "->";
+        
+        var token = GetSingleTokenFromLexerByText(operatorText);
+        
+        Assert.Equal(TokenType.RETURN_ARROW, token.Type);        
+        Assert.Equal(operatorText, token.Value);
     }
     
     [Fact]
-    public void TestFalseToken()
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "MultiCharOperator")]
+    [Trait("Category", "Invalid")]
+    public void TestInvalidMultiCharacterOperatorToken()
     {
-        const bool boolValue = false;
-        var stringText = $"{boolValue}";
+        const string operatorText = "-/";
         
-        var token = GetSingleTokenFromLexerByText(stringText);
+        var token = GetSingleTokenFromLexerByText(operatorText);
         
-        Assert.Equal(TokenType.BOOL, token.Type);        
-        Assert.Equal(boolValue, token.Value);
-    }
+        Assert.Equal(TokenType.INVALID, token.Type);        
+    }   
 
+
+    // Single operators
     
-    // TryBuildMultiCharacterOperator
+    [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "SingleCharOperator")]
+    public void TestAssignmentOperatorToken()
+    {
+        const char singleOperator = '=';
+        var operatorText = $"{singleOperator}";
+        
+        var token = GetSingleTokenFromLexerByText(operatorText);
+        
+        Assert.Equal(TokenType.ASSIGNMENT_OPERATOR, token.Type);        
+        Assert.Equal(singleOperator, token.Value);
+    }
     
-    // TODO
+    [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "SingleCharOperator")]
+    public void TestPlusOperatorToken()
+    {
+        const char singleOperator = '+';
+        var operatorText = $"{singleOperator}";
+        
+        var token = GetSingleTokenFromLexerByText(operatorText);
+        
+        Assert.Equal(TokenType.PLUS_OPERATOR, token.Type);        
+        Assert.Equal(singleOperator, token.Value);
+    }
     
-    // TryBuildSingleCharacterOperator
+    [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "SingleCharOperator")]
+    public void TestMinusOperatorToken()
+    {
+        const char singleOperator = '-';
+        var operatorText = $"{singleOperator}";
+        
+        var token = GetSingleTokenFromLexerByText(operatorText);
+        
+        Assert.Equal(TokenType.MINUS_OPERATOR, token.Type);        
+        Assert.Equal(singleOperator, token.Value);
+    }
     
-    // TODO
+    [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "SingleCharOperator")]
+    public void TestDivisionOperatorToken()
+    {
+        const char singleOperator = '/';
+        var operatorText = $"{singleOperator}";
+        
+        var token = GetSingleTokenFromLexerByText(operatorText);
+        
+        Assert.Equal(TokenType.DIVISION_OPERATOR, token.Type);        
+        Assert.Equal(singleOperator, token.Value);
+    }
     
+    [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "SingleCharOperator")]
+    public void TestMultiplicationOperatorToken()
+    {
+        const char singleOperator = '*';
+        var operatorText = $"{singleOperator}";
+        
+        var token = GetSingleTokenFromLexerByText(operatorText);
+        
+        Assert.Equal(TokenType.MULTIPLICATION_OPERATOR, token.Type);        
+        Assert.Equal(singleOperator, token.Value);
+    }
     
-    // MORE THAN ONE TOKEN STATEMENTS
+    [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "SingleCharOperator")]
+    public void TestGreaterThanToken()
+    {
+        const char singleOperator = '>';
+        var operatorText = $"{singleOperator}";
+        
+        var token = GetSingleTokenFromLexerByText(operatorText);
+        
+        Assert.Equal(TokenType.GREATER_THAN_OPERATOR, token.Type);        
+        Assert.Equal(singleOperator, token.Value);
+    }    
     
+    [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "SingleCharOperator")]
+    public void TestSmallerThanToken()
+    {
+        const char singleOperator = '<';
+        var operatorText = $"{singleOperator}";
+        
+        var token = GetSingleTokenFromLexerByText(operatorText);
+        
+        Assert.Equal(TokenType.SMALLER_THAN_OPERATOR, token.Type);        
+        Assert.Equal(singleOperator, token.Value);
+    }    
     
-    // [Fact]
-    // public void TestGetTokensFromVariableAssignment()
-    // {
-    //     const string assignmentText = "let x: [] = 5"
-    // let s: string = "my string here"
-    //     var streamReader = GetStreamReaderFromString(assignmentText);
-    //     var lexer = new Lexer(streamReader);       
-    //     
-    //     var tokens = new List<Token>();
-    //
-    //
-    //     lexer.GetNextToken();
-    //     while (lexer.token.Type != TokenType.ETX)
-    //     {
-    //         lexer.GetNextToken();
-    //         tokens.Add(lexer.token);
-    //     }
-    //     Assert.Equal(TokenType.LET, tokens[0].Type);
-    // }
+    [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "SingleCharOperator")]
+    public void TestPowerOperatorToken()
+    {
+        const char singleOperator = '^';
+        var operatorText = $"{singleOperator}";
+        
+        var token = GetSingleTokenFromLexerByText(operatorText);
+        
+        Assert.Equal(TokenType.POWER_OPERATOR, token.Type);        
+        Assert.Equal(singleOperator, token.Value);
+    }
     
+    [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "SingleCharOperator")]
+    public void TestNegateOperatorToken()
+    {
+        const char singleOperator = '!';
+        var operatorText = $"{singleOperator}";
+        
+        var token = GetSingleTokenFromLexerByText(operatorText);
+        
+        Assert.Equal(TokenType.NEGATE_OPERATOR, token.Type);        
+        Assert.Equal(singleOperator, token.Value);
+    }
     
-    // TOKEN POSITION TESTS
+    // Braces
+    [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "SingleCharOperator")]
+    public void TestLeftParenthesesToken()
+    {
+        const char singleOperator = '(';
+        var operatorText = $"{singleOperator}";
+        
+        var token = GetSingleTokenFromLexerByText(operatorText);
+        
+        Assert.Equal(TokenType.LEFT_PARENTHESES, token.Type);        
+        Assert.Equal(singleOperator, token.Value);
+    }    
+    
+    [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "SingleCharOperator")]
+    public void TestRightParenthesesToken()
+    {
+        const char singleOperator = ')';
+        var operatorText = $"{singleOperator}";        
+        
+        var token = GetSingleTokenFromLexerByText(operatorText);
+        
+        Assert.Equal(TokenType.RIGHT_PARENTHESES, token.Type);        
+        Assert.Equal(singleOperator, token.Value);
+    }    
+    
+    [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "SingleCharOperator")]
+    public void TestLeftSquareBracketToken()
+    {
+        const char singleOperator = '[';
+        var operatorText = $"{singleOperator}";     
+        
+        var token = GetSingleTokenFromLexerByText(operatorText);
+        
+        Assert.Equal(TokenType.LEFT_SQUARE_BRACKET, token.Type);        
+        Assert.Equal(singleOperator, token.Value);
+    }    
+    
+    [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "SingleCharOperator")]
+    public void TestRightSquareBracketToken()
+    {
+        const char singleOperator = ']';
+        var operatorText = $"{singleOperator}";     
+        
+        var token = GetSingleTokenFromLexerByText(operatorText);
+        
+        Assert.Equal(TokenType.RIGHT_SQUARE_BRACKET, token.Type);        
+        Assert.Equal(singleOperator, token.Value);
+    }    
+    
+    [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "SingleCharOperator")]
+    public void TestLeftCurlyBraceToken()
+    {
+        const char singleOperator = '{';
+        var operatorText = $"{singleOperator}";     
+        
+        var token = GetSingleTokenFromLexerByText(operatorText);
+        
+        Assert.Equal(TokenType.LEFT_CURLY_BRACE, token.Type);        
+        Assert.Equal(singleOperator, token.Value);
+    }    
+    
+    [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "SingleCharOperator")]
+    public void TestRightCurlyBraceToken()
+    {
+        const char singleOperator = '}';
+        var operatorText = $"{singleOperator}";             
+        
+        var token = GetSingleTokenFromLexerByText(operatorText);
+        
+        Assert.Equal(TokenType.RIGHT_CURLY_BRACE, token.Type);        
+        Assert.Equal(singleOperator, token.Value);
+    }    
+    
+    [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "SingleCharOperator")]
+    public void TestColonToken()
+    {
+        const char singleOperator = ':';
+        var operatorText = $"{singleOperator}";     
+        
+        var token = GetSingleTokenFromLexerByText(operatorText);
+        
+        Assert.Equal(TokenType.COLON, token.Type);        
+        Assert.Equal(singleOperator, token.Value);
+    }    
+    
+    [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "SingleCharOperator")]
+    public void TestCommaToken()
+    {
+        const char singleOperator = ',';
+        var operatorText = $"{singleOperator}";     
+        
+        var token = GetSingleTokenFromLexerByText(operatorText);
+        
+        Assert.Equal(TokenType.COMMA, token.Type);        
+        Assert.Equal(singleOperator, token.Value);
+    }    
+    
+    [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "SingleCharOperator")]
+    [Trait("Category", "Unknown")]
+    public void TestUnknownToken()
+    {
+        const string operatorText = ";";
+        
+        var token = GetSingleTokenFromLexerByText(operatorText);
+        
+        Assert.Equal(TokenType.UNKNOWN, token.Type);        
+    }    
+    
 
     [Fact]
+    [Trait("Category", "MultiToken")]
+    [Trait("Category", "TokenPosition")]
     public void TestTokenPositionOfKeywordAndIdentifier()
     {
         const string keywordAndIdentifierText = "return myVariable";
@@ -397,6 +804,9 @@ public class LexerUnitTests
 
 
     [Fact]
+    [Trait("Category", "MultiToken")]
+    [Trait("Category", "TokenPosition")]
+    [Trait("Category", "EdgeCase")]
     public void TestTokenPositionWithNewLineInside()
     {
         const string keywordAndIdentifierText = "return }\nlet force";
@@ -425,9 +835,9 @@ public class LexerUnitTests
     }
     
     
-    // Some edge cases
-
     [Fact]
+    [Trait("Category", "MultiToken")]
+    [Trait("Category", "EdgeCase")]
     public void TestDeclareLettIdentifier()
     {
         const string declareLett = "let lett";
@@ -440,8 +850,33 @@ public class LexerUnitTests
         Assert.Equal(TokenType.IDENTIFIER, tokens[1].Type);
         Assert.Equal("lett", tokens[1].Value);
     }
-
     
+    
+    [Fact]
+    [Trait("Category", "MultiToken")]
+    [Trait("Category", "EdgeCase")]
+    public void TestIffIdentifier()
+    {
+        const string iffText = "if ( iff > 5)";
+
+        var tokens = GetAllTokensFromLexerByText(iffText);
+
+        Assert.Equal(TokenType.IF, tokens[0].Type);
+        
+        Assert.Equal(TokenType.LEFT_PARENTHESES, tokens[1].Type);
+        
+        Assert.Equal(TokenType.IDENTIFIER, tokens[2].Type);
+        Assert.Equal("iff", tokens[2].Value);
+
+        Assert.Equal(TokenType.GREATER_THAN_OPERATOR, tokens[3].Type);
+        Assert.Equal('>', tokens[3].Value);
+
+        Assert.Equal(TokenType.INT, tokens[4].Type);
+        Assert.Equal(5, tokens[4].Value);
+
+    }
+
+
     // HELPER FUNCTIONS
     private static Token GetSingleTokenFromLexerByText(string textToLexer)
     {

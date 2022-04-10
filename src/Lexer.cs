@@ -9,10 +9,13 @@ public class Lexer
 {
     public Token Token;
 
-    private TokenPosition _currentPosition;
     private readonly Dictionary<string, TokenType> _keywordDictionary;
+    private readonly Dictionary<char, TokenType> _singleCharOperatorDictionary;
+    private readonly Dictionary<string, TokenType> _multiCharOperatorDictionary;
     private readonly StreamReader _streamReader; 
+
     private char _character;
+    private TokenPosition _currentPosition;
 
     public Lexer(StreamReader streamReader)
     {
@@ -34,26 +37,62 @@ public class Lexer
             ["bool"] = TokenType.BOOL_TYPE,
             ["void"] = TokenType.VOID_TYPE,
         };
+        
+        _singleCharOperatorDictionary = new Dictionary<char, TokenType>
+        {
+            ['='] = TokenType.ASSIGNMENT_OPERATOR,
+            ['+'] = TokenType.PLUS_OPERATOR,
+            ['-'] = TokenType.MINUS_OPERATOR,
+            ['/'] = TokenType.DIVISION_OPERATOR,
+            ['*'] = TokenType.MULTIPLICATION_OPERATOR,
+            ['>'] = TokenType.GREATER_THAN_OPERATOR,
+            ['<'] = TokenType.SMALLER_THAN_OPERATOR,
+            ['^'] = TokenType.POWER_OPERATOR,
+            ['!'] = TokenType.NEGATE_OPERATOR,
+            
+            ['('] = TokenType.LEFT_PARENTHESES,
+            [')'] = TokenType.RIGHT_PARENTHESES,
+
+            ['['] = TokenType.LEFT_SQUARE_BRACKET,
+            [']'] = TokenType.RIGHT_SQUARE_BRACKET,
+
+            ['{'] = TokenType.LEFT_CURLY_BRACE,
+            ['}'] = TokenType.RIGHT_CURLY_BRACE,
+
+            [','] = TokenType.COMMA,
+            [':'] = TokenType.COLON,
+
+        };
+        
+        _multiCharOperatorDictionary = new Dictionary<string, TokenType>
+        {
+            ["||"] = TokenType.OR_OPERATOR,
+            ["&&"] = TokenType.AND_OPERATOR,
+            [">="] = TokenType.GREATER_EQUAL_THAN_OPERATOR,
+            ["<="] = TokenType.SMALLER_EQUAL_THAN_OPERATOR,
+            ["=="] = TokenType.EQUAL_OPERATOR,
+            ["!="] = TokenType.NOT_EQUAL_OPERATOR,
+            ["->"] = TokenType.RETURN_ARROW,
+        };
     }
     
     public void GetNextToken()
     {
         GetNextCharacter();
+
         SkipWhites();
 
         if (TryBuildEtx()) return;
 
         if (TryBuildCommentOrDivideOperator()) return;
         
+        if (TryBuildIdentifierKeywordOrBool()) return;
+
         if (TryBuildText()) return;
 
         if (TryBuildNumber()) return;
-        
-        // if (TryBuildBoolean()) return;
 
-        if (TryBuildIdentifierOrKeyword()) return;
-        
-        
+        if (TryBuildOperator()) return;
 
         Token = new Token(TokenType.UNKNOWN, _currentPosition, "");
     }
@@ -80,15 +119,18 @@ public class Lexer
 
     private bool TryBuildEtx()
     {
-        if (!_streamReader.EndOfStream) return false;
+        if (!_streamReader.EndOfStream || _character != '\uffff') return false;
         
         Token = new Token(TokenType.ETX, _currentPosition);
         return true;
+
     }
 
     private bool TryBuildCommentOrDivideOperator()
     {
         if (_character != '/') return false;
+
+        var divisionChar = _character;
         
         GetNextCharacter();
 
@@ -111,16 +153,15 @@ public class Lexer
         }
 
         commentPosition.ColumnNumber--;
-        Token = new Token(TokenType.DIVISION_OPERATOR, commentPosition, '/');
+        Token = new Token(_singleCharOperatorDictionary[divisionChar], commentPosition, divisionChar);
         return true;
-
     }
 
-    private bool TryBuildIdentifierOrKeyword()
+    private bool TryBuildIdentifierKeywordOrBool()
     {
         if (!char.IsLetter(_character)) return false;
 
-        var identifierOrKeywordPosition = _currentPosition;
+        var identifierPosition = _currentPosition;
         
         var value = new StringBuilder();
         while (char.IsLetter(_character))
@@ -133,12 +174,17 @@ public class Lexer
 
         if (_keywordDictionary.ContainsKey(stringValue))
         {
-            Token = new Token(_keywordDictionary[stringValue], identifierOrKeywordPosition, stringValue);
-
+            Token = new Token(_keywordDictionary[stringValue], identifierPosition, stringValue);
             return true;
         }
 
-        Token = new Token(TokenType.IDENTIFIER, identifierOrKeywordPosition, stringValue);
+        if (stringValue is "true" or "false")
+        {
+            Token = new Token(TokenType.BOOL, identifierPosition, bool.Parse(stringValue));
+            return true;
+        }
+
+        Token = new Token(TokenType.IDENTIFIER, identifierPosition, stringValue);
         return true;
     }
 
@@ -164,7 +210,6 @@ public class Lexer
         }
 
         Token = new Token(TokenType.STRING, textPosition, text.ToString());
-
         return true;
     }
 
@@ -228,21 +273,70 @@ public class Lexer
         Token = new Token(TokenType.INT, position, intPart);
         return true;
     }
-
-    private bool TryBuildBoolean()
+    private bool TryBuildOperator()
     {
-        // Token = new Token(TokenType.BOOL, position, boolValue);
-        throw new NotImplementedException();
+        var multiOperatorStartingChars = GetStartingCharsOfMultiCharOperator();
+
+        if (!multiOperatorStartingChars.Contains(_character) && !_singleCharOperatorDictionary.ContainsKey(_character))
+        {
+            return false;
+        }
+        
+        var operatorPosition = _currentPosition;
+        var firstCharacter = _character;
+        
+        var secondCharacter = GetSecondCharForMultiCharacterOperator(_character);
+        
+        GetNextCharacter();
+
+        if (_character == secondCharacter)
+        {
+            var operatorBuilt = $"{firstCharacter}{secondCharacter}";
+            Token = new Token(_multiCharOperatorDictionary[operatorBuilt], operatorPosition, operatorBuilt);
+            return true;
+        }
+
+        // If we have multi operator like -/ we want to return invalid token rather than minus and div operators
+        if (_singleCharOperatorDictionary.ContainsKey(_character))
+        {
+            Token = new Token(TokenType.INVALID, operatorPosition);
+            return true;
+        }
+
+        if (_singleCharOperatorDictionary.ContainsKey(firstCharacter))
+        {
+            Token = new Token(_singleCharOperatorDictionary[firstCharacter], operatorPosition, firstCharacter);
+            return true;
+        }
+        
+        Token = new Token(TokenType.INVALID, operatorPosition);
+        return true;
     }
 
-    private bool TryBuildMultiCharacterOperator()
+    private List<char> GetStartingCharsOfMultiCharOperator()
     {
-        throw new NotImplementedException();
+        var multiOperatorStartingChars = new List<char>();
+
+        foreach (var (key, _) in _multiCharOperatorDictionary)
+        {
+            multiOperatorStartingChars.Add(key[0]);
+        }
+
+        return multiOperatorStartingChars;
     }
 
-    private bool TryBuildSingleCharacterOperator()
+    private char? GetSecondCharForMultiCharacterOperator(char firstCharacter)
     {
-        throw new NotImplementedException();
+        char? secondChar = null;
+        foreach (var (key, _) in _multiCharOperatorDictionary)
+        {
+            if (key[0] == firstCharacter)
+            {
+                secondChar = key[1];
+            }
+        }
+
+        return secondChar;
     }
 }
 
