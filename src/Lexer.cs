@@ -15,9 +15,25 @@ public class Lexer
     private readonly Dictionary<string, TokenType> _multiCharOperatorDictionary;
     private readonly Dictionary<char, Func<(TokenType, string)>> _collidingOperatorsDictionary;
 
-    public Lexer(StreamReader streamReader)
+    private readonly int MAX_COMMENT_LENGTH;
+    private readonly int MAX_IDENTIFIER_LENGTH;
+    private readonly int MAX_TEXT_LENGTH;
+    private readonly long MAX_INT_SIZE;
+
+    public Lexer(
+        StreamReader streamReader, 
+        int maxCommentLength = 1000, 
+        int maxIdentifierLength = 1000, 
+        int maxTextLength = 100000, 
+        long maxIntSize = 9_223_372_036_854_775_807
+        )
     {
         _streamReader = streamReader;
+
+        MAX_COMMENT_LENGTH = maxCommentLength;
+        MAX_IDENTIFIER_LENGTH = maxIdentifierLength;
+        MAX_TEXT_LENGTH = maxTextLength;
+        MAX_INT_SIZE = maxIntSize;
 
         _keywordDictionary = new Dictionary<string, TokenType>
         {
@@ -75,7 +91,7 @@ public class Lexer
         GetNextCharacter();
     }
 
-    private (TokenType, string) DetermineOperator(char expectedNextOperator, TokenType single, TokenType multi)
+    private (TokenType, string) DetermineOperator(char expectedNextOperator, TokenType singleOperator, TokenType multiOperator)
     {
         var operatorString = $"{_character}";
         
@@ -84,10 +100,10 @@ public class Lexer
         {
             operatorString += _character;
             GetNextCharacter();
-            return (multi, operatorString);
+            return (multiOperator, operatorString);
         }
 
-        return (single, operatorString);
+        return (singleOperator, operatorString);
     }
 
     public void GetNextToken()
@@ -181,7 +197,7 @@ public class Lexer
         var identifierPosition = _currentPosition;
         
         var value = new StringBuilder();
-        while (char.IsLetter(_character))
+        while (char.IsLetter(_character) || _character == '_' || char.IsDigit(_character))
         {
             value.Append(_character);
             GetNextCharacter();
@@ -211,7 +227,15 @@ public class Lexer
         // sprawdzac dlugosc stringa, parametr elxera
         while (_character != '\"' && _character != '\uffff')
         {
-            text.Append(_character);
+            if (_character == '\\')
+            {
+                GetNextCharacter();
+                text.Append($"\\{_character}");
+            }
+            else
+            {
+                text.Append(_character);
+            }
             
             GetNextCharacter();
         }
