@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Text;
 
 namespace si_unit_interpreter;
@@ -8,21 +5,19 @@ namespace si_unit_interpreter;
 public class Lexer
 {
     public Token Token;
+    
+    private readonly StreamReader _streamReader;
+    private char _character;
+    private TokenPosition _currentPosition;
 
     private readonly Dictionary<string, TokenType> _keywordDictionary;
     private readonly Dictionary<char, TokenType> _singleCharOperatorDictionary;
     private readonly Dictionary<string, TokenType> _multiCharOperatorDictionary;
-    private readonly StreamReader _streamReader; 
-
-    private char _character;
-    private TokenPosition _currentPosition;
+    private readonly Dictionary<char, Func<(TokenType, string)>> _collidingOperatorsDictionary;
 
     public Lexer(StreamReader streamReader)
     {
         _streamReader = streamReader;
-
-        _currentPosition.ColumnNumber = 0;
-        _currentPosition.RowNumber = 1;
 
         _keywordDictionary = new Dictionary<string, TokenType>
         {
@@ -36,19 +31,16 @@ public class Lexer
             ["string"] = TokenType.STRING_TYPE,
             ["bool"] = TokenType.BOOL_TYPE,
             ["void"] = TokenType.VOID_TYPE,
+            ["true"] = TokenType.TRUE,
+            ["false"] = TokenType.FALSE,
         };
         
         _singleCharOperatorDictionary = new Dictionary<char, TokenType>
         {
-            ['='] = TokenType.ASSIGNMENT_OPERATOR,
             ['+'] = TokenType.PLUS_OPERATOR,
-            ['-'] = TokenType.MINUS_OPERATOR,
             ['/'] = TokenType.DIVISION_OPERATOR,
             ['*'] = TokenType.MULTIPLICATION_OPERATOR,
-            ['>'] = TokenType.GREATER_THAN_OPERATOR,
-            ['<'] = TokenType.SMALLER_THAN_OPERATOR,
             ['^'] = TokenType.POWER_OPERATOR,
-            ['!'] = TokenType.NEGATE_OPERATOR,
             
             ['('] = TokenType.LEFT_PARENTHESES,
             [')'] = TokenType.RIGHT_PARENTHESES,
@@ -61,38 +53,53 @@ public class Lexer
 
             [','] = TokenType.COMMA,
             [':'] = TokenType.COLON,
-
         };
         
         _multiCharOperatorDictionary = new Dictionary<string, TokenType>
         {
             ["||"] = TokenType.OR_OPERATOR,
             ["&&"] = TokenType.AND_OPERATOR,
-            [">="] = TokenType.GREATER_EQUAL_THAN_OPERATOR,
-            ["<="] = TokenType.SMALLER_EQUAL_THAN_OPERATOR,
-            ["=="] = TokenType.EQUAL_OPERATOR,
-            ["!="] = TokenType.NOT_EQUAL_OPERATOR,
-            ["->"] = TokenType.RETURN_ARROW,
         };
+
+        _collidingOperatorsDictionary = new Dictionary<char, Func<(TokenType, string)>>
+        {
+            ['>'] = ()=> DetermineOperator('=',TokenType.GREATER_THAN_OPERATOR, TokenType.GREATER_EQUAL_THAN_OPERATOR),
+            ['<'] = ()=> DetermineOperator('=',TokenType.SMALLER_THAN_OPERATOR, TokenType.SMALLER_EQUAL_THAN_OPERATOR),
+            ['='] = ()=> DetermineOperator('=',TokenType.ASSIGNMENT_OPERATOR, TokenType.EQUAL_OPERATOR),
+            ['!'] = ()=> DetermineOperator('=',TokenType.NEGATE_OPERATOR, TokenType.NOT_EQUAL_OPERATOR),
+            ['-'] = ()=> DetermineOperator('>',TokenType.MINUS_OPERATOR, TokenType.RETURN_ARROW)
+        };
+        
+        _currentPosition.ColumnNumber = 0;
+        _currentPosition.RowNumber = 1;
+        GetNextCharacter();
     }
-    
+
+    private (TokenType, string) DetermineOperator(char expectedNextOperator, TokenType single, TokenType multi)
+    {
+        var operatorString = $"{_character}";
+        
+        GetNextCharacter();
+        if (_character == expectedNextOperator)
+        {
+            operatorString += _character;
+            GetNextCharacter();
+            return (multi, operatorString);
+        }
+
+        return (single, operatorString);
+    }
+
     public void GetNextToken()
     {
-        GetNextCharacter();
-
         SkipWhites();
-
-        if (TryBuildEtx()) return;
-
-        if (TryBuildCommentOrDivideOperator()) return;
-        
-        if (TryBuildIdentifierKeywordOrBool()) return;
-
-        if (TryBuildText()) return;
-
-        if (TryBuildNumber()) return;
-
-        if (TryBuildOperator()) return;
+        if (
+            TryBuildEtx() ||
+            TryBuildCommentOrDivideOperator() || 
+            TryBuildIdentifierKeywordOrBool() || 
+            TryBuildText() || 
+            TryBuildNumber() || 
+            TryBuildOperator()) return;
 
         Token = new Token(TokenType.UNKNOWN, _currentPosition, "");
     }
@@ -104,6 +111,19 @@ public class Lexer
 
         if (_character == '\n')
         {
+            if (_streamReader.Peek() == '\r')
+            {
+                _streamReader.Read();
+            }
+            _currentPosition.ColumnNumber = 0;
+            _currentPosition.RowNumber++;
+        }
+        else if (_character == '\r')
+        {
+            if (_streamReader.Peek() == '\n')
+            {
+                _streamReader.Read();
+            }
             _currentPosition.ColumnNumber = 0;
             _currentPosition.RowNumber++;
         }
@@ -123,37 +143,34 @@ public class Lexer
         
         Token = new Token(TokenType.ETX, _currentPosition);
         return true;
-
     }
 
     private bool TryBuildCommentOrDivideOperator()
     {
         if (_character != '/') return false;
 
-        var divisionChar = _character;
-        
-        GetNextCharacter();
+        var commentDivisionPosition = _currentPosition;
 
-        var commentPosition = _currentPosition;
+        GetNextCharacter();
 
         if (_character == '/')
         {
             var value = new StringBuilder();
-
-
-            while (_character != '\n' && !_streamReader.EndOfStream)
+            
+            GetNextCharacter();
+            // sprawdzać max długość komentarza
+            // atrybut lexera, pewna domyslna wartosc
+            while (_character != '\n' && (_character != '\uffff' || !_streamReader.EndOfStream))
             {
-                GetNextCharacter();
-
                 value.Append(_character);
+                GetNextCharacter();
             }
                 
-            Token = new Token(TokenType.COMMENT, commentPosition, value.ToString());
+            Token = new Token(TokenType.COMMENT, commentDivisionPosition, value.ToString());
             return true;
         }
 
-        commentPosition.ColumnNumber--;
-        Token = new Token(_singleCharOperatorDictionary[divisionChar], commentPosition, divisionChar);
+        Token = new Token(_singleCharOperatorDictionary['/'], commentDivisionPosition, "/");
         return true;
     }
 
@@ -172,15 +189,9 @@ public class Lexer
 
         var stringValue = value.ToString();
 
-        if (_keywordDictionary.ContainsKey(stringValue))
+        if (_keywordDictionary.TryGetValue(stringValue, out var tokenType))
         {
-            Token = new Token(_keywordDictionary[stringValue], identifierPosition, stringValue);
-            return true;
-        }
-
-        if (stringValue is "true" or "false")
-        {
-            Token = new Token(TokenType.BOOL, identifierPosition, bool.Parse(stringValue));
+            Token = new Token(tokenType, identifierPosition);
             return true;
         }
 
@@ -197,34 +208,110 @@ public class Lexer
         var textPosition = _currentPosition;
 
         GetNextCharacter();
-        while (_character != '\"')
+        // sprawdzac dlugosc stringa, parametr elxera
+        while (_character != '\"' && _character != '\uffff')
         {
             text.Append(_character);
-            if (_streamReader.EndOfStream)
-            {
-                Token = new Token(TokenType.INVALID, textPosition, text.ToString());
-                return true;
-            }
             
             GetNextCharacter();
         }
-
+        
+        if (_character != '\"')
+        {
+            // zarejestrowac blad ale isc dalej
+            // handler bledow w lexerze
+        }
+        else
+        {
+            GetNextCharacter();
+        }
+        
         Token = new Token(TokenType.STRING, textPosition, text.ToString());
         return true;
     }
 
     private bool TryBuildNumber()
     {
-        if (!char.IsDigit(_character)) return false; //should be is digit but no 0
+        if (!char.IsDigit(_character)) return false;
+        
+        var numberPosition = _currentPosition;
+        
+        var (intPartSuccess, intPart) = _TryBuildIntPart();
+        var (fractionPartSuccess, fractionPart, decimalPlaces) = _TryBuildFractionPart();
+        var (exponentPartSuccess, minusFactor, exponentPart) = _TryBuildExponentPart();
 
+        if (!intPartSuccess)
+        {
+            Token = new Token(TokenType.INVALID, numberPosition);
+            GetNextCharacter();
+            return true;
+        }
+
+        if (!fractionPartSuccess && !exponentPartSuccess)
+        {
+            Token = new Token(TokenType.INT, numberPosition, intPart);
+            return true;
+        }
+
+        double number = intPart;
+
+        if (fractionPartSuccess)
+        {
+            number += fractionPart / Math.Pow(10, decimalPlaces);
+        }
+
+        if (exponentPartSuccess)
+        {
+            number *= Math.Pow(10, minusFactor * exponentPart);
+        }
+        
+        Token = new Token(TokenType.FLOAT, numberPosition, number);
+        return true;
+    }
+    private bool TryBuildOperator()
+    {
+        var operatorPosition = _currentPosition;
+
+        if (_singleCharOperatorDictionary.TryGetValue(_character, out var singleOperatorTokenType))
+        {
+            Token = new Token(singleOperatorTokenType, operatorPosition, char.ToString(_character));
+            
+            GetNextCharacter();
+            return true;
+        }
+        
+        if (_collidingOperatorsDictionary.TryGetValue(_character, out var determineOperator))
+        {
+            var (singleOrMultiTokenType, operatorString) = determineOperator();
+            Token = new Token(singleOrMultiTokenType, operatorPosition, operatorString);
+            return true;
+        }
+
+        var firstOperatorChar = _character;
+
+        GetNextCharacter();
+        var multiOperator = $"{firstOperatorChar}{_character}";
+
+        if (_multiCharOperatorDictionary.TryGetValue(multiOperator, out var multiOperatorTokenType))
+        {
+            Token = new Token(multiOperatorTokenType, operatorPosition, multiOperator);
+            
+            GetNextCharacter();
+            return true;
+        }
+
+        return false;
+    }
+    
+    private (bool, long) _TryBuildIntPart()
+    {
         long intPart = 0;
-
-        var position = _currentPosition; 
+        var intPartSuccess = true;
 
         if (_character != '0')
         {
-            intPart += _character - '0';
-            
+            intPart = _character - '0';
+
             GetNextCharacter();
 
             while (char.IsDigit(_character))
@@ -235,145 +322,62 @@ public class Lexer
         }
         else
         {
-            // if 0 is present
             GetNextCharacter();
+            if (_character == '0')
+            {
+                intPartSuccess = false;
+            }
         }
 
-        if (_character == '.')
-        {
-            long fractionPart = 0;
-            int decimalPlaces = 0;
-            
-            int exponentPart = 0;
-            
-            
-            GetNextCharacter();
-
-            while (char.IsDigit(_character))
-            {
-                fractionPart = fractionPart * 10 + _character - '0';
-                decimalPlaces++;
-                GetNextCharacter();
-            }
-
-            if (_character == 'e')
-            {
-                GetNextCharacter();
-
-                var minusFactor = 1;
-
-                if (_character == '-')
-                {
-                    minusFactor = -1;
-                    GetNextCharacter();
-                }
-
-                while (char.IsDigit(_character))
-                {
-                    exponentPart = exponentPart * 10 + _character - '0';
-                    GetNextCharacter();
-                }
-                
-                Token = new Token(TokenType.FLOAT, position,
-                    (intPart + fractionPart / Math.Pow(10, decimalPlaces)) * Math.Pow(10, minusFactor * exponentPart));
-                return true;
-            }
-
-            Token = new Token(TokenType.FLOAT, position, intPart + fractionPart / Math.Pow(10, decimalPlaces));
-            return true;
-        }
-        
-        if (_character == 'e')
-        {
-            int exponentPart = 0;
-
-            GetNextCharacter();
-
-            var minusFactor = 1;
-
-            if (_character == '-')
-            {
-                minusFactor = -1;
-                GetNextCharacter();
-            }
-
-            while (char.IsDigit(_character))
-            {
-                exponentPart = exponentPart * 10 + _character - '0';
-                GetNextCharacter();
-            }
-                
-            Token = new Token(TokenType.FLOAT, position, intPart * Math.Pow(10, minusFactor * exponentPart));
-            return true;
-        }
-
-        Token = new Token(TokenType.INT, position, intPart);
-        return true;
+        return (intPartSuccess, intPart);
     }
-    private bool TryBuildOperator()
-    {
-        var multiOperatorStartingChars = GetStartingCharsOfMultiCharOperator();
 
-        if (!multiOperatorStartingChars.Contains(_character) && !_singleCharOperatorDictionary.ContainsKey(_character))
-        {
-            return false;
-        }
-        
-        var operatorPosition = _currentPosition;
-        var firstCharacter = _character;
-        
-        var secondCharacter = GetSecondCharForMultiCharacterOperator(_character);
+    private (bool, long, int) _TryBuildFractionPart()
+    {
+        var fractionPartSuccess = false;
+        long fractionPart = 0;
+        var decimalPlaces = 0;
+
+
+        if (_character != '.') return (fractionPartSuccess, fractionPart, decimalPlaces);
         
         GetNextCharacter();
 
-        if (_character == secondCharacter)
+        while (char.IsDigit(_character))
         {
-            var operatorBuilt = $"{firstCharacter}{secondCharacter}";
-            Token = new Token(_multiCharOperatorDictionary[operatorBuilt], operatorPosition, operatorBuilt);
-            return true;
+            fractionPart = fractionPart * 10 + _character - '0';
+            decimalPlaces++;
+            GetNextCharacter();
         }
-
-        // If we have multi operator like -/ we want to return invalid token rather than minus and div operators
-        if (_singleCharOperatorDictionary.ContainsKey(_character))
-        {
-            Token = new Token(TokenType.INVALID, operatorPosition);
-            return true;
-        }
-
-        if (_singleCharOperatorDictionary.ContainsKey(firstCharacter))
-        {
-            Token = new Token(_singleCharOperatorDictionary[firstCharacter], operatorPosition, firstCharacter);
-            return true;
-        }
+        fractionPartSuccess = true;
         
-        Token = new Token(TokenType.INVALID, operatorPosition);
-        return true;
+        return (fractionPartSuccess, fractionPart, decimalPlaces);
     }
 
-    private List<char> GetStartingCharsOfMultiCharOperator()
+    private (bool, int, int) _TryBuildExponentPart()
     {
-        var multiOperatorStartingChars = new List<char>();
+        var exponentPartSuccess = false;
+        var exponentPart = 0;
+        var minusFactor = 1;
 
-        foreach (var (key, _) in _multiCharOperatorDictionary)
+        if (_character != 'e') return (exponentPartSuccess, minusFactor, exponentPart);
+        
+        GetNextCharacter();
+
+        if (_character == '-')
         {
-            multiOperatorStartingChars.Add(key[0]);
+            minusFactor = -1;
+            GetNextCharacter();
         }
 
-        return multiOperatorStartingChars;
-    }
-
-    private char? GetSecondCharForMultiCharacterOperator(char firstCharacter)
-    {
-        char? secondChar = null;
-        foreach (var (key, _) in _multiCharOperatorDictionary)
+        while (char.IsDigit(_character))
         {
-            if (key[0] == firstCharacter)
-            {
-                secondChar = key[1];
-            }
+            exponentPart = exponentPart * 10 + _character - '0';
+            GetNextCharacter();
         }
+        exponentPartSuccess = true;
 
-        return secondChar;
+        return (exponentPartSuccess, minusFactor, exponentPart);
     }
 }
 

@@ -84,7 +84,8 @@ public enum TokenType
     FLOAT,
     INT,
     STRING,
-    BOOL,
+    TRUE,
+    FALSE,
     
     // Types
     STRING_TYPE,
