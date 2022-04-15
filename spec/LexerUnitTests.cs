@@ -40,17 +40,21 @@ public class LexerUnitTests
     [Fact]
     [Trait("Category", "SingleToken")]
     [Trait("Category", "Comment")]
+    [Trait("Category", "Error")]
     public void TestCommentLimit()
     {
-        const string comment = "let x";
-        const string commentText = "//" + comment;
-        
-        var token = GetSingleTokenFromLexerByText(commentText);
-        
-        Assert.Equal(TokenType.COMMENT, token.Type);        
-        Assert.Equal(comment, token.Value);
-        Assert.Equal(1, token.Position.RowNumber);
-        Assert.Equal(1, token.Position.ColumnNumber);
+        const string comment = "comment to test limit, more than 10 chars";
+        const string commentText = "// " + comment;
+        const int maxCommentLength = 10;
+
+        var e = Assert.Throws<CommentExceededLengthException>(() => GetSingleTokenFromLexerByText(commentText, maxCommentLength: maxCommentLength));
+        Assert.Equal($"Comment can have maximum: {maxCommentLength} chars.", e.Message);
+
+        // var errors = GetErrorsThrownByLexer(commentText, maxCommentLength);
+        //
+        // Assert.Single(errors);
+        // Assert.IsType<CommentExceededLengthException>(errors[0]);
+        // Assert.Equal(errors[0].Message, $"Comment can have maximum: {maxCommentLength} chars.");
     }
 
     // TryBuildIdentifierOrKeyword
@@ -65,6 +69,26 @@ public class LexerUnitTests
         
         Assert.Equal(TokenType.IDENTIFIER, token.Type);        
         Assert.Equal(identifierText, token.Value);        
+    }
+    
+    [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "Identifier")]
+    [Trait("Category", "Error")]
+
+    public void TestIdentifierLimit()
+    {
+        const string identifierText = "myIdentifierWithMoreThan10Chars";
+        const int maxIdentifierLength = 10;
+        
+        var e = Assert.Throws<IdentifierExceededLengthException>(() => GetSingleTokenFromLexerByText(identifierText, maxIdentifierLength: maxIdentifierLength));
+        Assert.Equal($"Identifier can have maximum: {maxIdentifierLength} chars.", e.Message);
+
+        // var errors = GetErrorsThrownByLexer(identifierText, maxIdentifierLength: maxIdentifierLength);
+        //
+        // Assert.Single(errors);
+        // Assert.IsType<IdentifierExceededLengthException>(errors[0]);
+        // Assert.Equal(errors[0].Message, $"Identifier can have maximum: {maxIdentifierLength} chars.");
     }
     
     [Fact]
@@ -323,7 +347,22 @@ public class LexerUnitTests
         Assert.Equal(TokenType.STRING, token.Type);      
         Assert.Equal("escaped \\\"string\\\" with \\\\ \\\\", token.Value);
     }
-    
+
+    [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "String")]
+    [Trait("Category", "Error")]
+    public void TestTextLimit()
+    {
+        const string s = "my string with exceeded length - more than 10";
+        const string stringText = $"\"{s}\"";
+        const int maxTextLength = 10;
+
+        var e = Assert.Throws<TextExceededLengthException>(() =>
+            GetSingleTokenFromLexerByText(stringText, maxTextLength: maxTextLength));
+        Assert.Equal($"Text can have maximum: {maxTextLength} chars.", e.Message);
+    }
+
     [Fact]
     [Trait("Category", "SingleToken")]
     [Trait("Category", "String")]
@@ -380,6 +419,21 @@ public class LexerUnitTests
         var token = GetSingleTokenFromLexerByText(stringText);
         
         Assert.Equal(TokenType.INVALID, token.Type);        
+    }
+    
+    [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "Int")]
+    [Trait("Category", "Error")]
+    public void TestIntLimit()
+    {
+        const int intValue = 1500;
+        var stringText = $"{intValue}";
+        const int maxIntSize = 1000;
+
+        var e = Assert.Throws<NumberExceededLengthException>(() =>
+            GetSingleTokenFromLexerByText(stringText, maxIntSize: maxIntSize));
+        Assert.Equal($"Number can be up to: {maxIntSize}", e.Message);
     }
     
     [Fact]
@@ -1366,7 +1420,7 @@ public class LexerUnitTests
             tokens.Add(lexer.Token);
             lexer.GetNextToken();
         }
-        // Add ETX
+        // Add ETX token
         tokens.Add(lexer.Token);
 
         streamReader.Close();

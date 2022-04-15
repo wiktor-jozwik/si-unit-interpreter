@@ -15,10 +15,10 @@ public class Lexer
     private readonly Dictionary<string, TokenType> _multiCharOperatorDictionary;
     private readonly Dictionary<char, Func<(TokenType, string)>> _collidingOperatorsDictionary;
 
-    private readonly int MAX_COMMENT_LENGTH;
-    private readonly int MAX_IDENTIFIER_LENGTH;
-    private readonly int MAX_TEXT_LENGTH;
-    private readonly long MAX_INT_SIZE;
+    private readonly int _maxCommentLength;
+    private readonly int _maxIdentifierLength;
+    private readonly int _maxTextLength;
+    private readonly long _maxIntSize;
 
     public Lexer(
         StreamReader streamReader, 
@@ -30,10 +30,10 @@ public class Lexer
     {
         _streamReader = streamReader;
 
-        MAX_COMMENT_LENGTH = maxCommentLength;
-        MAX_IDENTIFIER_LENGTH = maxIdentifierLength;
-        MAX_TEXT_LENGTH = maxTextLength;
-        MAX_INT_SIZE = maxIntSize;
+        _maxCommentLength = maxCommentLength;
+        _maxIdentifierLength = maxIdentifierLength;
+        _maxTextLength = maxTextLength;
+        _maxIntSize = maxIntSize;
 
         _keywordDictionary = new Dictionary<string, TokenType>
         {
@@ -79,11 +79,11 @@ public class Lexer
 
         _collidingOperatorsDictionary = new Dictionary<char, Func<(TokenType, string)>>
         {
-            ['>'] = ()=> DetermineOperator('=',TokenType.GREATER_THAN_OPERATOR, TokenType.GREATER_EQUAL_THAN_OPERATOR),
-            ['<'] = ()=> DetermineOperator('=',TokenType.SMALLER_THAN_OPERATOR, TokenType.SMALLER_EQUAL_THAN_OPERATOR),
-            ['='] = ()=> DetermineOperator('=',TokenType.ASSIGNMENT_OPERATOR, TokenType.EQUAL_OPERATOR),
-            ['!'] = ()=> DetermineOperator('=',TokenType.NEGATE_OPERATOR, TokenType.NOT_EQUAL_OPERATOR),
-            ['-'] = ()=> DetermineOperator('>',TokenType.MINUS_OPERATOR, TokenType.RETURN_ARROW)
+            ['>'] = ()=> _DetermineOperator('=',TokenType.GREATER_THAN_OPERATOR, TokenType.GREATER_EQUAL_THAN_OPERATOR),
+            ['<'] = ()=> _DetermineOperator('=',TokenType.SMALLER_THAN_OPERATOR, TokenType.SMALLER_EQUAL_THAN_OPERATOR),
+            ['='] = ()=> _DetermineOperator('=',TokenType.ASSIGNMENT_OPERATOR, TokenType.EQUAL_OPERATOR),
+            ['!'] = ()=> _DetermineOperator('=',TokenType.NEGATE_OPERATOR, TokenType.NOT_EQUAL_OPERATOR),
+            ['-'] = ()=> _DetermineOperator('>',TokenType.MINUS_OPERATOR, TokenType.RETURN_ARROW)
         };
         
         _currentPosition.ColumnNumber = 0;
@@ -91,12 +91,12 @@ public class Lexer
         GetNextCharacter();
     }
 
-    private (TokenType, string) DetermineOperator(char expectedNextOperator, TokenType singleOperator, TokenType multiOperator)
+    private (TokenType, string) _DetermineOperator(char multiOperatorNextChar, TokenType singleOperator, TokenType multiOperator)
     {
         var operatorString = $"{_character}";
         
         GetNextCharacter();
-        if (_character == expectedNextOperator)
+        if (_character == multiOperatorNextChar)
         {
             operatorString += _character;
             GetNextCharacter();
@@ -125,18 +125,11 @@ public class Lexer
         _character = (char)_streamReader.Read();
         _currentPosition.ColumnNumber++;
 
-        if (_character == '\n')
+        if (_character is '\n' or '\r')
         {
-            if (_streamReader.Peek() == '\r')
-            {
-                _streamReader.Read();
-            }
-            _currentPosition.ColumnNumber = 0;
-            _currentPosition.RowNumber++;
-        }
-        else if (_character == '\r')
-        {
-            if (_streamReader.Peek() == '\n')
+            var escapingChars = new List<string> {"\n\r", "\r\n"};
+            
+            if (escapingChars.Contains($"{_character}{(char)_streamReader.Peek()}"))
             {
                 _streamReader.Read();
             }
@@ -171,18 +164,21 @@ public class Lexer
 
         if (_character == '/')
         {
-            var value = new StringBuilder();
+            var comment = new StringBuilder();
             
             GetNextCharacter();
-            // sprawdzać max długość komentarza
-            // atrybut lexera, pewna domyslna wartosc
+
             while (_character != '\n' && (_character != '\uffff' || !_streamReader.EndOfStream))
             {
-                value.Append(_character);
+                comment.Append(_character);
+                if (comment.Length > _maxCommentLength)
+                {
+                    throw new CommentExceededLengthException($"Comment can have maximum: {_maxCommentLength} chars.");
+                }
                 GetNextCharacter();
             }
                 
-            Token = new Token(TokenType.COMMENT, commentDivisionPosition, value.ToString());
+            Token = new Token(TokenType.COMMENT, commentDivisionPosition, comment.ToString());
             return true;
         }
 
@@ -200,6 +196,10 @@ public class Lexer
         while (char.IsLetter(_character) || _character == '_' || char.IsDigit(_character))
         {
             value.Append(_character);
+            if (value.Length > _maxIdentifierLength)
+            {
+                throw new IdentifierExceededLengthException($"Identifier can have maximum: {_maxIdentifierLength} chars.");
+            }
             GetNextCharacter();
         }
 
@@ -235,6 +235,11 @@ public class Lexer
             else
             {
                 text.Append(_character);
+            }
+            
+            if (text.Length > _maxTextLength)
+            {
+                throw new TextExceededLengthException($"Text can have maximum: {_maxTextLength} chars.");
             }
             
             GetNextCharacter();
@@ -341,6 +346,12 @@ public class Lexer
             while (char.IsDigit(_character))
             {
                 intPart = intPart * 10 + _character - '0';
+                
+                if (intPart > _maxIntSize)
+                {
+                    throw new NumberExceededLengthException($"Number can be up to: {_maxIntSize}");
+                }
+
                 GetNextCharacter();
             }
         }
