@@ -1,6 +1,5 @@
-using System.Collections.Generic;
-using System.IO;
 using System.Text;
+using si_unit_interpreter.exceptions.lexer;
 using Xunit;
 
 namespace si_unit_interpreter.spec;
@@ -49,12 +48,6 @@ public class LexerUnitTests
 
         var e = Assert.Throws<CommentExceededLengthException>(() => GetSingleTokenFromLexerByText(commentText, maxCommentLength: maxCommentLength));
         Assert.Equal($"Comment can have maximum: {maxCommentLength} chars.", e.Message);
-
-        // var errors = GetErrorsThrownByLexer(commentText, maxCommentLength);
-        //
-        // Assert.Single(errors);
-        // Assert.IsType<CommentExceededLengthException>(errors[0]);
-        // Assert.Equal(errors[0].Message, $"Comment can have maximum: {maxCommentLength} chars.");
     }
 
     // TryBuildIdentifierOrKeyword
@@ -83,12 +76,6 @@ public class LexerUnitTests
         
         var e = Assert.Throws<IdentifierExceededLengthException>(() => GetSingleTokenFromLexerByText(identifierText, maxIdentifierLength: maxIdentifierLength));
         Assert.Equal($"Identifier can have maximum: {maxIdentifierLength} chars.", e.Message);
-
-        // var errors = GetErrorsThrownByLexer(identifierText, maxIdentifierLength: maxIdentifierLength);
-        //
-        // Assert.Single(errors);
-        // Assert.IsType<IdentifierExceededLengthException>(errors[0]);
-        // Assert.Equal(errors[0].Message, $"Identifier can have maximum: {maxIdentifierLength} chars.");
     }
     
     [Fact]
@@ -366,16 +353,15 @@ public class LexerUnitTests
     [Fact]
     [Trait("Category", "SingleToken")]
     [Trait("Category", "String")]
-    [Trait("Category", "Invalid")]
+    [Trait("Category", "Error")]
     public void TestTextWithoutEndingQuoteToken()
     {
         const string s = "my string ";
         const string stringText = $"\"{s}";
         
-        var token = GetSingleTokenFromLexerByText(stringText);
-        
-        Assert.Equal(TokenType.STRING, token.Type);        
-        Assert.Equal(s, token.Value);
+        var e = Assert.Throws<TextEndingQuoteNotFoundException>(() =>
+            GetSingleTokenFromLexerByText(stringText));
+        Assert.Equal("There should be ending quote provided.", e.Message);
     }
     
     // TryBuildNumber
@@ -427,11 +413,10 @@ public class LexerUnitTests
     [Trait("Category", "Error")]
     public void TestIntLimit()
     {
-        const int intValue = 1500;
-        var stringText = $"{intValue}";
+        const string stringText = "1500";
         const int maxIntSize = 1000;
 
-        var e = Assert.Throws<NumberExceededLengthException>(() =>
+        var e = Assert.Throws<NumberExceededSizeException>(() =>
             GetSingleTokenFromLexerByText(stringText, maxIntSize: maxIntSize));
         Assert.Equal($"Number can be up to: {maxIntSize}", e.Message);
     }
@@ -499,6 +484,34 @@ public class LexerUnitTests
         
         Assert.Equal(TokenType.FLOAT, token.Type);        
         Assert.Equal(2e3, token.Value, 5);
+    }
+    
+    [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "Float")]
+    [Trait("Category", "Error")]
+    public void TestDecimalPlacesLimit()
+    {
+        const string stringText = "0.000001";
+        const int maxDecimalPlaces = 5;
+
+        var e = Assert.Throws<DecimalPlacesExceededAmountException>(() =>
+            GetSingleTokenFromLexerByText(stringText, maxDecimalPlaces: maxDecimalPlaces));
+        Assert.Equal($"Number can have up to: {maxDecimalPlaces} decimal places.", e.Message);
+    }
+    
+    [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "Float")]
+    [Trait("Category", "Error")]
+    public void TestExponentSizeLimit()
+    {
+        const string stringText = "2e21";
+        const int maxExponentSize = 20;
+
+        var e = Assert.Throws<ExponentPartExceededSizeException>(() =>
+            GetSingleTokenFromLexerByText(stringText, maxExponentSize: maxExponentSize));
+        Assert.Equal($"Exponent part can be up to: {maxExponentSize}", e.Message);
     }
 
     
@@ -829,6 +842,7 @@ public class LexerUnitTests
         var token = GetSingleTokenFromLexerByText(operatorText);
         
         Assert.Equal(TokenType.UNKNOWN, token.Type);        
+        Assert.Equal(";", token.Value);        
     }
     
     // Examples from gitlab code examples
@@ -929,7 +943,7 @@ public class LexerUnitTests
     [Trait("Category", "Core")]
     public void TestStringAssignmentTokens()
     {
-        const string code = "let myString: string = \"my string with \\ \n \t escape chars\"";
+        const string code = "let myString: string = \"my string with \\\\ \\\n \\\t escape chars\"";
 
         var tokens = GetAllTokensFromLexerByText(code);
         
@@ -940,13 +954,12 @@ public class LexerUnitTests
         Assert.Equal(TokenType.STRING_TYPE, tokens[3].Type); 
         Assert.Equal(TokenType.ASSIGNMENT_OPERATOR, tokens[4].Type);        
         Assert.Equal(TokenType.STRING, tokens[5].Type);        
-        Assert.Equal("my string with \\ \n \t escape chars", tokens[5].Value);
+        Assert.Equal("my string with \\\\ \\\n \\\t escape chars", tokens[5].Value);
         Assert.Equal(TokenType.ETX, tokens[6].Type);
     }
     
     [Fact]
     [Trait("Category", "MultiToken")]
-    [Trait("Category", "TokenPosition")]
     [Trait("Category", "Core")]
     public void TestBoolAssignmentTokens()
     {
@@ -1031,7 +1044,6 @@ public class LexerUnitTests
     
     [Fact]
     [Trait("Category", "MultiToken")]
-    [Trait("Category", "TokenPosition")]
     [Trait("Category", "Core")]
     public void TestComplexLiteralExpressionTokens()
     {
@@ -1068,13 +1080,13 @@ public class LexerUnitTests
     [Trait("Category", "MultiToken")]
     [Trait("Category", "TokenPosition")]
     [Trait("Category", "Core")]
-    public void TestIfBlockTokens()
+    public void TestIfBlockTokensAndPositionOfEach()
     {
         const string code = "if (force > 5: [N]) " +
-                            "{\n\tlet x: [] = -0.2e2 } " +
+                            "{\nlet x: [] = -0.2e2 } " +
                             "else if (duration <= 0: [s]) " +
-                            "{\n\tprint(duration) } " +
-                            "else {\n return 5.5 }";
+                            "{\nprint(duration) } " +
+                            "else {\nreturn 5.5 }";
 
         var tokens = GetAllTokensFromLexerByText(code);
         
@@ -1096,6 +1108,9 @@ public class LexerUnitTests
         Assert.Equal(TokenType.LET, tokens[11].Type);        
         Assert.Equal(TokenType.IDENTIFIER, tokens[12].Type);
         Assert.Equal("x", tokens[12].Value);
+        Assert.Equal(2, tokens[12].Position.RowNumber);
+        Assert.Equal(5, tokens[12].Position.ColumnNumber);
+        
         Assert.Equal(TokenType.COLON, tokens[13].Type);        
         Assert.Equal(TokenType.LEFT_SQUARE_BRACKET, tokens[14].Type);
         Assert.Equal(TokenType.RIGHT_SQUARE_BRACKET, tokens[15].Type);        
@@ -1126,12 +1141,18 @@ public class LexerUnitTests
         Assert.Equal(TokenType.LEFT_PARENTHESES, tokens[33].Type);  
         Assert.Equal(TokenType.IDENTIFIER, tokens[34].Type);  
         Assert.Equal("duration", tokens[34].Value);  
+        Assert.Equal(3, tokens[34].Position.RowNumber);
+        Assert.Equal(7, tokens[34].Position.ColumnNumber);
+        
         Assert.Equal(TokenType.RIGHT_PARENTHESES, tokens[35].Type);  
         Assert.Equal(TokenType.RIGHT_CURLY_BRACE, tokens[36].Type);
         
         Assert.Equal(TokenType.ELSE, tokens[37].Type);
         Assert.Equal(TokenType.LEFT_CURLY_BRACE, tokens[38].Type);        
         Assert.Equal(TokenType.RETURN, tokens[39].Type);
+        Assert.Equal(4, tokens[39].Position.RowNumber);
+        Assert.Equal(1, tokens[39].Position.ColumnNumber);
+        
         Assert.Equal(TokenType.FLOAT, tokens[40].Type);
         Assert.Equal(5.5, tokens[40].Value, 4);
         Assert.Equal(TokenType.RIGHT_CURLY_BRACE, tokens[41].Type);
@@ -1143,49 +1164,100 @@ public class LexerUnitTests
     [Trait("Category", "MultiToken")]
     [Trait("Category", "TokenPosition")]
     [Trait("Category", "Core")]
-    public void TestWhileTokens()
+    public void TestWhileTokensAndPositionOfEach()
     {
-        const string code = "while (i != 0) {\n\tlet energy: [J] = 10 * i\n}";
+        const string code = "while (i != 0) {\nlet energy: [J] = 10 * i\n}";
 
         var tokens = GetAllTokensFromLexerByText(code);
         
-        Assert.Equal(TokenType.WHILE, tokens[0].Type);        
-        Assert.Equal(TokenType.LEFT_PARENTHESES, tokens[1].Type);        
+        Assert.Equal(TokenType.WHILE, tokens[0].Type);    
+        Assert.Equal(1, tokens[0].Position.RowNumber);
+        Assert.Equal(1, tokens[0].Position.ColumnNumber);
+        
+        Assert.Equal(TokenType.LEFT_PARENTHESES, tokens[1].Type);   
+        Assert.Equal(1, tokens[1].Position.RowNumber);
+        Assert.Equal(7, tokens[1].Position.ColumnNumber);
+        
         Assert.Equal(TokenType.IDENTIFIER, tokens[2].Type);  
         Assert.Equal("i", tokens[2].Value);  
-        Assert.Equal(TokenType.NOT_EQUAL_OPERATOR, tokens[3].Type);      
+        Assert.Equal(1, tokens[2].Position.RowNumber);
+        Assert.Equal(8, tokens[2].Position.ColumnNumber);
+        
+        Assert.Equal(TokenType.NOT_EQUAL_OPERATOR, tokens[3].Type);  
+        Assert.Equal(1, tokens[3].Position.RowNumber);
+        Assert.Equal(10, tokens[3].Position.ColumnNumber);
+        
         Assert.Equal(TokenType.INT, tokens[4].Type);  
         Assert.Equal(0, tokens[4].Value); 
+        Assert.Equal(1, tokens[4].Position.RowNumber);
+        Assert.Equal(13, tokens[4].Position.ColumnNumber);
+        
         Assert.Equal(TokenType.RIGHT_PARENTHESES, tokens[5].Type); 
+        Assert.Equal(1, tokens[5].Position.RowNumber);
+        Assert.Equal(14, tokens[5].Position.ColumnNumber);
         
         Assert.Equal(TokenType.LEFT_CURLY_BRACE, tokens[6].Type);
-        Assert.Equal(TokenType.LET, tokens[7].Type);        
+        Assert.Equal(1, tokens[6].Position.RowNumber);
+        Assert.Equal(16, tokens[6].Position.ColumnNumber);
+        
+        Assert.Equal(TokenType.LET, tokens[7].Type);
+        Assert.Equal(2, tokens[7].Position.RowNumber);
+        Assert.Equal(1, tokens[7].Position.ColumnNumber);
+        
         Assert.Equal(TokenType.IDENTIFIER, tokens[8].Type);  
         Assert.Equal("energy", tokens[8].Value);  
+        Assert.Equal(2, tokens[8].Position.RowNumber);
+        Assert.Equal(5, tokens[8].Position.ColumnNumber);
+        
         Assert.Equal(TokenType.COLON, tokens[9].Type);
+        Assert.Equal(2, tokens[9].Position.RowNumber);
+        Assert.Equal(11, tokens[9].Position.ColumnNumber);
+        
         Assert.Equal(TokenType.LEFT_SQUARE_BRACKET, tokens[10].Type);
+        Assert.Equal(2, tokens[10].Position.RowNumber);
+        Assert.Equal(13, tokens[10].Position.ColumnNumber);
+        
         Assert.Equal(TokenType.IDENTIFIER, tokens[11].Type);  
         Assert.Equal("J", tokens[11].Value);  
-        Assert.Equal(TokenType.RIGHT_SQUARE_BRACKET, tokens[12].Type); 
-        Assert.Equal(TokenType.ASSIGNMENT_OPERATOR, tokens[13].Type);        
+        Assert.Equal(2, tokens[11].Position.RowNumber);
+        Assert.Equal(14, tokens[11].Position.ColumnNumber);
+        
+        Assert.Equal(TokenType.RIGHT_SQUARE_BRACKET, tokens[12].Type);
+        Assert.Equal(2, tokens[12].Position.RowNumber);
+        Assert.Equal(15, tokens[12].Position.ColumnNumber);
+        
+        Assert.Equal(TokenType.ASSIGNMENT_OPERATOR, tokens[13].Type);
+        Assert.Equal(2, tokens[13].Position.RowNumber);
+        Assert.Equal(17, tokens[13].Position.ColumnNumber);
+        
         Assert.Equal(TokenType.INT, tokens[14].Type);  
-        Assert.Equal(10, tokens[14].Value);  
-        Assert.Equal(TokenType.MULTIPLICATION_OPERATOR, tokens[15].Type); 
+        Assert.Equal(10, tokens[14].Value);
+        Assert.Equal(2, tokens[14].Position.RowNumber);
+        Assert.Equal(19, tokens[14].Position.ColumnNumber);
+        
+        Assert.Equal(TokenType.MULTIPLICATION_OPERATOR, tokens[15].Type);
+        Assert.Equal(2, tokens[15].Position.RowNumber);
+        Assert.Equal(22, tokens[15].Position.ColumnNumber);
+        
         Assert.Equal(TokenType.IDENTIFIER, tokens[16].Type);  
         Assert.Equal("i", tokens[16].Value);  
-        Assert.Equal(TokenType.RIGHT_CURLY_BRACE, tokens[17].Type); 
+        Assert.Equal(2, tokens[16].Position.RowNumber);
+        Assert.Equal(24, tokens[16].Position.ColumnNumber);
+        
+        Assert.Equal(TokenType.RIGHT_CURLY_BRACE, tokens[17].Type);
+        Assert.Equal(3, tokens[17].Position.RowNumber);
+        Assert.Equal(1, tokens[17].Position.ColumnNumber);
 
         Assert.Equal(TokenType.ETX, tokens[18].Type);
     }
     
     [Fact]
     [Trait("Category", "MultiToken")]
-    [Trait("Category", "TokenPosition")]
     [Trait("Category", "Core")]
     public void TestFunctionTokens()
     {
         const string code = "fn calculateForceDelta(N1: [N], N2: [N], scalar: []) -> [N] {" +
-                            "\n\treturn (N2-N1) * scalar }";
+                            "\nreturn (N2-N1) * scalar }";
 
         var tokens = GetAllTokensFromLexerByText(code);
         
@@ -1343,7 +1415,7 @@ public class LexerUnitTests
     [Trait("Category", "MultiToken")]
     [Trait("Category", "EdgeCase")]
     [Trait("Category", "TokenPosition")]
-    public void TestNewlineCombinationsPositions()
+    public void TestNewlineDifferentCombinations()
     {
         const string newLines = "let x\n\r" +
                                 "let y\n" +
@@ -1396,10 +1468,26 @@ public class LexerUnitTests
     }
 
     // HELPER FUNCTIONS
-    private static Token GetSingleTokenFromLexerByText(string textToLexer, int maxCommentLength = 1000, int maxIdentifierLength = 50, int maxTextLength = 1000, long maxIntSize = 10000)
+    private static Token GetSingleTokenFromLexerByText(
+        string textToLexer, 
+        int maxCommentLength = 1000,
+        int maxIdentifierLength = 50,
+        int maxTextLength = 1000,
+        int maxDecimalPlaces = 10,
+        int maxExponentSize = 10,
+        long maxIntSize = 10000
+        )
     {
         var streamReader = GetStreamReaderFromString(textToLexer);
-        var lexer = new Lexer(streamReader, maxCommentLength, maxIdentifierLength, maxTextLength, maxIntSize);       
+        var lexer = new Lexer(
+            streamReader, 
+            maxCommentLength,
+            maxIdentifierLength,
+            maxTextLength,
+            maxDecimalPlaces,
+            maxExponentSize,
+            maxIntSize
+            );       
 
         lexer.GetNextToken();
         streamReader.Close();

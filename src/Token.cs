@@ -51,6 +51,8 @@ public enum TokenType
     POWER_OPERATOR,
     NEGATE_OPERATOR,
     
+    // Multi char
+
     // () [] {}
     LEFT_PARENTHESES,
     RIGHT_PARENTHESES,
@@ -64,8 +66,6 @@ public enum TokenType
     // ',' ':'
     COLON,
     COMMA,
-    
-    // Multi char
     
     // || && >= <= == != ->
     OR_OPERATOR,
