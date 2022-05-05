@@ -1478,7 +1478,7 @@ public class LexerUnitTests
         long maxIntSize = 10000
         )
     {
-        var streamReader = GetStreamReaderFromString(textToLexer);
+        var streamReader = Helper.GetStreamReaderFromString(textToLexer);
         var lexer = new Lexer(
             streamReader, 
             maxCommentLength,
@@ -1497,7 +1497,7 @@ public class LexerUnitTests
 
     private static List<Token> GetAllTokensFromLexerByText(string textToLexer)
     {
-        var streamReader = GetStreamReaderFromString(textToLexer);
+        var streamReader = Helper.GetStreamReaderFromString(textToLexer);
         var lexer = new Lexer(streamReader);     
         
         var tokens = new List<Token>();
@@ -1517,11 +1517,5 @@ public class LexerUnitTests
     }
 
 
-    private static StreamReader GetStreamReaderFromString(string text)
-    {
-        var byteArray = Encoding.UTF8.GetBytes(text);
-        var stream = new MemoryStream(byteArray);
-        
-        return new StreamReader(stream);
-    }
+
 }

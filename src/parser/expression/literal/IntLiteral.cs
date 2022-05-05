@@ -2,12 +2,12 @@ using si_unit_interpreter.parser.type;
 
 namespace si_unit_interpreter.parser.expression.literal;
 
-public class IntLiteral
+public class IntLiteral: IExpression
 {
-    public int Value;
+    public long Value;
     public UnitType? UnitType;
     
-    public IntLiteral(int value, UnitType? unitType)
+    public IntLiteral(long value, UnitType? unitType)
     {
         Value = value;
         UnitType = unitType;

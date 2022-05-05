@@ -21,7 +21,9 @@ public class Parser
     private readonly Dictionary<TokenType, Func<IExpression, IExpression, IExpression>> _multiplicativeOperatorMap;
     private readonly Dictionary<TokenType, Func<IExpression, IExpression>> _negateOperatorMap;
     
-    private readonly IDictionary<string, IStatement> _statements = new Dictionary<string, IStatement>();
+    private readonly IList<IStatement> _statements = new List<IStatement>();
+    private readonly IDictionary<string, IList<IStatement>> _functions = new Dictionary<string, IList<IStatement>>();
+    private readonly SortedSet<AssignStatement> _variables = new SortedSet<AssignStatement>();
 
     public Parser(Lexer lexer)
     {
@@ -59,10 +61,37 @@ public class Parser
     
    public Program Parse()
    {
-       var statements = TryParseBlock();
-        // return new Program(statements);
+       // var statements = new List<IStatement>();
 
-        return new Program(_statements);
+       // IStatement? statement;
+       // while((statement = TryParseStatement()) != null)
+       // {
+       //     statements.Add(statement);
+       // }
+
+       var functionStatement = TryParseFunctionStatement();
+       if (functionStatement != null)
+       {
+           _functions[functionStatement.Name] = functionStatement.Statements;
+       }
+
+       var assignStatement = TryParseAssignStatement();
+       if (assignStatement != null)
+       {
+           _variables.Add(assignStatement);
+       }
+       
+       var statement = TryParseFunctionCall() ??
+                       TryParseUnitDeclaration() ?? 
+                       TryParseReturnStatement() ?? 
+                       TryParseIfStatement() ??
+                       TryParseWhileStatement();
+
+       if (statement != null)
+       {
+           _statements.Add(statement);
+       }
+       return new Program(_statements, _functions, _variables);
    }
 
    private IExpression? TryParseExpression()
@@ -215,7 +244,6 @@ public class Parser
        }
 
        // Identifier or function call
-
        var identifierOrFunctionCall = TryParseIdentifierOrFunctionCall();
 
        if (identifierOrFunctionCall != null)
@@ -248,7 +276,7 @@ public class Parser
 
        if (_TokenIs(TokenType.FLOAT) || _TokenIs(TokenType.INT))
        {
-           var value = _lexer.Token.Value;
+           var value = _GetValueOfTokenAndPrepareNext();
            UnitType? unitType = null;
            
            if (_CheckAndConsume(TokenType.COLON))
@@ -262,10 +290,15 @@ public class Parser
                }
            }
 
-           // TODO maybe NumLiteral?
-
-           return new FloatLiteral(value, unitType);
-           // return new IntLiteral(_lexer.Token.Value, null);
+           if (value?.GetType().Equals(typeof(long)))
+           {
+               return new IntLiteral(value, null);
+           }
+           
+           if (value?.GetType().Equals(typeof(double)))
+           {
+               return new FloatLiteral(value, unitType);
+           }
        }
 
        return null;
@@ -278,7 +311,7 @@ public class Parser
            return null;
        }
 
-       var value = _lexer.Token.Value;
+       var value = _GetValueOfTokenAndPrepareNext();
        return TryParseFunctionCall() ?? new Identifier(value);
    }
 
@@ -290,7 +323,7 @@ public class Parser
            return null;
        }
        
-       var identifier = _lexer.Token.Value;
+       var identifier = _GetValueOfTokenAndPrepareNext();
 
        if (!_CheckAndConsume(TokenType.LEFT_PARENTHESES))
        {
@@ -346,8 +379,7 @@ public class Parser
            // TODO
            throw new Exception();
        }
-       var functionName = _lexer.Token.Value;
-       _lexer.GetNextToken();
+       var functionName = _GetValueOfTokenAndPrepareNext();
 
        if (!_CheckAndConsume(TokenType.LEFT_PARENTHESES))
        {
@@ -413,8 +445,7 @@ public class Parser
        {
            return null;
        }
-       var identifier = _lexer.Token.Value;
-       _lexer.GetNextToken();
+       var identifier = _GetValueOfTokenAndPrepareNext();
 
        if (!_CheckAndConsume(TokenType.COLON))
        {
@@ -427,32 +458,26 @@ public class Parser
        return new Parameter(identifier, variableType);
    }
 
-   private IType TryParseReturnType()
+   private IType? TryParseReturnType()
    {
        return _TokenIs(TokenType.VOID_TYPE) ? new VoidType() : TryParseVariableType();
    }
 
-   private IType TryParseVariableType()
+   private IType? TryParseVariableType()
    {
-       if (_TokenIs(TokenType.STRING_TYPE)) return new StringType();
-       if (_TokenIs(TokenType.BOOL_TYPE)) return new BoolType();
+       if (_CheckAndConsume(TokenType.STRING_TYPE)) return new StringType();
+       if (_CheckAndConsume(TokenType.BOOL_TYPE)) return new BoolType();
 
-       var unitType = TryParseUnitType();
-       
-       if (unitType == null)
-       {
-           // TODO
-           throw new Exception();
-       }
-
-       return unitType;
+       return TryParseUnitType();
    }
 
    private IType? TryParseUnitType()
    {
        if (!_CheckAndConsume(TokenType.LEFT_SQUARE_BRACKET))
        {
-           return null;
+           // TODO
+           throw new Exception();
+           
        }
 
        var unitExpression = TryParseUnitExpression();
@@ -497,8 +522,7 @@ public class Parser
            return null;
        }
 
-       var identifier = _lexer.Token.Value;
-       _lexer.GetNextToken();
+       var identifier = _GetValueOfTokenAndPrepareNext();
 
        var unitPower = TryParseUnitPower();
 
@@ -514,10 +538,12 @@ public class Parser
 
        if (_CheckAndConsume(TokenType.MINUS_OPERATOR))
        {
-           return new UnitMinusPower(_lexer.Token.Value);
+           long minusValue = _GetValueOfTokenAndPrepareNext();
+           return new UnitMinusPower(minusValue);
        }
 
-       return new UnitPower(_lexer.Token.Value);
+       long value = _GetValueOfTokenAndPrepareNext();
+       return new UnitPower(value);
    }
 
    private List<IStatement> TryParseBlock()
@@ -530,7 +556,6 @@ public class Parser
 
        var block = new List<IStatement>();
 
-       // TODO ?? TryParseFunctionCall(name)
        var statement = TryParseStatement();
 
        while (statement != null)
@@ -559,8 +584,36 @@ public class Parser
               TryParseIfStatement() ??
               TryParseWhileStatement();
    }
+
+   private void ParseStatements()
+   {
+       var functionStatement = TryParseFunctionStatement();
+       if (functionStatement != null)
+       {
+           _functions[functionStatement.Name] = functionStatement.Statements;
+           return;
+       }
+
+       var assignStatement = TryParseAssignStatement();
+       if (assignStatement != null)
+       {
+           _variables.Add(assignStatement);
+           return;
+       }
+       
+       var statement = TryParseFunctionCall() ??
+                       TryParseUnitDeclaration() ?? 
+                       TryParseReturnStatement() ?? 
+                       TryParseIfStatement() ??
+                       TryParseWhileStatement();
+
+       if (statement != null)
+       {
+           _statements.Add(statement);
+       }
+   }
    
-   private IStatement? TryParseAssignStatement()
+   private AssignStatement? TryParseAssignStatement()
    {
        // throw new NotImplementedException();
 
@@ -592,7 +645,6 @@ public class Parser
        }
 
        return new AssignStatement(parameter, expression);
-
    }
    
    private IStatement? TryParseUnitDeclaration()
@@ -607,9 +659,7 @@ public class Parser
            // TODO
            throw new Exception();
        }
-       var identifier = _lexer.Token.Value;
-       
-       _lexer.GetNextToken();
+       var identifier = _GetValueOfTokenAndPrepareNext();
 
        if (!_CheckAndConsume(TokenType.COLON))
        {
@@ -753,5 +803,12 @@ public class Parser
    private bool _TokenIs(TokenType type)
    {
        return _lexer.Token.Type == type;
+   }
+
+   private dynamic? _GetValueOfTokenAndPrepareNext()
+   {
+       var value = _lexer.Token.Value;
+       _lexer.GetNextToken();
+       return value;
    }
 }

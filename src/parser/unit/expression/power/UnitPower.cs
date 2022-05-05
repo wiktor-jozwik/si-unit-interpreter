@@ -2,9 +2,9 @@ namespace si_unit_interpreter.parser.unit.expression.power;
 
 public class UnitPower: IUnitPower
 {
-    public int Value;
+    public long Value;
 
-    public UnitPower(int value)
+    public UnitPower(long value)
     {
         Value = value;
     }
