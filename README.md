@@ -346,7 +346,7 @@ unit_expression             = unit_unary_expression, { "*", unit_unary_expressio
 
 unit_unary_expression       = identifier, [ unit_power ]
 
-unit_power                  = "^", [ "-" ], decimal_digits;
+unit_power                  = "^", [ "-" ], int_literal;
 
 
 --- LITERALS
