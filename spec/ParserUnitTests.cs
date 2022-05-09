@@ -1,5 +1,6 @@
 using si_unit_interpreter.parser;
 using si_unit_interpreter.parser.expression.literal;
+using si_unit_interpreter.parser.statement;
 using si_unit_interpreter.parser.type;
 using si_unit_interpreter.parser.unit.expression;
 using si_unit_interpreter.parser.unit.expression.power;
@@ -18,9 +19,12 @@ public class ParserUnitTests
         var parser = PrepareParser(code);
         var program = parser.Parse();
         
-        Assert.Single(program.Variables);
+        Assert.Single(program.Statements);
 
-        var assignStatement = program.Variables.First();
+        var firstStatement = program.Statements.First();
+        Assert.IsType<AssignStatement>(firstStatement);
+
+        var assignStatement = (AssignStatement) firstStatement;
         Assert.Equal("x", assignStatement.Parameter.Identifier);
         Assert.IsType<BoolType>(assignStatement.Parameter.Type);
         Assert.IsType<BoolLiteral>(assignStatement.Expression);
@@ -38,9 +42,12 @@ public class ParserUnitTests
         var parser = PrepareParser(code);
         var program = parser.Parse();
         
-        Assert.Single(program.Variables);
+        Assert.Single(program.Statements);
 
-        var assignStatement = program.Variables.First();
+        var firstStatement = program.Statements.First();
+        Assert.IsType<AssignStatement>(firstStatement);
+
+        var assignStatement = (AssignStatement) firstStatement;
         Assert.Equal("s", assignStatement.Parameter.Identifier);
         Assert.IsType<StringType>(assignStatement.Parameter.Type);
         Assert.IsType<StringLiteral>(assignStatement.Expression);
@@ -58,9 +65,12 @@ public class ParserUnitTests
         var parser = PrepareParser(code);
         var program = parser.Parse();
         
-        Assert.Single(program.Variables);
+        Assert.Single(program.Statements);
 
-        var assignStatement = program.Variables.First();
+        var firstStatement = program.Statements.First();
+        Assert.IsType<AssignStatement>(firstStatement);
+
+        var assignStatement = (AssignStatement) firstStatement;
         Assert.Equal("mul", assignStatement.Parameter.Identifier);
         Assert.IsType<UnitType>(assignStatement.Parameter.Type);
         Assert.IsType<IntLiteral>(assignStatement.Expression);
@@ -80,9 +90,12 @@ public class ParserUnitTests
         var parser = PrepareParser(code);
         var program = parser.Parse();
         
-        Assert.Single(program.Variables);
+        Assert.Single(program.Statements);
 
-        var assignStatement = program.Variables.First();
+        var firstStatement = program.Statements.First();
+        Assert.IsType<AssignStatement>(firstStatement);
+
+        var assignStatement = (AssignStatement) firstStatement;
         Assert.Equal("mulFloat", assignStatement.Parameter.Identifier);
         Assert.IsType<UnitType>(assignStatement.Parameter.Type);
         Assert.IsType<FloatLiteral>(assignStatement.Expression);
@@ -102,9 +115,12 @@ public class ParserUnitTests
         var parser = PrepareParser(code);
         var program = parser.Parse();
         
-        Assert.Single(program.Variables);
+        Assert.Single(program.Statements);
 
-        var assignStatement = program.Variables.First();
+        var firstStatement = program.Statements.First();
+        Assert.IsType<AssignStatement>(firstStatement);
+
+        var assignStatement = (AssignStatement) firstStatement;
         Assert.Equal("force", assignStatement.Parameter.Identifier);
         Assert.IsType<UnitType>(assignStatement.Parameter.Type);
         Assert.IsType<FloatLiteral>(assignStatement.Expression);

@@ -6,7 +6,7 @@
 	<s:String x:Key="/Default/Environment/Highlighting/HighlightingSourceSnapshotLocation/@EntryValue">/Users/jozek/Library/Caches/JetBrains/Rider2021.3/resharper-host/temp/Rider/vAny/CoverageData/_.19/Snapshot/snapshot.utdcvr</s:String>
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=6b049b4d_002D0a33_002D4389_002Dacb3_002De8b5bd3b51f5/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="TestUnitAssignment" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
   &lt;TestAncestor&gt;
-    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.ParserUnitTests.TestUnitAssignment&lt;/TestId&gt;
+    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.ParserUnitTests&lt;/TestId&gt;
   &lt;/TestAncestor&gt;
 &lt;/SessionState&gt;</s:String>
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=d33efea3_002Dc784_002D4954_002D9bf8_002D3118bead4d38/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="All tests from &amp;lt;si-unit-interpreter&amp;gt;" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
