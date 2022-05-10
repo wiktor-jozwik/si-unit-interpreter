@@ -1,4 +1,4 @@
-namespace si_unit_interpreter.parser.expression;
+namespace si_unit_interpreter.parser.expression.negate;
 
 public class MinusExpression: IExpression
 {

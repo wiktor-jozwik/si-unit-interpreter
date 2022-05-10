@@ -15,6 +15,10 @@ namespace si_unit_interpreter.parser;
 public class Parser
 {
     private readonly Lexer _lexer;
+    
+    private readonly IList<IStatement> _statements = new List<IStatement>();
+    private readonly IDictionary<string, IList<IStatement>> _functions = new Dictionary<string, IList<IStatement>>();
+    private readonly IDictionary<string, UnitType> _units = new Dictionary<string, UnitType>();
 
     private readonly Dictionary<TokenType, Func<IExpression, IExpression, IExpression>> _comparisonOperatorMap;
     private readonly Dictionary<TokenType, Func<IExpression, IExpression, IExpression>> _additiveOperatorMap;
@@ -30,8 +34,8 @@ public class Parser
         {
             [TokenType.GREATER_THAN_OPERATOR] = (left, right)=> new GreaterThanExpression(left, right),
             [TokenType.SMALLER_THAN_OPERATOR] = (left, right)=> new SmallerThanExpression(left, right),
-            [TokenType.GREATER_EQUAL_THAN_OPERATOR] = (left, right)=> new GreaterThanExpression(left, right),
-            [TokenType.SMALLER_EQUAL_THAN_OPERATOR] = (left, right)=> new SmallerThanExpression(left, right),
+            [TokenType.GREATER_EQUAL_THAN_OPERATOR] = (left, right)=> new GreaterEqualThanExpression(left, right),
+            [TokenType.SMALLER_EQUAL_THAN_OPERATOR] = (left, right)=> new SmallerEqualThanExpression(left, right),
             [TokenType.EQUAL_OPERATOR] = (left, right)=> new EqualExpression(left, right),
             [TokenType.NOT_EQUAL_OPERATOR] = (left, right)=> new NotEqualExpression(left, right),
         };
@@ -57,9 +61,9 @@ public class Parser
     
    public Program Parse()
    {
-       var (functions, statements) = ParseStatements();
-           
-       return new Program(statements, functions);
+       ParseStatements();
+       
+       return new Program(_statements, _functions, _units);
    }
 
    private IExpression? TryParseExpression()
@@ -177,6 +181,8 @@ public class Parser
    {
        if (_negateOperatorMap.TryGetValue(_lexer.Token.Type, out var negateExpression))
        {
+           _lexer.GetNextToken();
+
            var child = TryParsePrimaryExpression();
 
            return child == null ? null : negateExpression(child);
@@ -187,20 +193,16 @@ public class Parser
 
    private IExpression? TryParsePrimaryExpression()
    {
-       // Literal
-
        var literal = TryParseLiteral();
 
        if (literal != null) return literal;
 
-       // Identifier or function call
        var identifierOrFunctionCall = TryParseIdentifierOrFunctionCall();
 
        if (identifierOrFunctionCall != null) return identifierOrFunctionCall;
        
        if (_CheckAndConsume(TokenType.LEFT_PARENTHESES))
        {
-           // Expression
            var expression = TryParseExpression();
 
            if (!_CheckAndConsume(TokenType.RIGHT_PARENTHESES))
@@ -353,12 +355,6 @@ public class Parser
            parameters.Add(nextParameter);
        }
 
-       if (!_CheckAndConsume(TokenType.RIGHT_PARENTHESES))
-       {
-           // TODO
-           throw new Exception();
-       }
-
        return parameters;
    }
 
@@ -392,7 +388,7 @@ public class Parser
        return TryParseUnitType();
    }
 
-   private IType? TryParseUnitType()
+   private IType TryParseUnitType()
    {
        if (!_CheckAndConsume(TokenType.LEFT_SQUARE_BRACKET))
        {
@@ -493,27 +489,27 @@ public class Parser
               TryParseWhileStatement();
    }
 
-   private (IDictionary<string, IList<IStatement>>, IList<IStatement>) ParseStatements()
+   private void ParseStatements()
    {
-       var statements = new List<IStatement>();
-       var functions = new Dictionary<string, IList<IStatement>>();
-
        var functionStatement = TryParseFunctionStatement();
+       var unitDeclaration = TryParseUnitDeclaration();
        var statement = 
            TryParseAssignStatement() ??
            TryParseFunctionCall() ??
-           TryParseUnitDeclaration() ?? 
            TryParseReturnStatement() ?? 
            TryParseIfStatement() ??
            TryParseWhileStatement();
 
-       while (functionStatement != null || statement != null)
+       while (functionStatement != null || statement != null || unitDeclaration != null)
        {
-           if (functionStatement != null) functions[functionStatement.Name] = functionStatement.Statements;
+           if (functionStatement != null) _functions[functionStatement.Name] = functionStatement.Statements;
+
+           if (unitDeclaration != null) _units[unitDeclaration.Identifier] = unitDeclaration.Type;
            
-           if (statement != null) statements.Add(statement);
+           if (statement != null) _statements.Add(statement);
            
            functionStatement = TryParseFunctionStatement();
+           unitDeclaration = TryParseUnitDeclaration();
            statement = 
                TryParseAssignStatement() ??
                TryParseFunctionCall() ??
@@ -522,8 +518,6 @@ public class Parser
                TryParseIfStatement() ??
                TryParseWhileStatement();
        }
-       
-       return (functions, statements);
    }
    
    private AssignStatement? TryParseAssignStatement()
@@ -555,7 +549,7 @@ public class Parser
        return new AssignStatement(parameter, expression);
    }
    
-   private IStatement? TryParseUnitDeclaration()
+   private UnitDeclaration? TryParseUnitDeclaration()
    {
        if (!_CheckAndConsume(TokenType.UNIT)) return null;
 
