@@ -6,7 +6,6 @@ using si_unit_interpreter.parser.expression.multiplicative;
 using si_unit_interpreter.parser.expression.negate;
 using si_unit_interpreter.parser.statement;
 using si_unit_interpreter.parser.type;
-using si_unit_interpreter.parser.unit;
 using si_unit_interpreter.parser.unit.expression;
 using si_unit_interpreter.parser.unit.expression.power;
 

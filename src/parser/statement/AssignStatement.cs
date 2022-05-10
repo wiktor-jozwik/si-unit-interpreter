@@ -4,8 +4,8 @@ namespace si_unit_interpreter.parser.statement;
 
 public class AssignStatement: IStatement
 {
-    public Parameter Parameter;
-    public IExpression Expression;
+    public readonly Parameter Parameter;
+    public readonly IExpression Expression;
 
     public AssignStatement(Parameter parameter, IExpression expression)
     {

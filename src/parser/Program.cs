@@ -5,10 +5,9 @@ namespace si_unit_interpreter.parser;
 
 public class Program
 {
-
-    public IList<IStatement> Statements;
-    public IDictionary<string, IList<IStatement>> Functions;
-    public IDictionary<string, UnitType> Units;
+    public readonly IList<IStatement> Statements;
+    public readonly IDictionary<string, IList<IStatement>> Functions;
+    public readonly IDictionary<string, UnitType> Units;
 
     public Program(
         IList<IStatement> statements, 

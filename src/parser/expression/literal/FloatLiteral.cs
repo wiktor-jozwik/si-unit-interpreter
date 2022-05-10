@@ -4,8 +4,8 @@ namespace si_unit_interpreter.parser.expression.literal;
 
 public class FloatLiteral: IExpression
 {
-    public double Value;
-    public UnitType? UnitType;
+    public readonly double Value;
+    public readonly UnitType? UnitType;
     
     public FloatLiteral(double value, UnitType? unitType)
     {

@@ -4,8 +4,8 @@ namespace si_unit_interpreter.parser.expression.literal;
 
 public class IntLiteral: IExpression
 {
-    public long Value;
-    public UnitType? UnitType;
+    public readonly long Value;
+    public readonly UnitType? UnitType;
     
     public IntLiteral(long value, UnitType? unitType)
     {

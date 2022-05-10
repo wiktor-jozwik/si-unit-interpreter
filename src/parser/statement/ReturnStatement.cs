@@ -4,7 +4,7 @@ namespace si_unit_interpreter.parser.statement;
 
 public class ReturnStatement: IStatement
 {
-    public IExpression? Expression;
+    public readonly IExpression? Expression;
 
     public ReturnStatement(IExpression? expression)
     {

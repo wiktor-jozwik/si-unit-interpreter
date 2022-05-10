@@ -4,8 +4,8 @@ namespace si_unit_interpreter.parser.statement;
 
 public class Parameter: IStatement
 {
-    public string Identifier;
-    public IType Type;
+    public readonly string Identifier;
+    public readonly IType Type;
     
     public Parameter(string identifier, IType type)
     {

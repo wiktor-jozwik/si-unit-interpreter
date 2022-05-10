@@ -2,7 +2,7 @@ namespace si_unit_interpreter.parser.expression.literal;
 
 public class BoolLiteral: IExpression
 {
-    public bool Value;
+    public readonly bool Value;
 
     public BoolLiteral(bool value)
     {
