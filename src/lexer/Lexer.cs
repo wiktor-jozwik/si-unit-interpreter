@@ -1,7 +1,7 @@
 using System.Text;
 using si_unit_interpreter.exceptions.lexer;
 
-namespace si_unit_interpreter;
+namespace si_unit_interpreter.lexer;
 
 public class Lexer
 {
@@ -103,14 +103,12 @@ public class Lexer
         var operatorString = $"{_character}";
         
         GetNextCharacter();
-        if (_character == multiOperatorNextChar)
-        {
-            operatorString += _character;
-            GetNextCharacter();
-            return (multiOperator, operatorString);
-        }
+        if (_character != multiOperatorNextChar) return (singleOperator, operatorString);
+        
+        operatorString += _character;
+        GetNextCharacter();
+        return (multiOperator, operatorString);
 
-        return (singleOperator, operatorString);
     }
 
     public void GetNextToken()
@@ -132,17 +130,15 @@ public class Lexer
         _character = (char)_streamReader.Read();
         _currentPosition.ColumnNumber++;
 
-        if (_character is '\n' or '\r')
+        if (_character is not ('\n' or '\r')) return;
+        
+        var escapingChars = new List<string> {"\n\r", "\r\n"};
+        if (escapingChars.Contains($"{_character}{(char)_streamReader.Peek()}"))
         {
-            var escapingChars = new List<string> {"\n\r", "\r\n"};
-            
-            if (escapingChars.Contains($"{_character}{(char)_streamReader.Peek()}"))
-            {
-                _streamReader.Read();
-            }
-            _currentPosition.ColumnNumber = 0;
-            _currentPosition.RowNumber++;
+            _streamReader.Read();
         }
+        _currentPosition.ColumnNumber = 0;
+        _currentPosition.RowNumber++;
     }
 
     private void SkipWhites()
@@ -166,13 +162,11 @@ public class Lexer
         if (_character != '/') return false;
 
         var commentDivisionPosition = _currentPosition;
-
         GetNextCharacter();
 
         if (_character == '/')
         {
             var comment = new StringBuilder();
-            
             GetNextCharacter();
 
             while (_character != '\n' && (_character != '\uffff' || !_streamReader.EndOfStream))
@@ -209,7 +203,6 @@ public class Lexer
             }
             GetNextCharacter();
         }
-
         var stringValue = value.ToString();
 
         if (_keywordDictionary.TryGetValue(stringValue, out var tokenType))
@@ -227,9 +220,7 @@ public class Lexer
         if (_character != '\"') return false;
 
         var text = new StringBuilder();
-
         var textPosition = _currentPosition;
-
         GetNextCharacter();
 
         while (_character != '\"' && _character != '\uffff')
@@ -244,21 +235,14 @@ public class Lexer
                 text.Append(_character);
             }
             
-            if (text.Length > _maxTextLength)
-            {
-                throw new TextExceededLengthException($"Text can have maximum: {_maxTextLength} chars.");
-            }
+            if (text.Length > _maxTextLength) throw new TextExceededLengthException($"Text can have maximum: {_maxTextLength} chars.");
             
             GetNextCharacter();
         }
         
-        if (_character != '\"')
-        {
-            throw new TextEndingQuoteNotFoundException("There should be ending quote provided.");
-        }
-        
+        if (_character != '\"') throw new TextEndingQuoteNotFoundException("There should be ending quote provided.");
+
         GetNextCharacter();
-        
         Token = new Token(TokenType.STRING, textPosition, text.ToString());
         return true;
     }
@@ -287,7 +271,6 @@ public class Lexer
         }
 
         double number = intPart;
-
         if (fractionPartSuccess)
         {
             number += fractionPart / Math.Pow(10, decimalPlaces);
@@ -325,7 +308,6 @@ public class Lexer
 
         if (_multiCharOperatorDictionary.TryGetValue(multiOperator, out var multiOperatorTokenType))
         {
-            // as there was only a Peek() it's necessary to consume character
             GetNextCharacter();
             Token = new Token(multiOperatorTokenType, operatorPosition, multiOperator);
             
@@ -344,17 +326,12 @@ public class Lexer
         if (_character != '0')
         {
             intPart = _character - '0';
-
             GetNextCharacter();
 
             while (char.IsDigit(_character))
             {
                 intPart = intPart * 10 + _character - '0';
-                
-                if (intPart > _maxIntSize)
-                {
-                    throw new NumberExceededSizeException($"Number can be up to: {_maxIntSize}");
-                }
+                if (intPart > _maxIntSize) throw new NumberExceededSizeException($"Number can be up to: {_maxIntSize}");
 
                 GetNextCharacter();
             }
@@ -377,11 +354,9 @@ public class Lexer
         long fractionPart = 0;
         var decimalPlaces = 0;
 
-
         if (_character != '.') return (fractionPartSuccess, fractionPart, decimalPlaces);
         
         GetNextCharacter();
-
         while (char.IsDigit(_character))
         {
             fractionPart = fractionPart * 10 + _character - '0';
@@ -408,7 +383,6 @@ public class Lexer
         if (_character != 'e') return (exponentPartSuccess, minusFactor, exponentPart);
         
         GetNextCharacter();
-
         if (_character == '-')
         {
             minusFactor = -1;
@@ -418,11 +392,7 @@ public class Lexer
         while (char.IsDigit(_character))
         {
             exponentPart = exponentPart * 10 + _character - '0';
-            
-            if (exponentPart > _maxExponentSize)
-            {
-                throw new ExponentPartExceededSizeException($"Exponent part can be up to: {_maxExponentSize}");
-            }
+            if (exponentPart > _maxExponentSize) throw new ExponentPartExceededSizeException($"Exponent part can be up to: {_maxExponentSize}");
             
             GetNextCharacter();
         }
