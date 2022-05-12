@@ -1,3 +1,4 @@
+using si_unit_interpreter.lexer;
 using si_unit_interpreter.parser.expression;
 using si_unit_interpreter.parser.expression.additive;
 using si_unit_interpreter.parser.expression.comparison;
@@ -15,8 +16,7 @@ public class Parser
 {
     private readonly Lexer _lexer;
     
-    private readonly IList<IStatement> _statements = new List<IStatement>();
-    private readonly IDictionary<string, IList<IStatement>> _functions = new Dictionary<string, IList<IStatement>>();
+    private readonly IDictionary<string, FunctionStatement> _functions = new Dictionary<string, FunctionStatement>();
     private readonly IDictionary<string, UnitType> _units = new Dictionary<string, UnitType>();
 
     private readonly Dictionary<TokenType, Func<IExpression, IExpression, IExpression>> _comparisonOperatorMap;
@@ -58,13 +58,445 @@ public class Parser
         };
     }
     
-   public Program Parse()
+   public TopLevel Parse()
    {
-       ParseStatements();
+       ParseProgramStatements();
        
-       return new Program(_statements, _functions, _units);
+       return new TopLevel(_functions, _units);
+   }
+   
+   private void ParseProgramStatements()
+   {
+       var functionStatement = TryParseFunctionStatement();
+       var unitDeclaration = TryParseUnitDeclaration();
+       
+       while (functionStatement != null || unitDeclaration != null)
+       {
+           if (functionStatement != null) _functions[functionStatement.Name] = functionStatement;
+           if (unitDeclaration != null) _units[unitDeclaration.Identifier] = unitDeclaration.Type;
+           
+           functionStatement = TryParseFunctionStatement();
+           unitDeclaration = TryParseUnitDeclaration();
+       }
+   }
+   
+   private FunctionStatement? TryParseFunctionStatement()
+   {
+       // if (!_CheckAndConsume(TokenType.FUNCTION)) return null; // mozna by wyrzucic
+
+       if (!_TokenIs(TokenType.IDENTIFIER)) return null;
+       
+       var functionName = _GetValueOfTokenAndPrepareNext();
+
+       if (!_CheckAndConsume(TokenType.LEFT_PARENTHESES))
+       {
+           // TODO
+           throw new Exception();
+       }
+
+       var parameters = TryParseParameters();
+       
+       if (!_CheckAndConsume(TokenType.RIGHT_PARENTHESES))
+       {
+           // TODO
+           throw new Exception();
+       }
+       
+       if (!_CheckAndConsume(TokenType.RETURN_ARROW))
+       {
+           // TODO
+           throw new Exception();
+       }
+
+       var returnType = TryParseReturnType();
+       if (returnType == null)
+       {
+           // TODO
+           throw new Exception();
+       }
+       var statements = TryParseBlock();
+
+       return new FunctionStatement(functionName, parameters, returnType, statements);
    }
 
+   private List<Parameter> TryParseParameters()
+   {
+       var parameters = new List<Parameter>();
+       var parameter = TryParseParameter();
+
+       if (parameter != null) parameters.Add(parameter);
+
+       while (_CheckAndConsume(TokenType.COMMA))
+       {
+           var nextParameter = TryParseParameter();
+
+           if (nextParameter == null)
+           {
+               // TODO
+               throw new Exception();
+           }
+           parameters.Add(nextParameter);
+       }
+
+       return parameters;
+   }
+
+   private Parameter? TryParseParameter()
+   {
+       if (!_TokenIs(TokenType.IDENTIFIER)) return null;
+       
+       var identifier = _GetValueOfTokenAndPrepareNext();
+
+       if (!_CheckAndConsume(TokenType.COLON))
+       {
+           // TODO
+           throw new Exception();
+       }
+
+       var variableType = TryParseVariableType();
+
+       return new Parameter(identifier, variableType);
+   }
+
+   private IType? TryParseReturnType()
+   {
+       return _CheckAndConsume(TokenType.VOID_TYPE) ? new VoidType() : TryParseVariableType();
+   }
+
+   private IType? TryParseVariableType()
+   {
+       if (_CheckAndConsume(TokenType.STRING_TYPE)) return new StringType();
+       if (_CheckAndConsume(TokenType.BOOL_TYPE)) return new BoolType();
+
+       return TryParseUnitType();
+   }
+
+   private UnitType? TryParseUnitType()
+   {
+       if (!_CheckAndConsume(TokenType.LEFT_SQUARE_BRACKET)) return null;
+
+       var unitExpression = TryParseUnitExpression();
+       
+       if (!_CheckAndConsume(TokenType.RIGHT_SQUARE_BRACKET))
+       {
+           // TODO
+           throw new Exception();
+       }
+
+       return new UnitType(unitExpression);
+   }
+
+   private IUnitExpression? TryParseUnitExpression()
+   {
+       var leftUnitUnaryExpression = TryParseUnitUnaryExpression();
+
+       if (leftUnitUnaryExpression == null) return null;
+       
+       while (_CheckAndConsume(TokenType.MULTIPLICATION_OPERATOR))
+       {
+           var rightUnitUnaryExpression = TryParseUnitUnaryExpression();
+           if (rightUnitUnaryExpression == null)
+           {
+               // TODO
+               throw new Exception();
+           }
+           
+           leftUnitUnaryExpression = new UnitExpression(leftUnitUnaryExpression, rightUnitUnaryExpression);
+       }
+
+       return leftUnitUnaryExpression;
+   }
+
+   private IUnitExpression? TryParseUnitUnaryExpression()
+   {
+       if (!_TokenIs(TokenType.IDENTIFIER)) return null;
+
+       var identifier = _GetValueOfTokenAndPrepareNext();
+       var unitPower = TryParseUnitPower();
+
+       return new UnitUnaryExpression(identifier, unitPower);
+   }
+
+   private IUnitPower? TryParseUnitPower()
+   {
+       if (!_CheckAndConsume(TokenType.POWER_OPERATOR)) return null;
+
+       if (_CheckAndConsume(TokenType.MINUS_OPERATOR))
+       {
+           var minusValue = _GetValueOfTokenAndPrepareNext();
+           if (minusValue == null) throw new Exception();
+           if (minusValue.GetType() != typeof(long)) throw new Exception();
+           
+           return new UnitMinusPower(minusValue);
+       }
+
+       long value = _GetValueOfTokenAndPrepareNext();
+       return new UnitPower(value);
+   }
+
+   private Block? TryParseBlock()
+   {
+       if (!_CheckAndConsume(TokenType.LEFT_CURLY_BRACE)) return null;
+
+       var statements = new List<IStatement>();
+       var statement = TryParseStatement();
+
+       while (statement != null)
+       {
+           statements.Add(statement);
+           statement = TryParseStatement();
+       }
+       
+       if (!_CheckAndConsume(TokenType.RIGHT_CURLY_BRACE))
+       {
+           // TODO
+           throw new Exception();
+       }
+
+       return new Block(statements);
+   }
+
+   private UnitDeclaration? TryParseUnitDeclaration()
+   {
+       if (!_CheckAndConsume(TokenType.UNIT)) return null;
+
+       if (!_TokenIs(TokenType.IDENTIFIER))
+       {
+           // TODO
+           throw new Exception();
+       }
+
+       var identifier = _GetValueOfTokenAndPrepareNext();
+
+       if (!_CheckAndConsume(TokenType.COLON))
+       {
+           // TODO
+           throw new Exception();
+       }
+
+       var unitType = TryParseUnitType();
+
+       if (unitType == null)
+       {
+           // TODO
+           throw new Exception();
+       }
+
+       return new UnitDeclaration(identifier, unitType);
+   }
+
+   private IStatement? TryParseStatement()
+   {
+       return TryParseVariableDeclaration() ?? 
+              TryParseAssignStatementOrFunctionCall() ??
+              TryParseReturnStatement() ??
+              TryParseIfStatement() ??
+              TryParseWhileStatement();
+   }
+   
+   private IStatement? TryParseAssignStatementOrFunctionCall()
+   {
+       if (!_TokenIs(TokenType.IDENTIFIER)) return null;
+
+       var identifier = _GetValueOfTokenAndPrepareNext();
+
+       return TryParseRestOfFunctionCall(identifier) ?? TryParseAssignStatement(identifier);
+   }
+
+   private FunctionCall? TryParseRestOfFunctionCall(string identifier)
+   {
+       if (!_CheckAndConsume(TokenType.LEFT_PARENTHESES)) return null;
+       
+       var arguments = TryParseArguments();
+
+       if (!_CheckAndConsume(TokenType.RIGHT_PARENTHESES))
+       {
+           // TODO
+           throw new Exception();
+       }
+
+       return new FunctionCall(identifier, arguments);
+   }
+
+   private AssignStatement? TryParseAssignStatement(string identifier)
+   {
+       if (!_CheckAndConsume(TokenType.ASSIGNMENT_OPERATOR)) return null;
+       
+       var expression = TryParseExpression();
+
+       if (expression == null)
+       {
+           // TODO
+           throw new Exception();
+       }
+
+       return new AssignStatement(identifier, expression);
+   }
+   
+   private List<IExpression> TryParseArguments()
+   {
+       var arguments = new List<IExpression>();
+       var argument = TryParseExpression();
+
+       if (argument == null) return arguments;
+       
+       arguments.Add(argument);
+
+       while (_CheckAndConsume(TokenType.COMMA))
+       {
+           argument = TryParseExpression();
+           if (argument == null)
+           {
+               // TODO
+               throw new Exception();
+           } 
+           arguments.Add(argument);
+       }
+
+       return arguments;
+   }
+
+   private VariableDeclaration? TryParseVariableDeclaration()
+   {
+       if (!_CheckAndConsume(TokenType.LET)) return null;
+
+       var parameter = TryParseParameter();
+
+       if (parameter == null)
+       {
+           // TODO
+           throw new Exception();
+       }
+
+       if (!_CheckAndConsume(TokenType.ASSIGNMENT_OPERATOR))
+       {
+           // TODO
+           throw new Exception();
+       }
+
+       var expression = TryParseExpression();
+       
+       if (expression == null)
+       {
+           // TODO
+           throw new Exception();
+       }
+
+       return new VariableDeclaration(parameter, expression);
+   }
+
+   private IStatement? TryParseReturnStatement()
+   {
+       if (!_CheckAndConsume(TokenType.RETURN)) return null;
+
+       var expression = TryParseExpression();
+
+       return new ReturnStatement(expression);
+   }
+
+   private IStatement? TryParseIfStatement()
+   {
+       if (!_CheckAndConsume(TokenType.IF)) return null;
+       
+       var (condition, statements) = TryParseIfConditionAndBlock();
+
+       var ifElseIfStatements = new List<ElseIfStatement>();
+       var ifElseStatement = new Block();
+
+       while (_CheckAndConsume(TokenType.ELSE))
+       {
+           if (_CheckAndConsume(TokenType.IF))
+           {
+               var (elseIfCondition, elseIfStatements) = TryParseIfConditionAndBlock();
+
+               if (elseIfCondition == null || elseIfStatements == null)
+               {
+                   // TODO
+                   throw new Exception();
+               }
+               
+               ifElseIfStatements.Add(new ElseIfStatement(elseIfCondition, elseIfStatements));
+           }
+           else
+           {
+               var block = TryParseBlock();
+
+               ifElseStatement = block ?? throw new Exception();
+           }
+       }
+       
+       return new IfStatement(condition, statements, ifElseIfStatements, ifElseStatement);
+   }
+
+   private (IExpression, Block) TryParseIfConditionAndBlock()
+   {
+       if (!_CheckAndConsume(TokenType.LEFT_PARENTHESES))
+       {
+           // TODO
+           throw new Exception();
+       }
+       
+       var condition = TryParseExpression();
+
+       if (condition == null)
+       {
+           // TODO
+           throw new Exception();
+       }
+       
+       if (!_CheckAndConsume(TokenType.RIGHT_PARENTHESES))
+       {
+           // TODO
+           throw new Exception();
+       }
+
+       var statements = TryParseBlock();
+
+       if (statements == null)
+       {
+           // TODO
+           throw new Exception();
+       }
+
+       return (condition, statements);
+   }
+   
+   private IStatement? TryParseWhileStatement()
+   {
+       if (!_CheckAndConsume(TokenType.WHILE)) return null;
+
+       if (!_CheckAndConsume(TokenType.LEFT_PARENTHESES))
+       {
+           // TODO
+           throw new Exception();
+       }
+
+       var condition = TryParseExpression();
+
+       if (condition == null)
+       {
+           // TODO
+           throw new Exception();
+       }
+       
+       if (!_CheckAndConsume(TokenType.RIGHT_PARENTHESES))
+       {
+           // TODO
+           throw new Exception();
+       }
+
+       var statements = TryParseBlock();
+       
+       if (statements == null)
+       {
+           // TODO
+           throw new Exception();
+       }
+       
+       return new WhileStatement(condition, statements);
+   }
+   
+   
    private IExpression? TryParseExpression()
    {
        var leftLogicFactor = TryParseLogicFactor();
@@ -113,7 +545,7 @@ public class Parser
        
        if (leftAdditiveExpression == null) return null;
        
-       while (_comparisonOperatorMap.TryGetValue(_lexer.Token.Type, out var comparisonExpression))
+       if (_comparisonOperatorMap.TryGetValue(_lexer.Token.Type, out var comparisonExpression))
        {
            _lexer.GetNextToken();
            
@@ -184,7 +616,13 @@ public class Parser
 
            var child = TryParsePrimaryExpression();
 
-           return child == null ? null : negateExpression(child);
+           if (child == null)
+           {
+               // TODO
+               throw new Exception();
+           }
+
+           return negateExpression(child);
        }
 
        return TryParsePrimaryExpression();
@@ -192,491 +630,74 @@ public class Parser
 
    private IExpression? TryParsePrimaryExpression()
    {
-       var literal = TryParseLiteral();
-
-       if (literal != null) return literal;
-
-       var identifierOrFunctionCall = TryParseIdentifierOrFunctionCall();
-
-       if (identifierOrFunctionCall != null) return identifierOrFunctionCall;
-       
-       if (_CheckAndConsume(TokenType.LEFT_PARENTHESES))
-       {
-           var expression = TryParseExpression();
-
-           if (!_CheckAndConsume(TokenType.RIGHT_PARENTHESES))
-           {
-               // TODO
-               throw new Exception();
-           }
-
-           return expression;
-       }
-
-       return null;
+       return TryParseLiteral() ?? TryParseIdentifierOrFunctionCallOrParentheses();
    }
 
    private IExpression? TryParseLiteral()
    {
-       if (_TokenIs(TokenType.TRUE)) return new BoolLiteral(true);
-       if (_TokenIs(TokenType.FALSE)) return new BoolLiteral(false);
-       if (_TokenIs(TokenType.STRING)) return new StringLiteral(_lexer.Token.Value);
+       return TryParseBoolLiteral() ?? TryParseStringLiteral() ?? TryParseNumLiteral();
+   }
 
-       if (_TokenIs(TokenType.FLOAT) || _TokenIs(TokenType.INT))
-       {
-           var value = _GetValueOfTokenAndPrepareNext();
-           UnitType? unitType = null;
+   private IExpression? TryParseBoolLiteral()
+   {
+       bool value;
+       if (_TokenIs(TokenType.FALSE)) value = false;
+       else if (_TokenIs(TokenType.TRUE)) value = true;
+       else return null;
+       
+       _lexer.GetNextToken();
+       return new BoolLiteral(value);
+   }
+
+   private IExpression? TryParseStringLiteral()
+   {
+       return _TokenIs(TokenType.STRING) ? new StringLiteral(_GetValueOfTokenAndPrepareNext()) : null;
+   }
+
+   private IExpression? TryParseNumLiteral()
+   {
+       if (!_TokenIs(TokenType.FLOAT) && !_TokenIs(TokenType.INT)) return null;
+       
+       var value = _GetValueOfTokenAndPrepareNext();
            
-           if (_CheckAndConsume(TokenType.COLON))
-           {
-               unitType = (UnitType?) TryParseUnitType();
+       var unitType = TryParseUnitType();
 
-               if (unitType == null)
-               {
-                   // TODO
-                   throw new Exception();
-               }
-           }
-
-           if (value?.GetType().Equals(typeof(long))) return new IntLiteral(value, unitType);
-
-           if (value?.GetType().Equals(typeof(double))) return new FloatLiteral(value, unitType);
-       }
+       if (value?.GetType().Equals(typeof(long))) return new IntLiteral(value, unitType);
+       if (value?.GetType().Equals(typeof(double))) return new FloatLiteral(value, unitType);
 
        return null;
+   }
+
+   private IExpression? TryParseIdentifierOrFunctionCallOrParentheses()
+   {
+       return TryParseIdentifierOrFunctionCall() ?? TryParseParenthesesExpression();
    }
 
    private IExpression? TryParseIdentifierOrFunctionCall()
    {
        if (!_TokenIs(TokenType.IDENTIFIER)) return null;
 
-       var value = _GetValueOfTokenAndPrepareNext();
-       return TryParseFunctionCall() ?? new Identifier(value);
+       var identifier = _GetValueOfTokenAndPrepareNext();
+       
+       var functionCall = TryParseRestOfFunctionCall(identifier);
+       if (functionCall != null) return functionCall;
+       
+       return new Identifier(identifier);
    }
 
-   // FunctionCall should match both IStatement and IExpression I guess
-   private dynamic? TryParseFunctionCall()
+   private IExpression? TryParseParenthesesExpression()
    {
-       if (!_TokenIs(TokenType.IDENTIFIER)) return null;
-       
-       var identifier = _GetValueOfTokenAndPrepareNext();
-
        if (!_CheckAndConsume(TokenType.LEFT_PARENTHESES)) return null;
        
-       var arguments = TryParseArguments();
-
-       if (!_CheckAndConsume(TokenType.RIGHT_PARENTHESES))
-       {
-           // TODO
-           throw new Exception();
-       }
-
-       return new FunctionCall(identifier, arguments);
-   }
-
-   private List<IExpression> TryParseArguments()
-   {
-       var arguments = new List<IExpression>();
-       var argument = TryParseExpression();
-
-       if (argument == null) return arguments;
-       
-       arguments.Add(argument);
-
-       while (_CheckAndConsume(TokenType.COMMA))
-       {
-           var nextArgument = TryParseExpression();
-           if (nextArgument == null)
-           {
-               // TODO
-               throw new Exception();
-           } 
-           arguments.Add(argument);
-       }
-
-       return arguments;
-   }
-
-   private FunctionStatement? TryParseFunctionStatement()
-   {
-       if (!_CheckAndConsume(TokenType.FUNCTION)) return null;
-       
-
-       if (!_TokenIs(TokenType.IDENTIFIER))
-       {
-           // TODO
-           throw new Exception();
-       }
-       var functionName = _GetValueOfTokenAndPrepareNext();
-
-       if (!_CheckAndConsume(TokenType.LEFT_PARENTHESES))
-       {
-           // TODO
-           throw new Exception();
-       }
-
-       var parameters = TryParseParameters();
-       
-       if (!_CheckAndConsume(TokenType.RIGHT_PARENTHESES))
-       {
-           // TODO
-           throw new Exception();
-       }
-       
-       if (!_CheckAndConsume(TokenType.RETURN_ARROW))
-       {
-           // TODO
-           throw new Exception();
-       }
-
-       var returnType = TryParseReturnType();
-       var statements = TryParseBlock();
-
-       return new FunctionStatement(functionName, parameters, returnType, statements);
-   }
-
-   private List<Parameter> TryParseParameters()
-   {
-       var parameters = new List<Parameter>();
-       var parameter = TryParseParameter();
-
-       if (parameter != null) parameters.Add(parameter);
-
-       while (_CheckAndConsume(TokenType.COMMA))
-       {
-           var nextParameter = TryParseParameter();
-
-           if (nextParameter == null)
-           {
-               // TODO
-               throw new Exception();
-           }
-           parameters.Add(nextParameter);
-       }
-
-       return parameters;
-   }
-
-   private Parameter? TryParseParameter()
-   {
-       if (!_TokenIs(TokenType.IDENTIFIER)) return null;
-       
-       var identifier = _GetValueOfTokenAndPrepareNext();
-
-       if (!_CheckAndConsume(TokenType.COLON))
-       {
-           // TODO
-           throw new Exception();
-       }
-
-       var variableType = TryParseVariableType();
-
-       return new Parameter(identifier, variableType);
-   }
-
-   private IType? TryParseReturnType()
-   {
-       return _TokenIs(TokenType.VOID_TYPE) ? new VoidType() : TryParseVariableType();
-   }
-
-   private IType? TryParseVariableType()
-   {
-       if (_CheckAndConsume(TokenType.STRING_TYPE)) return new StringType();
-       if (_CheckAndConsume(TokenType.BOOL_TYPE)) return new BoolType();
-
-       return TryParseUnitType();
-   }
-
-   private IType TryParseUnitType()
-   {
-       if (!_CheckAndConsume(TokenType.LEFT_SQUARE_BRACKET))
-       {
-           // TODO
-           throw new Exception();
-       }
-
-       var unitExpression = TryParseUnitExpression();
-       
-       if (!_CheckAndConsume(TokenType.RIGHT_SQUARE_BRACKET))
-       {
-           // TODO
-           throw new Exception();
-       }
-
-       return new UnitType(unitExpression);
-   }
-
-   private IUnitExpression? TryParseUnitExpression()
-   {
-       var leftUnitUnaryExpression = TryParseUnitUnaryExpression();
-
-       if (leftUnitUnaryExpression == null) return null;
-       
-       while (_CheckAndConsume(TokenType.MULTIPLICATION_OPERATOR))
-       {
-           var rightUnitUnaryExpression = TryParseUnitUnaryExpression();
-           if (rightUnitUnaryExpression == null)
-           {
-               // TODO
-               throw new Exception();
-           }
-           
-           leftUnitUnaryExpression = new UnitExpression(leftUnitUnaryExpression, rightUnitUnaryExpression);
-       }
-
-       return leftUnitUnaryExpression;
-   }
-
-   private IUnitExpression? TryParseUnitUnaryExpression()
-   {
-       if (!_TokenIs(TokenType.IDENTIFIER)) return null;
-
-       var identifier = _GetValueOfTokenAndPrepareNext();
-       var unitPower = TryParseUnitPower();
-
-       return new UnitUnaryExpression(identifier, unitPower);
-   }
-
-   private IUnitPower? TryParseUnitPower()
-   {
-       if (!_CheckAndConsume(TokenType.POWER_OPERATOR)) return null;
-
-       if (_CheckAndConsume(TokenType.MINUS_OPERATOR))
-       {
-           long minusValue = _GetValueOfTokenAndPrepareNext();
-           return new UnitMinusPower(minusValue);
-       }
-
-       long value = _GetValueOfTokenAndPrepareNext();
-       return new UnitPower(value);
-   }
-
-   private List<IStatement> TryParseBlock()
-   {
-       if (!_CheckAndConsume(TokenType.LEFT_CURLY_BRACE))
-       {
-           // TODO
-           throw new Exception();
-       }
-
-       var block = new List<IStatement>();
-       var statement = TryParseStatement();
-
-       while (statement != null)
-       {
-           block.Add(statement);
-           statement = TryParseStatement();
-       }
-       
-       if (!_CheckAndConsume(TokenType.RIGHT_CURLY_BRACE))
-       {
-           // TODO
-           throw new Exception();
-       }
-
-       return block;
-   }
-
-   private IStatement? TryParseStatement()
-   {
-       return TryParseFunctionCall() ?? 
-              TryParseFunctionStatement() ?? 
-              TryParseAssignStatement() ?? 
-              TryParseUnitDeclaration() ?? 
-              TryParseReturnStatement() ?? 
-              TryParseIfStatement() ??
-              TryParseWhileStatement();
-   }
-
-   private void ParseStatements()
-   {
-       var functionStatement = TryParseFunctionStatement();
-       var unitDeclaration = TryParseUnitDeclaration();
-       var statement = 
-           TryParseAssignStatement() ??
-           TryParseFunctionCall() ??
-           TryParseReturnStatement() ?? 
-           TryParseIfStatement() ??
-           TryParseWhileStatement();
-
-       while (functionStatement != null || statement != null || unitDeclaration != null)
-       {
-           if (functionStatement != null) _functions[functionStatement.Name] = functionStatement.Statements;
-
-           if (unitDeclaration != null) _units[unitDeclaration.Identifier] = unitDeclaration.Type;
-           
-           if (statement != null) _statements.Add(statement);
-           
-           functionStatement = TryParseFunctionStatement();
-           unitDeclaration = TryParseUnitDeclaration();
-           statement = 
-               TryParseAssignStatement() ??
-               TryParseFunctionCall() ??
-               TryParseUnitDeclaration() ?? 
-               TryParseReturnStatement() ?? 
-               TryParseIfStatement() ??
-               TryParseWhileStatement();
-       }
-   }
-   
-   private AssignStatement? TryParseAssignStatement()
-   {
-       if (!_CheckAndConsume(TokenType.LET)) return null;
-
-       var parameter = TryParseParameter();
-
-       if (parameter == null)
-       {
-           // TODO
-           throw new Exception();
-       }
-
-       if (!_CheckAndConsume(TokenType.ASSIGNMENT_OPERATOR))
-       {
-           // TODO
-           throw new Exception();
-       }
-
-       var expression = TryParseExpression();
-       
-       if (expression == null)
-       {
-           // TODO
-           throw new Exception();
-       }
-
-       return new AssignStatement(parameter, expression);
-   }
-   
-   private UnitDeclaration? TryParseUnitDeclaration()
-   {
-       if (!_CheckAndConsume(TokenType.UNIT)) return null;
-
-       if (!_TokenIs(TokenType.IDENTIFIER))
-       {
-           // TODO
-           throw new Exception();
-       }
-       var identifier = _GetValueOfTokenAndPrepareNext();
-
-       if (!_CheckAndConsume(TokenType.COLON))
-       {
-           // TODO
-           throw new Exception();
-       }
-
-       var unitType = TryParseUnitType();
-
-       if (unitType == null)
-       {
-           // TODO
-           throw new Exception();
-       }
-
-       return new UnitDeclaration(identifier, (UnitType) unitType);
-   }
-
-   private IStatement? TryParseReturnStatement()
-   {
-       if (!_CheckAndConsume(TokenType.RETURN)) return null;
-
        var expression = TryParseExpression();
 
-       return new ReturnStatement(expression);
-   }
-
-   private IStatement? TryParseIfStatement()
-   {
-       if (!_CheckAndConsume(TokenType.IF)) return null;
-       
-       var (condition, statements) = TryParseIfConditionAndBlock();
-
-       var ifElseIfStatements = new List<ElseIfStatement>();
-       var ifElseStatement = new List<IStatement>();
-
-       while (_CheckAndConsume(TokenType.ELSE))
-       {
-           if (_CheckAndConsume(TokenType.IF))
-           {
-               var (elseIfCondition, elseIfStatements) = TryParseIfConditionAndBlock();
-
-               if (elseIfCondition == null || elseIfStatements == null)
-               {
-                   // TODO
-                   throw new Exception();
-               }
-               
-               elseIfStatements.Add(new ElseIfStatement(elseIfCondition, elseIfStatements));
-           }
-
-           var block = TryParseBlock();
-
-           if (block == null)
-           {
-               // TODO
-               throw new Exception();   
-           }
-       }
-
-       return new IfStatement(condition, statements, ifElseIfStatements, ifElseStatement);
-   }
-
-   private (IExpression, IList<IStatement>) TryParseIfConditionAndBlock()
-   {
-       if (!_CheckAndConsume(TokenType.LEFT_PARENTHESES))
-       {
-           // TODO
-           throw new Exception();
-       }
-       
-       var condition = TryParseExpression();
-
-       if (condition == null)
-       {
-           // TODO
-           throw new Exception();
-       }
-       
        if (!_CheckAndConsume(TokenType.RIGHT_PARENTHESES))
        {
            // TODO
            throw new Exception();
        }
 
-       var statements = TryParseBlock();
-
-       return (condition, statements);
-   }
-   
-   
-
-   private IStatement? TryParseWhileStatement()
-   {
-       if (!_CheckAndConsume(TokenType.WHILE)) return null;
-
-       if (!_CheckAndConsume(TokenType.LEFT_PARENTHESES))
-       {
-           // TODO
-           throw new Exception();
-       }
-
-       var condition = TryParseExpression();
-
-       if (condition == null)
-       {
-           // TODO
-           throw new Exception();
-       }
-       
-       if (!_CheckAndConsume(TokenType.RIGHT_PARENTHESES))
-       {
-           // TODO
-           throw new Exception();
-       }
-
-       var statements = TryParseBlock();
-       
-       return new WhileStatement(condition, statements);
+       return expression;
    }
    
    private bool _CheckAndConsume(TokenType type)

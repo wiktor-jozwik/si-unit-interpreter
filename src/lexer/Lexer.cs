@@ -171,11 +171,11 @@ public class Lexer
 
             while (_character != '\n' && (_character != '\uffff' || !_streamReader.EndOfStream))
             {
-                comment.Append(_character);
-                if (comment.Length > _maxCommentLength)
+                if (comment.Length == _maxCommentLength)
                 {
                     throw new CommentExceededLengthException($"Comment can have maximum: {_maxCommentLength} chars.");
                 }
+                comment.Append(_character);
                 GetNextCharacter();
             }
                 
@@ -196,11 +196,11 @@ public class Lexer
         var value = new StringBuilder();
         while (char.IsLetter(_character) || _character == '_' || char.IsDigit(_character))
         {
-            value.Append(_character);
-            if (value.Length > _maxIdentifierLength)
+            if (value.Length == _maxIdentifierLength)
             {
                 throw new IdentifierExceededLengthException($"Identifier can have maximum: {_maxIdentifierLength} chars.");
             }
+            value.Append(_character);
             GetNextCharacter();
         }
         var stringValue = value.ToString();
@@ -225,17 +225,18 @@ public class Lexer
 
         while (_character != '\"' && _character != '\uffff')
         {
+            if (text.Length == _maxTextLength) throw new TextExceededLengthException($"Text can have maximum: {_maxTextLength} chars.");
+
             if (_character == '\\')
             {
                 GetNextCharacter();
+                // mapa escapowalnych znakow, odkodowac znak zamiast tego \\
                 text.Append($"\\{_character}");
             }
             else
             {
                 text.Append(_character);
             }
-            
-            if (text.Length > _maxTextLength) throw new TextExceededLengthException($"Text can have maximum: {_maxTextLength} chars.");
             
             GetNextCharacter();
         }

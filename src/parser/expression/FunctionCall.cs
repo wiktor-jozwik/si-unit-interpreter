@@ -1,8 +1,6 @@
-using si_unit_interpreter.parser.statement;
-
 namespace si_unit_interpreter.parser.expression;
 
-public class FunctionCall: IExpression, IStatement
+public class FunctionCall: IExpression
 {
     public readonly string Name;
     public readonly List<IExpression> Arguments;

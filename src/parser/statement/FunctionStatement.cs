@@ -7,9 +7,9 @@ public class FunctionStatement: IStatement
     public readonly string Name;
     public readonly IList<Parameter> Parameters;
     public readonly IType ReturnType;
-    public readonly IList<IStatement> Statements;
+    public readonly Block Statements;
 
-    public FunctionStatement(string name, IList<Parameter> parameters, IType returnType, IList<IStatement> statements)
+    public FunctionStatement(string name, IList<Parameter> parameters, IType returnType, Block statements)
     {
         Name = name;
         Parameters = parameters;

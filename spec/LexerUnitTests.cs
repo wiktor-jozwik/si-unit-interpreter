@@ -1,5 +1,5 @@
-using System.Text;
 using si_unit_interpreter.exceptions.lexer;
+using si_unit_interpreter.lexer;
 using Xunit;
 
 namespace si_unit_interpreter.spec;

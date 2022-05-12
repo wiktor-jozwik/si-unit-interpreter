@@ -67,9 +67,9 @@
     let length: [m] = 50
     let speed: [m*s^-1] = length / speed
     
-    if (speed >  5: [m*s^-1]) {
+    if (speed >  5 [m*s^-1]) {
       code block
-    } else if (speed <= 0: [m*s^-1]) {
+    } else if (speed <= 0 [m*s^-1]) {
       code block 
     } else {
       code block
@@ -180,7 +180,7 @@
 - ```
   let v: [m*s^-1] = 10
     
-  if (v > 5: []) {
+  if (v > 5) {
     code block
   } // OperationError: cannot compare [m*s^-1] and [].
   ```
@@ -239,15 +239,17 @@
 
 ```bash
 --- STATEMENTS
-program                     = { statement };
+top_level                   = { top_level_statement };
 
-statement                   = assign_statement    | 
-                              unit_declaration    | 
-                              function_call       | 
-                              return_statement    | 
-                              function_statement  | 
-                              if_statement        | 
-                              while_statement;
+top_level_statement         = unit_declaration      | 
+                              function_statement    | 
+                              
+statement                   = assign_statement      |
+                              variable_declaration  | 
+                              function_call         | 
+                              return_statement      | 
+                              if_statement          | 
+                              while_statement;                              
           
 return_statement            = "return", [ expression ];
 
@@ -269,7 +271,7 @@ expression                  = logic_factor, { "||", logic_factor };
 
 logic_factor                = expression_comparison, { "&&" expression_comparison };
 
-expression_comparison       = additive_expression, { comparison_operator, additive_expression };
+expression_comparison       = additive_expression, [ comparison_operator, additive_expression ];
 
 comparison_operator         = ">"   | 
                               "<"   | 
@@ -308,7 +310,7 @@ arg                         = expression;
 
 function_call               = identifier, "(", args, ")";
 
-function_statement          = "fn", identifier, "(", parameters, ")", "->", return_type, block;
+function_statement          = identifier, "(", parameters, ")", "->", return_type, block;
 
 parameters                  = [ parameter, { ",", parameter } ];
 
@@ -318,10 +320,11 @@ return_type                 = variable_type |
                               
 --- VARIABLES ASSIGNMENT
 
-assign_statement            = "let", parameter, "=" expression;
+variable_declaration            = "let", parameter, "=" expression;
 
-parameter                   = identifier, ":", variable_type;
+parameter                       = identifier, ":", variable_type;
 
+assign_statement                = identifier, "=", expression
 
 --- VARIABLE TYPES
 
@@ -358,7 +361,7 @@ literal                     = bool_literal  |
 bool_literal                = "true" | 
                               "false";
                               
-num_literal                 = int_or_float_literal, [ ":", unit_type ]
+num_literal                 = int_or_float_literal, [ unit_type ]
 
 int_or_float_literal        = int_literal   | 
                               float_literal;

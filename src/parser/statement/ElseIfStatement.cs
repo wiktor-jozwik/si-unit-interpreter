@@ -5,11 +5,11 @@ namespace si_unit_interpreter.parser.statement;
 public class ElseIfStatement: IStatement
 {
     public readonly IExpression Condition;
-    public readonly IList<IStatement> Statements;
+    public readonly Block Statements;
 
     public ElseIfStatement(
         IExpression condition,
-        IList<IStatement> statements
+        Block statements
     )
     {
         Condition = condition;

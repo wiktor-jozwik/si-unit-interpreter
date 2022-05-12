@@ -5,15 +5,15 @@ namespace si_unit_interpreter.parser.statement;
 public class IfStatement: IStatement
 {
     public readonly IExpression Condition;
-    public readonly IList<IStatement> Statements;
-    public readonly IList<ElseIfStatement>? ElseIfStatements;
-    public readonly IList<IStatement>? ElseStatement;
+    public readonly Block Statements;
+    public readonly IList<ElseIfStatement> ElseIfStatements;
+    public readonly Block ElseStatement;
 
     public IfStatement(
         IExpression condition,
-        IList<IStatement> statements,
+        Block statements,
         IList<ElseIfStatement> elseIfStatements,
-        IList<IStatement> elseStatement
+        Block elseStatement
     )
     {
         Condition = condition;
