@@ -11,10 +11,11 @@ public class Lexer
     private char _character;
     private TokenPosition _currentPosition;
 
-    private readonly Dictionary<string, TokenType> _keywordDictionary;
-    private readonly Dictionary<char, TokenType> _singleCharOperatorDictionary;
-    private readonly Dictionary<string, TokenType> _multiCharOperatorDictionary;
-    private readonly Dictionary<char, Func<(TokenType, string)>> _collidingOperatorsDictionary;
+    private readonly Dictionary<string, TokenType> _keywordMap;
+    private readonly Dictionary<string, char> _escapeCharsMap;
+    private readonly Dictionary<char, TokenType> _singleCharOperatorMap;
+    private readonly Dictionary<string, TokenType> _multiCharOperatorMap;
+    private readonly Dictionary<char, Func<(TokenType, string)>> _collidingOperatorsMap;
 
     private readonly int _maxCommentLength;
     private readonly int _maxIdentifierLength;
@@ -42,11 +43,10 @@ public class Lexer
         _maxExponentSize = maxExponentSize;
         _maxIntSize = maxIntSize;
 
-        _keywordDictionary = new Dictionary<string, TokenType>
+        _keywordMap = new Dictionary<string, TokenType>
         {
             ["let"] = TokenType.LET,
             ["unit"] = TokenType.UNIT,
-            ["fn"] = TokenType.FUNCTION,
             ["return"] = TokenType.RETURN,
             ["if"] = TokenType.IF,
             ["else"] = TokenType.ELSE,
@@ -58,7 +58,16 @@ public class Lexer
             ["false"] = TokenType.FALSE,
         };
         
-        _singleCharOperatorDictionary = new Dictionary<char, TokenType>
+        
+        _escapeCharsMap = new Dictionary<string, char>()
+        {
+            ["\\\""] = '\"',
+            ["\\\n"] = '\n',
+            ["\\\t"] = '\t',
+            ["\\\\"] = '\\'
+        };
+        
+        _singleCharOperatorMap = new Dictionary<char, TokenType>
         {
             ['+'] = TokenType.PLUS_OPERATOR,
             ['/'] = TokenType.DIVISION_OPERATOR,
@@ -78,13 +87,13 @@ public class Lexer
             [':'] = TokenType.COLON,
         };
         
-        _multiCharOperatorDictionary = new Dictionary<string, TokenType>
+        _multiCharOperatorMap = new Dictionary<string, TokenType>
         {
             ["||"] = TokenType.OR_OPERATOR,
             ["&&"] = TokenType.AND_OPERATOR,
         };
 
-        _collidingOperatorsDictionary = new Dictionary<char, Func<(TokenType, string)>>
+        _collidingOperatorsMap = new Dictionary<char, Func<(TokenType, string)>>
         {
             ['>'] = ()=> _DetermineOperator('=',TokenType.GREATER_THAN_OPERATOR, TokenType.GREATER_EQUAL_THAN_OPERATOR),
             ['<'] = ()=> _DetermineOperator('=',TokenType.SMALLER_THAN_OPERATOR, TokenType.SMALLER_EQUAL_THAN_OPERATOR),
@@ -183,7 +192,7 @@ public class Lexer
             return true;
         }
 
-        Token = new Token(_singleCharOperatorDictionary['/'], commentDivisionPosition, "/");
+        Token = new Token(_singleCharOperatorMap['/'], commentDivisionPosition, "/");
         return true;
     }
 
@@ -205,7 +214,7 @@ public class Lexer
         }
         var stringValue = value.ToString();
 
-        if (_keywordDictionary.TryGetValue(stringValue, out var tokenType))
+        if (_keywordMap.TryGetValue(stringValue, out var tokenType))
         {
             Token = new Token(tokenType, identifierPosition);
             return true;
@@ -230,8 +239,14 @@ public class Lexer
             if (_character == '\\')
             {
                 GetNextCharacter();
-                // mapa escapowalnych znakow, odkodowac znak zamiast tego \\
-                text.Append($"\\{_character}");
+                if (_escapeCharsMap.TryGetValue($"\\{_character}", out var escapeChar))
+                {
+                    text.Append(escapeChar);
+                }
+                else
+                {
+                    throw new UnknownEscapeCharException();
+                }
             }
             else
             {
@@ -241,7 +256,7 @@ public class Lexer
             GetNextCharacter();
         }
         
-        if (_character != '\"') throw new TextEndingQuoteNotFoundException("There should be ending quote provided.");
+        if (_character != '\"') throw new TextEndingQuoteNotFoundException();
 
         GetNextCharacter();
         Token = new Token(TokenType.STRING, textPosition, text.ToString());
@@ -289,7 +304,7 @@ public class Lexer
     {
         var operatorPosition = _currentPosition;
 
-        if (_singleCharOperatorDictionary.TryGetValue(_character, out var singleOperatorTokenType))
+        if (_singleCharOperatorMap.TryGetValue(_character, out var singleOperatorTokenType))
         {
             Token = new Token(singleOperatorTokenType, operatorPosition, char.ToString(_character));
             
@@ -297,7 +312,7 @@ public class Lexer
             return true;
         }
         
-        if (_collidingOperatorsDictionary.TryGetValue(_character, out var determineOperator))
+        if (_collidingOperatorsMap.TryGetValue(_character, out var determineOperator))
         {
             var (singleOrMultiTokenType, operatorString) = determineOperator();
             
@@ -307,7 +322,7 @@ public class Lexer
 
         var multiOperator = $"{_character}{(char)_streamReader.Peek()}";
 
-        if (_multiCharOperatorDictionary.TryGetValue(multiOperator, out var multiOperatorTokenType))
+        if (_multiCharOperatorMap.TryGetValue(multiOperator, out var multiOperatorTokenType))
         {
             GetNextCharacter();
             Token = new Token(multiOperatorTokenType, operatorPosition, multiOperator);

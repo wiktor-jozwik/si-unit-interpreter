@@ -1,3 +1,4 @@
+using si_unit_interpreter.exceptions.parser;
 using si_unit_interpreter.lexer;
 using si_unit_interpreter.parser.expression;
 using si_unit_interpreter.parser.expression.additive;
@@ -23,7 +24,8 @@ public class Parser
     private readonly Dictionary<TokenType, Func<IExpression, IExpression, IExpression>> _additiveOperatorMap;
     private readonly Dictionary<TokenType, Func<IExpression, IExpression, IExpression>> _multiplicativeOperatorMap;
     private readonly Dictionary<TokenType, Func<IExpression, IExpression>> _negateOperatorMap;
-
+    private readonly HashSet<TokenType> _expressionTokenSet;
+    private readonly HashSet<TokenType> _returnTypeTokenSet;
     public Parser(Lexer lexer)
     {
         _lexer = lexer;
@@ -56,6 +58,32 @@ public class Parser
             [TokenType.MINUS_OPERATOR] = child=> new MinusExpression(child),
             [TokenType.NEGATE_OPERATOR] = child=> new NotExpression(child),
         };
+        
+        _expressionTokenSet = new HashSet<TokenType>
+        {
+            TokenType.TRUE,
+            TokenType.FALSE,
+            TokenType.INT,
+            TokenType.FLOAT,
+            TokenType.STRING,
+            TokenType.IDENTIFIER,
+            TokenType.LEFT_PARENTHESES
+        };
+
+        _returnTypeTokenSet = new HashSet<TokenType>
+        {
+            TokenType.STRING_TYPE,
+            TokenType.BOOL_TYPE,
+            TokenType.VOID_TYPE,
+            TokenType.LEFT_SQUARE_BRACKET,
+        };
+        //
+        // _blockTokenSet = new HashSet<TokenType>
+        // {
+        //     TokenType.IDENTIFIER,
+        //     TokenType.LET,
+        //     T
+        // }
     }
     
    public TopLevel Parse()
@@ -67,56 +95,47 @@ public class Parser
    
    private void ParseProgramStatements()
    {
-       var functionStatement = TryParseFunctionStatement();
-       var unitDeclaration = TryParseUnitDeclaration();
-       
-       while (functionStatement != null || unitDeclaration != null)
-       {
-           if (functionStatement != null) _functions[functionStatement.Name] = functionStatement;
-           if (unitDeclaration != null) _units[unitDeclaration.Identifier] = unitDeclaration.Type;
-           
-           functionStatement = TryParseFunctionStatement();
-           unitDeclaration = TryParseUnitDeclaration();
-       }
+       while(TryParseFunctionStatement() || TryParseUnitDeclaration()){}
    }
    
-   private FunctionStatement? TryParseFunctionStatement()
+   private bool TryParseFunctionStatement()
    {
-       // if (!_CheckAndConsume(TokenType.FUNCTION)) return null; // mozna by wyrzucic
-
-       if (!_TokenIs(TokenType.IDENTIFIER)) return null;
+       if (!_TokenIs(TokenType.IDENTIFIER)) return false;
        
        var functionName = _GetValueOfTokenAndPrepareNext();
 
        if (!_CheckAndConsume(TokenType.LEFT_PARENTHESES))
        {
-           // TODO
-           throw new Exception();
+           throw new ParserException(new HashSet<TokenType>{ TokenType.LEFT_PARENTHESES }, _lexer.Token.Type, _lexer.Token.Position);
        }
 
        var parameters = TryParseParameters();
        
        if (!_CheckAndConsume(TokenType.RIGHT_PARENTHESES))
        {
-           // TODO
-           throw new Exception();
+           throw new ParserException(new HashSet<TokenType>{ TokenType.RIGHT_PARENTHESES }, _lexer.Token.Type, _lexer.Token.Position);
        }
        
        if (!_CheckAndConsume(TokenType.RETURN_ARROW))
        {
-           // TODO
-           throw new Exception();
+           throw new ParserException(new HashSet<TokenType>{ TokenType.RETURN_ARROW }, _lexer.Token.Type, _lexer.Token.Position);
        }
 
        var returnType = TryParseReturnType();
        if (returnType == null)
        {
-           // TODO
-           throw new Exception();
+           throw new ParserException(_returnTypeTokenSet, _lexer.Token.Type, _lexer.Token.Position);
        }
        var statements = TryParseBlock();
 
-       return new FunctionStatement(functionName, parameters, returnType, statements);
+       if (statements == null)
+       {
+           throw new ParserException(new HashSet<TokenType>{ TokenType.LEFT_CURLY_BRACE }, _lexer.Token.Type, _lexer.Token.Position);
+       }
+
+       _functions[functionName] = new FunctionStatement(parameters, returnType, statements);
+
+       return true;
    }
 
    private List<Parameter> TryParseParameters()
@@ -132,8 +151,7 @@ public class Parser
 
            if (nextParameter == null)
            {
-               // TODO
-               throw new Exception();
+               throw new ParserException(new HashSet<TokenType>{ TokenType.IDENTIFIER }, _lexer.Token.Type, _lexer.Token.Position);
            }
            parameters.Add(nextParameter);
        }
@@ -149,8 +167,7 @@ public class Parser
 
        if (!_CheckAndConsume(TokenType.COLON))
        {
-           // TODO
-           throw new Exception();
+           throw new ParserException(new HashSet<TokenType>{ TokenType.COLON }, _lexer.Token.Type, _lexer.Token.Position);
        }
 
        var variableType = TryParseVariableType();
@@ -179,8 +196,7 @@ public class Parser
        
        if (!_CheckAndConsume(TokenType.RIGHT_SQUARE_BRACKET))
        {
-           // TODO
-           throw new Exception();
+           throw new ParserException(new HashSet<TokenType>{ TokenType.RIGHT_SQUARE_BRACKET }, _lexer.Token.Type, _lexer.Token.Position);
        }
 
        return new UnitType(unitExpression);
@@ -197,8 +213,7 @@ public class Parser
            var rightUnitUnaryExpression = TryParseUnitUnaryExpression();
            if (rightUnitUnaryExpression == null)
            {
-               // TODO
-               throw new Exception();
+               throw new ParserException(new HashSet<TokenType>{ TokenType.IDENTIFIER }, _lexer.Token.Type, _lexer.Token.Position);
            }
            
            leftUnitUnaryExpression = new UnitExpression(leftUnitUnaryExpression, rightUnitUnaryExpression);
@@ -223,15 +238,29 @@ public class Parser
 
        if (_CheckAndConsume(TokenType.MINUS_OPERATOR))
        {
-           var minusValue = _GetValueOfTokenAndPrepareNext();
-           if (minusValue == null) throw new Exception();
-           if (minusValue.GetType() != typeof(long)) throw new Exception();
-           
+           var minusValue = _CheckForIntValueAndGetIt();
            return new UnitMinusPower(minusValue);
        }
 
-       long value = _GetValueOfTokenAndPrepareNext();
+       var value = _CheckForIntValueAndGetIt();
        return new UnitPower(value);
+   }
+
+   private long _CheckForIntValueAndGetIt()
+   {
+       var value = _lexer.Token.Value;
+       if (value == null)
+       {
+           throw new ParserException(new HashSet<TokenType>{ TokenType.INT }, _lexer.Token.Type, _lexer.Token.Position);
+       }
+
+       if (value.GetType() != typeof(long))
+       {
+           throw new ParserException(new HashSet<TokenType>{ TokenType.INT }, _lexer.Token.Type, _lexer.Token.Position);
+       }
+           
+       _lexer.GetNextToken();
+       return value;
    }
 
    private Block? TryParseBlock()
@@ -249,40 +278,38 @@ public class Parser
        
        if (!_CheckAndConsume(TokenType.RIGHT_CURLY_BRACE))
        {
-           // TODO
-           throw new Exception();
+           throw new ParserException(new HashSet<TokenType>{ TokenType.RIGHT_CURLY_BRACE }, _lexer.Token.Type, _lexer.Token.Position);
        }
 
        return new Block(statements);
    }
 
-   private UnitDeclaration? TryParseUnitDeclaration()
+   private bool TryParseUnitDeclaration()
    {
-       if (!_CheckAndConsume(TokenType.UNIT)) return null;
+       if (!_CheckAndConsume(TokenType.UNIT)) return false;
 
        if (!_TokenIs(TokenType.IDENTIFIER))
        {
-           // TODO
-           throw new Exception();
+           throw new ParserException(new HashSet<TokenType>{ TokenType.IDENTIFIER }, _lexer.Token.Type, _lexer.Token.Position);
        }
 
-       var identifier = _GetValueOfTokenAndPrepareNext();
+       var unitName = _GetValueOfTokenAndPrepareNext();
 
        if (!_CheckAndConsume(TokenType.COLON))
        {
-           // TODO
-           throw new Exception();
+           throw new ParserException(new HashSet<TokenType>{ TokenType.COLON }, _lexer.Token.Type, _lexer.Token.Position);
        }
 
        var unitType = TryParseUnitType();
 
        if (unitType == null)
        {
-           // TODO
-           throw new Exception();
+           throw new ParserException(new HashSet<TokenType>{ TokenType.LEFT_SQUARE_BRACKET }, _lexer.Token.Type, _lexer.Token.Position);
        }
 
-       return new UnitDeclaration(identifier, unitType);
+       _units[unitName] = unitType;
+
+       return true;
    }
 
    private IStatement? TryParseStatement()
@@ -311,8 +338,7 @@ public class Parser
 
        if (!_CheckAndConsume(TokenType.RIGHT_PARENTHESES))
        {
-           // TODO
-           throw new Exception();
+           throw new ParserException(new HashSet<TokenType>{ TokenType.RIGHT_PARENTHESES }, _lexer.Token.Type, _lexer.Token.Position);
        }
 
        return new FunctionCall(identifier, arguments);
@@ -326,8 +352,7 @@ public class Parser
 
        if (expression == null)
        {
-           // TODO
-           throw new Exception();
+           throw new ParserException(_expressionTokenSet, _lexer.Token.Type, _lexer.Token.Position);
        }
 
        return new AssignStatement(identifier, expression);
@@ -347,8 +372,7 @@ public class Parser
            argument = TryParseExpression();
            if (argument == null)
            {
-               // TODO
-               throw new Exception();
+               throw new ParserException(_expressionTokenSet, _lexer.Token.Type, _lexer.Token.Position);
            } 
            arguments.Add(argument);
        }
@@ -364,22 +388,19 @@ public class Parser
 
        if (parameter == null)
        {
-           // TODO
-           throw new Exception();
+           throw new ParserException(new HashSet<TokenType>{ TokenType.IDENTIFIER }, _lexer.Token.Type, _lexer.Token.Position);
        }
 
        if (!_CheckAndConsume(TokenType.ASSIGNMENT_OPERATOR))
        {
-           // TODO
-           throw new Exception();
+           throw new ParserException(new HashSet<TokenType>{ TokenType.ASSIGNMENT_OPERATOR }, _lexer.Token.Type, _lexer.Token.Position);
        }
 
        var expression = TryParseExpression();
        
        if (expression == null)
        {
-           // TODO
-           throw new Exception();
+           throw new ParserException(_expressionTokenSet, _lexer.Token.Type, _lexer.Token.Position);
        }
 
        return new VariableDeclaration(parameter, expression);
@@ -408,12 +429,6 @@ public class Parser
            if (_CheckAndConsume(TokenType.IF))
            {
                var (elseIfCondition, elseIfStatements) = TryParseIfConditionAndBlock();
-
-               if (elseIfCondition == null || elseIfStatements == null)
-               {
-                   // TODO
-                   throw new Exception();
-               }
                
                ifElseIfStatements.Add(new ElseIfStatement(elseIfCondition, elseIfStatements));
            }
@@ -421,7 +436,7 @@ public class Parser
            {
                var block = TryParseBlock();
 
-               ifElseStatement = block ?? throw new Exception();
+               ifElseStatement = block ?? throw new ParserException(new HashSet<TokenType>{ TokenType.LEFT_CURLY_BRACE }, _lexer.Token.Type, _lexer.Token.Position);
            }
        }
        
@@ -432,30 +447,26 @@ public class Parser
    {
        if (!_CheckAndConsume(TokenType.LEFT_PARENTHESES))
        {
-           // TODO
-           throw new Exception();
+           throw new ParserException(new HashSet<TokenType>{ TokenType.LEFT_PARENTHESES }, _lexer.Token.Type, _lexer.Token.Position);
        }
        
        var condition = TryParseExpression();
 
        if (condition == null)
        {
-           // TODO
-           throw new Exception();
+           throw new ParserException(_expressionTokenSet, _lexer.Token.Type, _lexer.Token.Position);
        }
        
        if (!_CheckAndConsume(TokenType.RIGHT_PARENTHESES))
        {
-           // TODO
-           throw new Exception();
+           throw new ParserException(new HashSet<TokenType>{ TokenType.RIGHT_PARENTHESES }, _lexer.Token.Type, _lexer.Token.Position);
        }
 
        var statements = TryParseBlock();
 
        if (statements == null)
        {
-           // TODO
-           throw new Exception();
+           throw new ParserException(new HashSet<TokenType>{ TokenType.LEFT_CURLY_BRACE }, _lexer.Token.Type, _lexer.Token.Position);
        }
 
        return (condition, statements);
@@ -467,30 +478,26 @@ public class Parser
 
        if (!_CheckAndConsume(TokenType.LEFT_PARENTHESES))
        {
-           // TODO
-           throw new Exception();
+           throw new ParserException(new HashSet<TokenType>{ TokenType.LEFT_PARENTHESES }, _lexer.Token.Type, _lexer.Token.Position);
        }
 
        var condition = TryParseExpression();
 
        if (condition == null)
        {
-           // TODO
-           throw new Exception();
+           throw new ParserException(_expressionTokenSet, _lexer.Token.Type, _lexer.Token.Position);
        }
        
        if (!_CheckAndConsume(TokenType.RIGHT_PARENTHESES))
        {
-           // TODO
-           throw new Exception();
+           throw new ParserException(new HashSet<TokenType>{ TokenType.RIGHT_PARENTHESES }, _lexer.Token.Type, _lexer.Token.Position);
        }
 
        var statements = TryParseBlock();
        
        if (statements == null)
        {
-           // TODO
-           throw new Exception();
+           throw new ParserException(new HashSet<TokenType>{ TokenType.LEFT_CURLY_BRACE }, _lexer.Token.Type, _lexer.Token.Position);
        }
        
        return new WhileStatement(condition, statements);
@@ -505,11 +512,11 @@ public class Parser
    
        while (_CheckAndConsume(TokenType.OR_OPERATOR))
        {
+
            var rightLogicFactor = TryParseLogicFactor();
            if (rightLogicFactor == null)
            {
-               // TODO
-               throw new Exception();
+               throw new ParserException(_expressionTokenSet, _lexer.Token.Type, _lexer.Token.Position);
            }
 
            leftLogicFactor = new Expression(leftLogicFactor, rightLogicFactor);
@@ -529,8 +536,7 @@ public class Parser
            var rightExpressionComparison = TryParseExpressionComparison();
            if (rightExpressionComparison == null)
            {
-               // TODO
-               throw new Exception();
+               throw new ParserException(_expressionTokenSet, _lexer.Token.Type, _lexer.Token.Position);
            }
 
            leftExpressionComparison = new LogicFactor(leftExpressionComparison, rightExpressionComparison);
@@ -552,8 +558,7 @@ public class Parser
            var rightAdditiveExpression = TryParseAdditiveExpression();
            if (rightAdditiveExpression == null)
            {
-               // TODO
-               throw new Exception();
+               throw new ParserException(_expressionTokenSet, _lexer.Token.Type, _lexer.Token.Position);
            }
            
            leftAdditiveExpression = comparisonExpression(leftAdditiveExpression, rightAdditiveExpression);
@@ -575,8 +580,7 @@ public class Parser
            var rightMultiplicativeExpression = TryParseMultiplicativeExpression();
            if (rightMultiplicativeExpression == null)
            {
-               // TODO
-               throw new Exception();
+               throw new ParserException(_expressionTokenSet, _lexer.Token.Type, _lexer.Token.Position);
            }
            
            leftMultiplicativeExpression = additiveExpression(leftMultiplicativeExpression, rightMultiplicativeExpression);
@@ -598,8 +602,7 @@ public class Parser
            var rightUnaryExpression = TryParseUnaryExpression();
            if (rightUnaryExpression == null)
            {
-               // TODO
-               throw new Exception();
+               throw new ParserException(_expressionTokenSet, _lexer.Token.Type, _lexer.Token.Position);
            }
            
            leftUnaryExpression = multiplicativeExpression(leftUnaryExpression, rightUnaryExpression);
@@ -618,8 +621,7 @@ public class Parser
 
            if (child == null)
            {
-               // TODO
-               throw new Exception();
+               throw new ParserException(_expressionTokenSet, _lexer.Token.Type, _lexer.Token.Position);
            }
 
            return negateExpression(child);
@@ -693,8 +695,7 @@ public class Parser
 
        if (!_CheckAndConsume(TokenType.RIGHT_PARENTHESES))
        {
-           // TODO
-           throw new Exception();
+           throw new ParserException(new HashSet<TokenType>{ TokenType.RIGHT_PARENTHESES }, _lexer.Token.Type, _lexer.Token.Position);
        }
 
        return expression;

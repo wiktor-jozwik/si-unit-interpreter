@@ -33,7 +33,6 @@ public enum TokenType
     WHILE,
     IF,
     ELSE,
-    FUNCTION,
     RETURN,
     LET,
     UNIT,
