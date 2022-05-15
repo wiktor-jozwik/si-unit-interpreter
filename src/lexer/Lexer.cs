@@ -120,7 +120,7 @@ public class Lexer
 
     }
 
-    public void GetNextToken()
+    public virtual void GetNextToken()
     {
         SkipWhites();
         if (

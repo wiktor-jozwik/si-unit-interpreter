@@ -319,6 +319,25 @@ public class ParserUnitTests
     }
 
     [Fact]
+    public void TestCodeWithComments()
+    {
+        const string code = @"
+                            main() -> void {
+                                let x: [] = 5
+                                // let y: [] = 12
+                                // x = x + 5
+                                //x = x + 7
+                                x = x + 3
+                            }";
+
+        var parser = PrepareParser(code);
+        var program = parser.Parse();
+
+        var mainBlock = GetStatementsFromMain(program);
+        mainBlock.Statements.Count.ShouldBe(2);
+    }
+
+    [Fact]
     [Trait("Category", "IfStatement")]
     public void TestIfStatement()
     {
@@ -2005,7 +2024,7 @@ public class ParserUnitTests
     
     private static Parser PrepareParser(string code)
     {
-        var lexer = new Lexer(Helper.GetStreamReaderFromString(code));
+        var lexer = new CommentFilteredLexer(Helper.GetStreamReaderFromString(code));
 
         return new Parser(lexer);
     }
