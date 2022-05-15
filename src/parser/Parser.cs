@@ -77,23 +77,16 @@ public class Parser
             TokenType.VOID_TYPE,
             TokenType.LEFT_SQUARE_BRACKET,
         };
-        //
-        // _blockTokenSet = new HashSet<TokenType>
-        // {
-        //     TokenType.IDENTIFIER,
-        //     TokenType.LET,
-        //     T
-        // }
     }
     
    public TopLevel Parse()
    {
-       ParseProgramStatements();
+       ParseTopLevelStatements();
        
        return new TopLevel(_functions, _units);
    }
    
-   private void ParseProgramStatements()
+   private void ParseTopLevelStatements()
    {
        while(TryParseFunctionStatement() || TryParseUnitDeclaration()){}
    }
