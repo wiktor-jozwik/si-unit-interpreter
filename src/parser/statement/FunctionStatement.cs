@@ -14,4 +14,9 @@ public class FunctionStatement: IStatement
         ReturnType = returnType;
         Statements = statements;
     }
+
+    public void Accept(IVisitor visitor)
+    {
+        visitor.Visit(this);
+    }
 }

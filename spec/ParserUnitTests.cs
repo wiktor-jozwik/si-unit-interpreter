@@ -28,11 +28,11 @@ public class ParserUnitTests
                                 let x: bool = true
                             }";
 
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
         program.Functions.Keys.ShouldHaveSingleItem();
-        var block = GetStatementsFromMain(program);
+        var block = Helper.GetStatementsFromMain(program);
         block.Statements.ShouldHaveSingleItem();
 
         var variableDeclaration = 
@@ -57,11 +57,11 @@ public class ParserUnitTests
                                 let s: string = ""my string""
                             }";
 
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
         program.Functions.Keys.ShouldHaveSingleItem();
-        var block = GetStatementsFromMain(program);
+        var block = Helper.GetStatementsFromMain(program);
         block.Statements.ShouldHaveSingleItem();
 
         var variableDeclaration = 
@@ -86,11 +86,11 @@ public class ParserUnitTests
                                 let mul: [] = 5
                             }";
 
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
         program.Functions.Keys.ShouldHaveSingleItem();
-        var block = GetStatementsFromMain(program);
+        var block = Helper.GetStatementsFromMain(program);
         block.Statements.ShouldHaveSingleItem();
 
         var variableDeclaration = 
@@ -114,11 +114,11 @@ public class ParserUnitTests
                                 let mulFloat: [] = 5e2
                             }";
 
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
         program.Functions.Keys.ShouldHaveSingleItem();
-        var block = GetStatementsFromMain(program);
+        var block = Helper.GetStatementsFromMain(program);
         block.Statements.ShouldHaveSingleItem();
 
         var variableDeclaration = 
@@ -142,11 +142,11 @@ public class ParserUnitTests
                                 let speed: [m*s^-2] = 5.23
                             }";
 
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
         program.Functions.Keys.ShouldHaveSingleItem();
-        var block = GetStatementsFromMain(program);
+        var block = Helper.GetStatementsFromMain(program);
         block.Statements.ShouldHaveSingleItem();
 
         var variableDeclaration = 
@@ -182,11 +182,11 @@ public class ParserUnitTests
                                 print(myVariable)
                             }";
 
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
         program.Functions.Keys.ShouldHaveSingleItem();
-        var block = GetStatementsFromMain(program);
+        var block = Helper.GetStatementsFromMain(program);
         block.Statements.ShouldHaveSingleItem();
 
         var functionCall = 
@@ -211,11 +211,11 @@ public class ParserUnitTests
                                 return
                             }";
 
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
         program.Functions.Keys.ShouldHaveSingleItem();
-        var block = GetStatementsFromMain(program);
+        var block = Helper.GetStatementsFromMain(program);
         block.Statements.ShouldHaveSingleItem();
 
         var returnStatement =
@@ -234,11 +234,11 @@ public class ParserUnitTests
                                 return x + 5
                             }";
 
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
         program.Functions.Keys.ShouldHaveSingleItem();
-        var block = GetStatementsFromMain(program);
+        var block = Helper.GetStatementsFromMain(program);
         block.Statements.ShouldHaveSingleItem();
 
         var returnStatement =
@@ -269,11 +269,11 @@ public class ParserUnitTests
                                 }
                             }";
 
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
         program.Functions.Keys.ShouldHaveSingleItem();
-        var block = GetStatementsFromMain(program);
+        var block = Helper.GetStatementsFromMain(program);
         block.Statements.ShouldHaveSingleItem();
 
         var whileStatement =
@@ -330,10 +330,10 @@ public class ParserUnitTests
                                 x = x + 3
                             }";
 
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var mainBlock = GetStatementsFromMain(program);
+        var mainBlock = Helper.GetStatementsFromMain(program);
         mainBlock.Statements.Count.ShouldBe(2);
     }
 
@@ -358,11 +358,11 @@ public class ParserUnitTests
                                 }
                             }";
 
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
         program.Functions.Keys.ShouldHaveSingleItem();
-        var block = GetStatementsFromMain(program);
+        var block = Helper.GetStatementsFromMain(program);
         block.Statements.ShouldHaveSingleItem();
 
         var ifStatement =
@@ -510,7 +510,7 @@ public class ParserUnitTests
                                 return mass * speed * speed / scalar
                             }";
         
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
         var functionStatement = program.Functions["calculateKEnergy"];
@@ -606,7 +606,7 @@ public class ParserUnitTests
     {
         const string code = "unit N: [kg*m*s^-2]";
 
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
         program.Units.Keys.ShouldHaveSingleItem();
@@ -653,13 +653,13 @@ public class ParserUnitTests
                                 printCustomMessage2(m)
                             }";
     
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
         var functions = program.Functions;
         functions.Keys.Count.ShouldBe(3);
         
-        var mainBlock = GetStatementsFromMain(program);
+        var mainBlock = Helper.GetStatementsFromMain(program);
         mainBlock.Statements.Count.ShouldBe(3);
 
         var printCustomMessage = functions["printCustomMessage"];
@@ -789,11 +789,11 @@ public class ParserUnitTests
                                 let x: bool = firstVariable != (www && xyz || w == false && !ll || po)
                             }";
 
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
         program.Functions.Keys.ShouldHaveSingleItem();
-        var block = GetStatementsFromMain(program);
+        var block = Helper.GetStatementsFromMain(program);
         block.Statements.ShouldHaveSingleItem();
 
         var variableDeclaration =
@@ -838,11 +838,11 @@ public class ParserUnitTests
                                 let x: bool = x > 5 && x <= 40
                             }";
 
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
         program.Functions.Keys.ShouldHaveSingleItem();
-        var block = GetStatementsFromMain(program);
+        var block = Helper.GetStatementsFromMain(program);
         block.Statements.ShouldHaveSingleItem();
 
         var variableDeclaration =
@@ -886,11 +886,11 @@ public class ParserUnitTests
                                 let x: [] = 2 + 3 * 4.2 - 2e1 / 8
                             }";
 
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
         program.Functions.Keys.ShouldHaveSingleItem();
-        var block = GetStatementsFromMain(program);
+        var block = Helper.GetStatementsFromMain(program);
         block.Statements.ShouldHaveSingleItem();
 
         var variableDeclaration =
@@ -944,11 +944,11 @@ public class ParserUnitTests
                                 let x: [] = (2 + 3) * 4
                             }";
 
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
         program.Functions.Keys.ShouldHaveSingleItem();
-        var block = GetStatementsFromMain(program);
+        var block = Helper.GetStatementsFromMain(program);
         block.Statements.ShouldHaveSingleItem();
 
         var variableDeclaration =
@@ -991,11 +991,11 @@ public class ParserUnitTests
                                 let x: bool = -5.5 < -2 && !isEqual != y
                             }";
 
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
         program.Functions.Keys.ShouldHaveSingleItem();
-        var block = GetStatementsFromMain(program);
+        var block = Helper.GetStatementsFromMain(program);
         block.Statements.ShouldHaveSingleItem();
 
         var variableDeclaration =
@@ -1046,11 +1046,11 @@ public class ParserUnitTests
 
                             }";
 
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
         program.Functions.Keys.ShouldHaveSingleItem();
-        var block = GetStatementsFromMain(program);
+        var block = Helper.GetStatementsFromMain(program);
         block.Statements.ShouldHaveSingleItem();
 
         var variableDeclaration =
@@ -1112,13 +1112,13 @@ public class ParserUnitTests
                             }
                             ";
 
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
         program.Functions.Keys.Count.ShouldBe(2);
         program.Units.Keys.Count.ShouldBe(2);
         
-        var block = GetStatementsFromMain(program);
+        var block = Helper.GetStatementsFromMain(program);
         block.Statements.Count.ShouldBe(5);
 
         var nUnit = program.Units["N"].Expression;
@@ -1258,7 +1258,7 @@ public class ParserUnitTests
         JsonConvert.SerializeObject(statements)
             .ShouldBe(JsonConvert.SerializeObject(statementsExpected));
 
-        var mainStatements = GetStatementsFromMain(program);
+        var mainStatements = Helper.GetStatementsFromMain(program);
 
         var mainStatementsExpected =
             new Block(
@@ -1356,7 +1356,7 @@ public class ParserUnitTests
                             }
                             ";
         
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
             parser.Parse());
@@ -1375,7 +1375,7 @@ public class ParserUnitTests
                             }
                             ";
         
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
             parser.Parse());
@@ -1394,7 +1394,7 @@ public class ParserUnitTests
                             }
                             ";
         
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
             parser.Parse());
@@ -1413,7 +1413,7 @@ public class ParserUnitTests
                             }
                             ";
         
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
             parser.Parse());
@@ -1431,7 +1431,7 @@ public class ParserUnitTests
                             }
                             ";
         
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
             parser.Parse());
@@ -1449,7 +1449,7 @@ public class ParserUnitTests
                             }
                             ";
         
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
             parser.Parse());
@@ -1467,7 +1467,7 @@ public class ParserUnitTests
                             }
                             ";
         
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
             parser.Parse());
@@ -1484,7 +1484,7 @@ public class ParserUnitTests
                             }
                             ";
         
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
             parser.Parse());
@@ -1501,7 +1501,7 @@ public class ParserUnitTests
                             }
                             ";
         
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
             parser.Parse());
@@ -1518,7 +1518,7 @@ public class ParserUnitTests
                             }
                             ";
         
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
             parser.Parse());
@@ -1535,7 +1535,7 @@ public class ParserUnitTests
                             }
                             ";
         
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
             parser.Parse());
@@ -1552,7 +1552,7 @@ public class ParserUnitTests
                             }
                             ";
         
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
             parser.Parse());
@@ -1569,7 +1569,7 @@ public class ParserUnitTests
                             }
                             ";
         
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
             parser.Parse());
@@ -1586,7 +1586,7 @@ public class ParserUnitTests
                             }
                             ";
         
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
             parser.Parse());
@@ -1602,7 +1602,7 @@ public class ParserUnitTests
                             unit force: [N
                             ";
         
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
             parser.Parse());
@@ -1618,7 +1618,7 @@ public class ParserUnitTests
                             unit force: [N*]
                             ";
         
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
             parser.Parse());
@@ -1634,7 +1634,7 @@ public class ParserUnitTests
                             unit force: [N*m^]
                             ";
         
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
             parser.Parse());
@@ -1650,7 +1650,7 @@ public class ParserUnitTests
                             unit force: [N*m^s]
                             ";
         
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
             parser.Parse());
@@ -1666,7 +1666,7 @@ public class ParserUnitTests
                             unit force: [N*m^-true]
                             ";
         
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
             parser.Parse());
@@ -1682,7 +1682,7 @@ public class ParserUnitTests
                             unit force: [N*m^-s]
                             ";
         
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
             parser.Parse());
@@ -1699,7 +1699,7 @@ public class ParserUnitTests
                             print(a)
                             ";
         
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
             parser.Parse());
@@ -1715,7 +1715,7 @@ public class ParserUnitTests
                             unit 5: []
                             ";
         
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
             parser.Parse());
@@ -1731,7 +1731,7 @@ public class ParserUnitTests
                             unit x []
                             ";
         
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
             parser.Parse());
@@ -1747,7 +1747,7 @@ public class ParserUnitTests
                             unit x: ]
                             ";
         
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
             parser.Parse());
@@ -1766,7 +1766,7 @@ public class ParserUnitTests
                             }
                             ";
         
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
             parser.Parse());
@@ -1784,7 +1784,7 @@ public class ParserUnitTests
                             }
                             ";
         
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
             parser.Parse());
@@ -1802,7 +1802,7 @@ public class ParserUnitTests
                             }
                             ";
         
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
             parser.Parse());
@@ -1820,7 +1820,7 @@ public class ParserUnitTests
                             }
                             ";
         
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
             parser.Parse());
@@ -1838,7 +1838,7 @@ public class ParserUnitTests
                             }
                             ";
         
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
             parser.Parse());
@@ -1856,7 +1856,7 @@ public class ParserUnitTests
                             }
                             ";
         
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
             parser.Parse());
@@ -1875,7 +1875,7 @@ public class ParserUnitTests
                             }
                             ";
         
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
             parser.Parse());
@@ -1896,7 +1896,7 @@ public class ParserUnitTests
                             }
                             ";
         
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
             parser.Parse());
@@ -1916,7 +1916,7 @@ public class ParserUnitTests
                             }
                             ";
         
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
             parser.Parse());
@@ -1936,7 +1936,7 @@ public class ParserUnitTests
                             }
                             ";
         
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
             parser.Parse());
@@ -1954,7 +1954,7 @@ public class ParserUnitTests
                             }
                             ";
         
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
             parser.Parse());
@@ -1974,7 +1974,7 @@ public class ParserUnitTests
                             }
                             ";
         
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
             parser.Parse());
@@ -1994,7 +1994,7 @@ public class ParserUnitTests
                             }
                             ";
         
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
             parser.Parse());
@@ -2014,23 +2014,11 @@ public class ParserUnitTests
                             }
                             ";
         
-        var parser = PrepareParser(code);
+        var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
             parser.Parse());
         Assert.Equal("Expected RIGHT_PARENTHESES token" +
                      " but received LEFT_CURLY_BRACE on row 3 and column 49", e.Message);
-    }
-    
-    private static Parser PrepareParser(string code)
-    {
-        var lexer = new CommentFilteredLexer(Helper.GetStreamReaderFromString(code));
-
-        return new Parser(lexer);
-    }
-
-    private static Block GetStatementsFromMain(TopLevel topLevel)
-    {
-        return topLevel.Functions["main"].Statements;
     }
 }

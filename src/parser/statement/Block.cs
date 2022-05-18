@@ -13,4 +13,9 @@ public class Block: IStatement
     {
         Statements = statements;
     }
+    
+    public void Accept(IVisitor visitor)
+    {
+        visitor.Visit(this);
+    }
 }

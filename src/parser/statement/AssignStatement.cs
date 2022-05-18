@@ -12,4 +12,9 @@ public class AssignStatement: IStatement
         Name = name;
         Expression = expression;
     }
+    
+    public void Accept(IVisitor visitor)
+    {
+        visitor.Visit(this);
+    }
 }

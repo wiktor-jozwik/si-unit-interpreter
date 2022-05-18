@@ -4,10 +4,10 @@
   &lt;Assembly Path="/Users/jozek/.nuget/packages/mstest.testframework/2.2.10/lib/net5.0/Microsoft.VisualStudio.TestPlatform.TestFramework.dll" /&gt;
 &lt;/AssemblyExplorer&gt;</s:String>
 	<s:String x:Key="/Default/Environment/Highlighting/HighlightingSourceSnapshotLocation/@EntryValue">/Users/jozek/Library/Caches/JetBrains/Rider2021.3/resharper-host/temp/Rider/vAny/CoverageData/_.19/Snapshot/snapshot.utdcvr</s:String>
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=4ed030e7_002Dff4a_002D4dca_002Dae2f_002Da2380235a367/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="All tests from &amp;lt;si-unit-interpreter&amp;gt;" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=4ed030e7_002Dff4a_002D4dca_002Dae2f_002Da2380235a367/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="All tests from &amp;lt;si-unit-interpreter&amp;gt;" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
   &lt;Project Location="/Users/jozek/studia/SEM6/TKOM/projekt/si-unit-interpreter" Presentation="&amp;lt;si-unit-interpreter&amp;gt;" /&gt;
 &lt;/SessionState&gt;</s:String>
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=51b8fdaa_002D593c_002D4925_002Db4f7_002Dff02c0c50978/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="All tests from &amp;lt;si-unit-interpreter&amp;gt;" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=51b8fdaa_002D593c_002D4925_002Db4f7_002Dff02c0c50978/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="All tests from &amp;lt;si-unit-interpreter&amp;gt;" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
   &lt;Project Location="/Users/jozek/studia/SEM6/TKOM/projekt/si-unit-interpreter" Presentation="&amp;lt;si-unit-interpreter&amp;gt;" /&gt;
 &lt;/SessionState&gt;</s:String>
 	

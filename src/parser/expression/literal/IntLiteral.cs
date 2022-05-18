@@ -11,5 +11,10 @@ public class IntLiteral: IExpression
     {
         Value = value;
         UnitType = unitType;
-    } 
+    }
+
+    public void Accept(IVisitor visitor)
+    {
+        visitor.Visit(this);
+    }
 }

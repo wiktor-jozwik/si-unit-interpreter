@@ -12,4 +12,9 @@ public class VariableDeclaration: IStatement
         Parameter = parameter;
         Expression = expression;
     }
+    
+    public void Accept(IVisitor visitor)
+    {
+        visitor.Visit(this);
+    }
 }

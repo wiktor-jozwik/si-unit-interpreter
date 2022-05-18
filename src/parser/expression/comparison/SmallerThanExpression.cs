@@ -10,4 +10,9 @@ public class SmallerThanExpression: IExpression
         Left = left;
         Right = right;
     }
+
+    public void Accept(IVisitor visitor)
+    {
+        visitor.Visit(this);
+    }
 }

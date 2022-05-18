@@ -47,7 +47,7 @@ public class LexerUnitTests
         const int maxCommentLength = 10;
 
         var e = Assert.Throws<CommentExceededLengthException>(() => GetSingleTokenFromLexerByText(commentText, maxCommentLength: maxCommentLength));
-        Assert.Equal($"Comment can have maximum: {maxCommentLength} chars.", e.Message);
+        Assert.Equal($"Comment can have maximum: {maxCommentLength} chars", e.Message);
     }
 
     // TryBuildIdentifierOrKeyword
@@ -75,7 +75,7 @@ public class LexerUnitTests
         const int maxIdentifierLength = 10;
         
         var e = Assert.Throws<IdentifierExceededLengthException>(() => GetSingleTokenFromLexerByText(identifierText, maxIdentifierLength: maxIdentifierLength));
-        Assert.Equal($"Identifier can have maximum: {maxIdentifierLength} chars.", e.Message);
+        Assert.Equal($"Identifier can have maximum: {maxIdentifierLength} chars", e.Message);
     }
     
     [Fact]
@@ -347,7 +347,7 @@ public class LexerUnitTests
 
         var e = Assert.Throws<TextExceededLengthException>(() =>
             GetSingleTokenFromLexerByText(stringText, maxTextLength: maxTextLength));
-        Assert.Equal($"Text can have maximum: {maxTextLength} chars.", e.Message);
+        Assert.Equal($"Text can have maximum: {maxTextLength} chars", e.Message);
     }
 
     [Fact]
@@ -496,7 +496,7 @@ public class LexerUnitTests
 
         var e = Assert.Throws<DecimalPlacesExceededAmountException>(() =>
             GetSingleTokenFromLexerByText(stringText, maxDecimalPlaces: maxDecimalPlaces));
-        Assert.Equal($"Number can have up to: {maxDecimalPlaces} decimal places.", e.Message);
+        Assert.Equal($"Number can have up to: {maxDecimalPlaces} decimal places", e.Message);
     }
     
     [Fact]

@@ -3,7 +3,7 @@ using si_unit_interpreter.parser.type;
 
 namespace si_unit_interpreter.parser;
 
-public class TopLevel
+public class TopLevel: IStatement
 {
     public readonly IDictionary<string, FunctionStatement> Functions;
     public readonly IDictionary<string, UnitType> Units;
@@ -15,5 +15,10 @@ public class TopLevel
     {
         Functions = functions;
         Units = units;
+    }
+
+    public void Accept(IVisitor visitor)
+    {
+        visitor.Visit(this);
     }
 }

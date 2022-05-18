@@ -21,4 +21,9 @@ public class IfStatement: IStatement
         ElseIfStatements = elseIfStatements;
         ElseStatement = elseStatement;
     }
+    
+    public void Accept(IVisitor visitor)
+    {
+        visitor.Visit(this);
+    }
 }

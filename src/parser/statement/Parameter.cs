@@ -12,4 +12,9 @@ public class Parameter: IStatement
         Name = name;
         Type = type;
     }
+    
+    public void Accept(IVisitor visitor)
+    {
+        visitor.Visit(this);
+    }
 }

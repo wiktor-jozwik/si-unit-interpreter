@@ -10,4 +10,9 @@ public class FunctionCall: IExpression
         Name = name;
         Arguments = arguments;
     }
+
+    public void Accept(IVisitor visitor)
+    {
+        visitor.Visit(this);
+    }
 }

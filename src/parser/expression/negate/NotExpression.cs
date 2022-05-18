@@ -8,4 +8,9 @@ public class NotExpression: IExpression
     {
         Child = child;
     }
+
+    public void Accept(IVisitor visitor)
+    {
+        visitor.Visit(this);
+    }
 }

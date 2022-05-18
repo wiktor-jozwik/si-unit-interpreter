@@ -58,8 +58,7 @@ public class Lexer
             ["false"] = TokenType.FALSE,
         };
         
-        
-        _escapeCharsMap = new Dictionary<string, char>()
+        _escapeCharsMap = new Dictionary<string, char>
         {
             ["\\\""] = '\"',
             ["\\\n"] = '\n',
@@ -182,7 +181,7 @@ public class Lexer
             {
                 if (comment.Length == _maxCommentLength)
                 {
-                    throw new CommentExceededLengthException($"Comment can have maximum: {_maxCommentLength} chars.");
+                    throw new CommentExceededLengthException(_maxCommentLength);
                 }
                 comment.Append(_character);
                 GetNextCharacter();
@@ -207,7 +206,7 @@ public class Lexer
         {
             if (value.Length == _maxIdentifierLength)
             {
-                throw new IdentifierExceededLengthException($"Identifier can have maximum: {_maxIdentifierLength} chars.");
+                throw new IdentifierExceededLengthException(_maxIdentifierLength);
             }
             value.Append(_character);
             GetNextCharacter();
@@ -234,7 +233,7 @@ public class Lexer
 
         while (_character != '\"' && _character != '\uffff')
         {
-            if (text.Length == _maxTextLength) throw new TextExceededLengthException($"Text can have maximum: {_maxTextLength} chars.");
+            if (text.Length == _maxTextLength) throw new TextExceededLengthException(_maxTextLength);
 
             if (_character == '\\')
             {
@@ -347,7 +346,7 @@ public class Lexer
             while (char.IsDigit(_character))
             {
                 intPart = intPart * 10 + _character - '0';
-                if (intPart > _maxIntSize) throw new NumberExceededSizeException($"Number can be up to: {_maxIntSize}");
+                if (intPart > _maxIntSize) throw new NumberExceededSizeException(_maxIntSize);
 
                 GetNextCharacter();
             }
@@ -380,7 +379,7 @@ public class Lexer
             
             if (decimalPlaces > _maxDecimalPlaces)
             {
-                throw new DecimalPlacesExceededAmountException($"Number can have up to: {_maxDecimalPlaces} decimal places.");
+                throw new DecimalPlacesExceededAmountException(_maxDecimalPlaces);
             }
             
             GetNextCharacter();
@@ -408,7 +407,7 @@ public class Lexer
         while (char.IsDigit(_character))
         {
             exponentPart = exponentPart * 10 + _character - '0';
-            if (exponentPart > _maxExponentSize) throw new ExponentPartExceededSizeException($"Exponent part can be up to: {_maxExponentSize}");
+            if (exponentPart > _maxExponentSize) throw new ExponentPartExceededSizeException(_maxExponentSize);
             
             GetNextCharacter();
         }

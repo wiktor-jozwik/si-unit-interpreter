@@ -15,4 +15,9 @@ public class ElseIfStatement: IStatement
         Condition = condition;
         Statements = statements;
     }
+    
+    public void Accept(IVisitor visitor)
+    {
+        visitor.Visit(this);
+    }
 }

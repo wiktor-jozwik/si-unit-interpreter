@@ -10,4 +10,9 @@ public class ReturnStatement: IStatement
     {
         Expression = expression;
     }
+    
+    public void Accept(IVisitor visitor)
+    {
+        visitor.Visit(this);
+    }
 }
