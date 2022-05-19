@@ -10,4 +10,9 @@ public class Unit
         Name = name;
         Power = power;
     }
+
+    public Unit Clone()
+    {
+        return new Unit(Name, Power);
+    }
 }

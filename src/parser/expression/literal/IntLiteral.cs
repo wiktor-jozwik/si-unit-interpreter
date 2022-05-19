@@ -5,9 +5,9 @@ namespace si_unit_interpreter.parser.expression.literal;
 public class IntLiteral: IExpression
 {
     public readonly long Value;
-    public readonly UnitType? UnitType;
+    public readonly UnitType UnitType;
     
-    public IntLiteral(long value, UnitType? unitType)
+    public IntLiteral(long value, UnitType unitType)
     {
         Value = value;
         UnitType = unitType;
@@ -16,5 +16,10 @@ public class IntLiteral: IExpression
     public void Accept(IVisitor visitor)
     {
         visitor.Visit(this);
+    }
+
+    public IType Accept(IVisitor<IType> visitor)
+    {
+        return visitor.Visit(this);
     }
 }

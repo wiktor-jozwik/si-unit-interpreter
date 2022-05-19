@@ -17,4 +17,9 @@ public class FloatLiteral: IExpression
     {
         visitor.Visit(this);
     }
+
+    public IType Accept(IVisitor<IType> visitor)
+    {
+        return visitor.Visit(this);
+    }
 }

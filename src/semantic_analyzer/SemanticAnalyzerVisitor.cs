@@ -7,44 +7,89 @@ using si_unit_interpreter.parser.expression.literal;
 using si_unit_interpreter.parser.expression.multiplicative;
 using si_unit_interpreter.parser.expression.negate;
 using si_unit_interpreter.parser.statement;
+using si_unit_interpreter.parser.type;
 
 namespace si_unit_interpreter.semantic_analyzer;
 
-public class SemanticAnalyzerVisitor: IVisitor
+public class SemanticAnalyzerVisitor : IVisitor
 {
     private readonly LinkedList<SemanticScope> _scopes = new();
+    private readonly Dictionary<string, IType> _functions = new();
+    private IDictionary<string, UnitType> _units;
     public void Visit(TopLevel element)
     {
-        foreach (var (_, function) in element.Functions)
+        foreach (var (name, function) in element.Functions)
         {
+            _functions[name] = function.ReturnType;
             function.Accept(this);
         }
+
+        _units = element.Units;
     }
-    
+
     public void Visit(FunctionStatement element)
     {
-        _scopes.AddLast(new SemanticScope());
         element.Statements.Accept(this);
-        _scopes.RemoveLast();
     }
-    
+
     public void Visit(Block element)
     {
+        _scopes.AddLast(new SemanticScope());
         foreach (var statement in element.Statements)
         {
             statement.Accept(this);
         }
+        _scopes.RemoveLast();
     }
-    
+
     public void Visit(VariableDeclaration element)
     {
-        var lastScope = _scopes.Last();
         var name = element.Parameter.Name;
-        if (lastScope.VariableNames.Contains(name))
+        var variableType = element.Parameter.Type;
+        
+        if (_scopes.Any(scope => scope.Variables.Any(variables => variables.Key.Contains(name))))
         {
             throw new VariableRedeclarationException(name);
         }
-        lastScope.VariableNames.Add(name);
+        var typeVisitor = new TypeVisitor(_scopes, _functions, _units);
+        var typeExpression = element.Expression.Accept(typeVisitor);
+
+        if (typeExpression != null)
+        {
+            _CompareTypes(variableType, typeExpression);
+        }
+        
+        _scopes.Last().Variables[name] = variableType;
+    }
+
+    public void Visit(IfStatement element)
+    {
+        element.Condition.Accept(this);
+
+        element.Statements.Accept(this);
+        
+        foreach (var elseIfStatement in element.ElseIfStatements)
+        {
+            elseIfStatement.Accept(this);
+        }
+        element.ElseStatement.Accept(this);
+    }
+
+    public void Visit(ElseIfStatement element)
+    {
+        element.Statements.Accept(this);
+    }
+
+    public void Visit(WhileStatement element)
+    {
+        element.Condition.Accept(this);
+
+        element.Statements.Accept(this);
+    }
+
+    public void Visit(AssignStatement element)
+    {
+        throw new NotImplementedException();
     }
 
     public void Visit(AddExpression element)
@@ -87,26 +132,6 @@ public class SemanticAnalyzerVisitor: IVisitor
         throw new NotImplementedException();
     }
 
-    public void Visit(BoolLiteral element)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void Visit(FloatLiteral element)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void Visit(IntLiteral element)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void Visit(StringLiteral element)
-    {
-        throw new NotImplementedException();
-    }
-
     public void Visit(DivideExpression element)
     {
         throw new NotImplementedException();
@@ -131,39 +156,50 @@ public class SemanticAnalyzerVisitor: IVisitor
     {
         throw new NotImplementedException();
     }
-
-    public void Visit(FunctionCall element)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void Visit(Identifier element)
-    {
-        throw new NotImplementedException();
-    }
-
+    
     public void Visit(LogicFactor element)
     {
         throw new NotImplementedException();
     }
 
-    public void Visit(AssignStatement element)
+    public void Visit(BoolLiteral element)
     {
         throw new NotImplementedException();
     }
 
-
-
-    public void Visit(ElseIfStatement element)
+    public void Visit(FloatLiteral element)
     {
         throw new NotImplementedException();
     }
 
-
-
-    public void Visit(IfStatement element)
+    public void Visit(IntLiteral element)
     {
         throw new NotImplementedException();
+    }
+
+    public void Visit(StringLiteral element)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void Visit(FunctionCall element)
+    {
+        var name = element.Name;
+
+        if (!_functions.ContainsKey(name))
+        {
+            throw new FunctionUndeclaredException(name);
+        }
+    }
+
+    public void Visit(Identifier element)
+    {
+        var name = element.Name;
+        
+        if (!_scopes.Any(scope => scope.Variables.ContainsKey(name)))
+        {
+            throw new VariableUndeclaredException(name);
+        }    
     }
 
     public void Visit(Parameter element)
@@ -173,13 +209,25 @@ public class SemanticAnalyzerVisitor: IVisitor
 
     public void Visit(ReturnStatement element)
     {
-        throw new NotImplementedException();
     }
 
-
-
-    public void Visit(WhileStatement element)
+    private void _CompareTypes(IType left, IType right)
     {
-        throw new NotImplementedException();
+        if (left.GetType() == typeof(UnitType) && right.GetType() == typeof(UnitType))
+        {
+            _CompareUnits((UnitType) left, (UnitType) right);
+        }
+    }
+
+    private void _CompareUnits(UnitType leftUnit, UnitType rightUnit)
+    {
+        foreach (var unit in leftUnit.Units)
+        {
+            var foundUnitInRight = rightUnit.Units.FirstOrDefault(u => unit.Name == u.Name && unit.Power == u.Power) != null;
+            if (!foundUnitInRight)
+            {
+                throw new UnitNotPermittedOperationException(leftUnit.Units, rightUnit.Units);
+            }
+        }
     }
 }
