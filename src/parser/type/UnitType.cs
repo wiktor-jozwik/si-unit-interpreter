@@ -1,13 +1,13 @@
-using si_unit_interpreter.parser.unit.expression;
+using si_unit_interpreter.parser.unit;
 
 namespace si_unit_interpreter.parser.type;
 
 public class UnitType: IType
 {
-    public readonly IUnitExpression? Expression;
+    public IList<Unit> Units;
 
-    public UnitType(IUnitExpression? expression)
+    public UnitType(IList<Unit> units)
     {
-        Expression = expression;
+        Units = units;
     }
 }

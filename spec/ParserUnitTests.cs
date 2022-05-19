@@ -1,8 +1,6 @@
 using Newtonsoft.Json;
 using Shouldly;
 using si_unit_interpreter.exceptions.parser;
-using si_unit_interpreter.lexer;
-using si_unit_interpreter.parser;
 using si_unit_interpreter.parser.expression;
 using si_unit_interpreter.parser.expression.additive;
 using si_unit_interpreter.parser.expression.comparison;
@@ -11,8 +9,7 @@ using si_unit_interpreter.parser.expression.multiplicative;
 using si_unit_interpreter.parser.expression.negate;
 using si_unit_interpreter.parser.statement;
 using si_unit_interpreter.parser.type;
-using si_unit_interpreter.parser.unit.expression;
-using si_unit_interpreter.parser.unit.expression.power;
+using si_unit_interpreter.parser.unit;
 using Xunit;
 
 namespace si_unit_interpreter.spec;
@@ -35,14 +32,14 @@ public class ParserUnitTests
         var block = Helper.GetStatementsFromMain(program);
         block.Statements.ShouldHaveSingleItem();
 
-        var variableDeclaration = 
+        var variableDeclaration =
             new VariableDeclaration(
                 new Parameter(
                     "x",
                     new BoolType()
-                ), 
+                ),
                 new BoolLiteral(true)
-                );
+            );
 
         JsonConvert.SerializeObject(block.Statements.First())
             .ShouldBe(JsonConvert.SerializeObject(variableDeclaration));
@@ -64,14 +61,14 @@ public class ParserUnitTests
         var block = Helper.GetStatementsFromMain(program);
         block.Statements.ShouldHaveSingleItem();
 
-        var variableDeclaration = 
+        var variableDeclaration =
             new VariableDeclaration(
                 new Parameter(
-                    "s", 
+                    "s",
                     new StringType()
-                ), 
+                ),
                 new StringLiteral("my string")
-                );
+            );
 
         JsonConvert.SerializeObject(block.Statements.First())
             .ShouldBe(JsonConvert.SerializeObject(variableDeclaration));
@@ -93,11 +90,13 @@ public class ParserUnitTests
         var block = Helper.GetStatementsFromMain(program);
         block.Statements.ShouldHaveSingleItem();
 
-        var variableDeclaration = 
+        var variableDeclaration =
             new VariableDeclaration(
                 new Parameter(
-                    "mul", 
-                    new UnitType(null)
+                    "mul",
+                    new UnitType(
+                        new List<Unit>()
+                    )
                 ),
                 new IntLiteral(5, null));
 
@@ -121,14 +120,16 @@ public class ParserUnitTests
         var block = Helper.GetStatementsFromMain(program);
         block.Statements.ShouldHaveSingleItem();
 
-        var variableDeclaration = 
+        var variableDeclaration =
             new VariableDeclaration(
                 new Parameter(
                     "mulFloat",
-                    new UnitType(null)
+                    new UnitType(
+                        new List<Unit>()
+                    )
                 ),
                 new FloatLiteral(5e2, null)
-                );
+            );
         JsonConvert.SerializeObject(block.Statements.First())
             .ShouldBe(JsonConvert.SerializeObject(variableDeclaration));
     }
@@ -138,9 +139,9 @@ public class ParserUnitTests
     public void TestUnitAssignment()
     {
         const string code = @"
-                            main() -> void {
-                                let speed: [m*s^-2] = 5.23
-                            }";
+                             main() -> void {
+                                 let speed: [m*s^-2] = 5.23
+                             }";
 
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
@@ -149,25 +150,19 @@ public class ParserUnitTests
         var block = Helper.GetStatementsFromMain(program);
         block.Statements.ShouldHaveSingleItem();
 
-        var variableDeclaration = 
+        var variableDeclaration =
             new VariableDeclaration(
                 new Parameter(
-                    "speed", 
+                    "speed",
                     new UnitType(
-                        new UnitExpression(
-                            new UnitUnaryExpression(
-                                "m",
-                                null
-                            ),
-                            new UnitUnaryExpression(
-                                "s", 
-                                new UnitMinusPower(2)
-                                )
-                            )
-                        )
-                ), 
+                        new List<Unit>
+                        {
+                            new("m"),
+                            new("s", -2)
+                        })
+                ),
                 new FloatLiteral(5.23, null)
-                );
+            );
 
         JsonConvert.SerializeObject(block.Statements.First())
             .ShouldBe(JsonConvert.SerializeObject(variableDeclaration));
@@ -189,7 +184,7 @@ public class ParserUnitTests
         var block = Helper.GetStatementsFromMain(program);
         block.Statements.ShouldHaveSingleItem();
 
-        var functionCall = 
+        var functionCall =
             new FunctionCall(
                 "print",
                 new List<IExpression>
@@ -197,11 +192,11 @@ public class ParserUnitTests
                     new Identifier("myVariable")
                 }
             );
-        
+
         JsonConvert.SerializeObject(block.Statements.First())
             .ShouldBe(JsonConvert.SerializeObject(functionCall));
     }
-    
+
     [Fact]
     [Trait("Category", "ReturnStatement")]
     public void TestVoidReturnStatement()
@@ -220,11 +215,11 @@ public class ParserUnitTests
 
         var returnStatement =
             new ReturnStatement(null);
-        
+
         JsonConvert.SerializeObject(block.Statements.First())
             .ShouldBe(JsonConvert.SerializeObject(returnStatement));
     }
-    
+
     [Fact]
     [Trait("Category", "ReturnStatement")]
     public void TestReturnStatement()
@@ -246,17 +241,17 @@ public class ParserUnitTests
                 new AddExpression(
                     new Identifier(
                         "x"
-                        ),
+                    ),
                     new IntLiteral(
                         5,
                         null
-                        )
                     )
-                );
+                )
+            );
         JsonConvert.SerializeObject(block.Statements.First())
             .ShouldBe(JsonConvert.SerializeObject(returnStatement));
     }
-    
+
     [Fact]
     [Trait("Category", "WhileStatement")]
     public void TestWhileStatement()
@@ -371,12 +366,10 @@ public class ParserUnitTests
                     new Identifier("force"),
                     new IntLiteral(
                         12,
-                        new UnitType(
-                            new UnitUnaryExpression(
-                                "N",
-                                null
-                            )
-                        )
+                        new UnitType(new List<Unit>
+                        {
+                            new("N"),
+                        })
                     )
                 ),
                 new Block(
@@ -417,11 +410,10 @@ public class ParserUnitTests
                             new FloatLiteral(
                                 3.5,
                                 new UnitType(
-                                    new UnitUnaryExpression(
-                                        "N",
-                                        null
-                                    )
-                                )
+                                    new List<Unit>
+                                {
+                                    new("N"),
+                                })
                             )
                         ),
                         new Block(
@@ -456,11 +448,10 @@ public class ParserUnitTests
                             new IntLiteral(
                                 0,
                                 new UnitType(
-                                    new UnitUnaryExpression(
-                                        "N",
-                                        null
-                                    )
-                                )
+                                    new List<Unit>
+                                {
+                                    new("N"),
+                                })
                             )
                         ),
                         new Block(
@@ -509,7 +500,7 @@ public class ParserUnitTests
                             calculateKEnergy(mass: [kg], speed: [m*s^-1], scalar: []) -> [J] {
                                 return mass * speed * speed / scalar
                             }";
-        
+
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
@@ -518,7 +509,7 @@ public class ParserUnitTests
         var parameters = functionStatement.Parameters;
         var returnType = functionStatement.ReturnType;
         var block = functionStatement.Statements;
-        
+
         parameters.Count.ShouldBe(3);
         var firstParameter = parameters[0];
         var secondParameter = parameters[1];
@@ -528,45 +519,37 @@ public class ParserUnitTests
             new Parameter(
                 "mass",
                 new UnitType(
-                    new UnitUnaryExpression(
-                        "kg",
-                        null
-                    )
-                )
+                    new List<Unit>
+                {
+                    new("kg"),
+                })
             );
 
         var secondParameterExpected =
             new Parameter(
                 "speed",
                 new UnitType(
-                    new UnitExpression(
-                        new UnitUnaryExpression(
-                            "m",
-                            null
-                        ),
-                        new UnitUnaryExpression(
-                            "s",
-                            new UnitMinusPower(1)
-                        )
-                    )
-                )
+                    new List<Unit>
+                {
+                    new("m"),
+                    new("s", -1)
+                })
             );
-        
+
         var thirdParameterExpected =
             new Parameter(
                 "scalar",
                 new UnitType(
-                    null
-                    )
+                    new List<Unit>()
+                )
             );
 
         var returnTypeExpected =
             new UnitType(
-                new UnitUnaryExpression(
-                    "J",
-                    null
-                )
-            );
+                new List<Unit>
+            {
+                new("J"),
+            });
 
         block.Statements.Count.ShouldBe(1);
         var returnStatement = (ReturnStatement) block.Statements.First();
@@ -586,20 +569,20 @@ public class ParserUnitTests
 
         JsonConvert.SerializeObject(firstParameter)
             .ShouldBe(JsonConvert.SerializeObject(firstParameterExpected));
-        
+
         JsonConvert.SerializeObject(secondParameter)
             .ShouldBe(JsonConvert.SerializeObject(secondParameterExpected));
-        
+
         JsonConvert.SerializeObject(thirdParameter)
             .ShouldBe(JsonConvert.SerializeObject(thirdParameterExpected));
-        
+
         JsonConvert.SerializeObject(returnType)
             .ShouldBe(JsonConvert.SerializeObject(returnTypeExpected));
-        
+
         JsonConvert.SerializeObject(returnExpression)
             .ShouldBe(JsonConvert.SerializeObject(returnExpressionExpected));
     }
-    
+
     [Fact]
     [Trait("Category", "UnitDeclaration")]
     public void TestUnitDeclaration()
@@ -611,30 +594,21 @@ public class ParserUnitTests
 
         program.Units.Keys.ShouldHaveSingleItem();
 
-        var unitExpression = program.Units["N"].Expression;
+        var units = program.Units["N"];
 
-        var unitExpected =
-            new UnitExpression(
-                new UnitExpression(
-                    new UnitUnaryExpression(
-                        "kg",
-                        null
-                    ),
-                    new UnitUnaryExpression(
-                        "m",
-                        null
-                    )
-                ),
-                new UnitUnaryExpression(
-                    "s",
-                    new UnitMinusPower(2)
-                )
-            );
+        var unitsExpected =
+            new UnitType(
+                new List<Unit>
+            {
+                new("kg"),
+                new("m"),
+                new("s", -2)
+            });
 
-        JsonConvert.SerializeObject(unitExpression)
-            .ShouldBe(JsonConvert.SerializeObject(unitExpected));
+        JsonConvert.SerializeObject(units)
+            .ShouldBe(JsonConvert.SerializeObject(unitsExpected));
     }
-    
+
     [Fact]
     [Trait("Category", "FunctionStatement")]
     [Trait("Category", "MultiStatement")]
@@ -652,13 +626,13 @@ public class ParserUnitTests
                                 printCustomMessage(m)
                                 printCustomMessage2(m)
                             }";
-    
+
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
         var functions = program.Functions;
         functions.Keys.Count.ShouldBe(3);
-        
+
         var mainBlock = Helper.GetStatementsFromMain(program);
         mainBlock.Statements.Count.ShouldBe(3);
 
@@ -676,7 +650,7 @@ public class ParserUnitTests
 
         printCustomMessageParameters.ShouldHaveSingleItem();
         printCustomMessage2Parameters.ShouldHaveSingleItem();
-        
+
         printCustomMessageBlock.Statements.ShouldHaveSingleItem();
         printCustomMessage2Block.Statements.ShouldHaveSingleItem();
 
@@ -688,7 +662,7 @@ public class ParserUnitTests
                     new StringType()
                 )
             };
-        
+
         var printCustomMessage2ParametersExpected =
             new List<Parameter>
             {
@@ -703,7 +677,6 @@ public class ParserUnitTests
 
         var printCustomMessageBlockExpected =
             new Block(
-
                 new List<IStatement>
                 {
                     new FunctionCall(
@@ -757,29 +730,29 @@ public class ParserUnitTests
                     )
                 }
             );
-        
+
         JsonConvert.SerializeObject(printCustomMessageParameters)
             .ShouldBe(JsonConvert.SerializeObject(printCustomMessageParametersExpected));
-        
+
         JsonConvert.SerializeObject(printCustomMessage2Parameters)
             .ShouldBe(JsonConvert.SerializeObject(printCustomMessage2ParametersExpected));
-        
+
         JsonConvert.SerializeObject(printCustomMessageReturnType)
             .ShouldBe(JsonConvert.SerializeObject(voidTypeExpected));
-        
+
         JsonConvert.SerializeObject(printCustomMessage2ReturnType)
             .ShouldBe(JsonConvert.SerializeObject(voidTypeExpected));
-        
+
         JsonConvert.SerializeObject(printCustomMessageBlock)
             .ShouldBe(JsonConvert.SerializeObject(printCustomMessageBlockExpected));
 
         JsonConvert.SerializeObject(printCustomMessage2Block)
             .ShouldBe(JsonConvert.SerializeObject(printCustomMessage2BlockExpected));
-        
+
         JsonConvert.SerializeObject(mainBlock)
             .ShouldBe(JsonConvert.SerializeObject(mainBlockExpected));
     }
-    
+
     [Fact]
     [Trait("Category", "Expression")]
     public void TestLogicExpression()
@@ -824,11 +797,11 @@ public class ParserUnitTests
                     )
                 )
             );
-            
+
         JsonConvert.SerializeObject(block.Statements.First())
             .ShouldBe(JsonConvert.SerializeObject(variableDeclaration));
     }
-    
+
     [Fact]
     [Trait("Category", "Expression")]
     public void TestComparisonExpression()
@@ -872,11 +845,11 @@ public class ParserUnitTests
                     )
                 )
             );
-        
+
         JsonConvert.SerializeObject(block.Statements.First())
             .ShouldBe(JsonConvert.SerializeObject(variableDeclaration));
     }
-    
+
     [Fact]
     [Trait("Category", "Expression")]
     public void TestAdditiveAndMultiplicativeExpression()
@@ -898,7 +871,7 @@ public class ParserUnitTests
                 new Parameter(
                     "x",
                     new UnitType(
-                        null
+                        new List<Unit>()
                     )
                 ),
                 new SubtractExpression(
@@ -930,11 +903,11 @@ public class ParserUnitTests
                     )
                 )
             );
-        
+
         JsonConvert.SerializeObject(block.Statements.First())
             .ShouldBe(JsonConvert.SerializeObject(variableDeclaration));
     }
-    
+
     [Fact]
     [Trait("Category", "Expression")]
     public void TestExpressionWithParentheses()
@@ -956,7 +929,7 @@ public class ParserUnitTests
                 new Parameter(
                     "x",
                     new UnitType(
-                        null
+                        new List<Unit>()
                     )
                 ),
                 new MultiplicateExpression(
@@ -976,12 +949,12 @@ public class ParserUnitTests
                     )
                 )
             );
-        
+
         JsonConvert.SerializeObject(block.Statements.First())
             .ShouldBe(JsonConvert.SerializeObject(variableDeclaration));
     }
-    
-    
+
+
     [Fact]
     [Trait("Category", "Expression")]
     public void TestNegateExpression()
@@ -1031,11 +1004,11 @@ public class ParserUnitTests
                     )
                 )
             );
-        
+
         JsonConvert.SerializeObject(block.Statements.First())
             .ShouldBe(JsonConvert.SerializeObject(variableDeclaration));
     }
-    
+
     [Fact]
     [Trait("Category", "Expression")]
     public void TestExpressionWithFunctionCalls()
@@ -1058,11 +1031,10 @@ public class ParserUnitTests
                 new Parameter(
                     "secs",
                     new UnitType(
-                        new UnitUnaryExpression(
-                            "s",
-                            new UnitPower(2)
-                        )
-                    )
+                        new List<Unit>
+                        {
+                            new("s", 2),
+                        })
                 ),
                 new SubtractExpression(
                     new FunctionCall(
@@ -1085,11 +1057,11 @@ public class ParserUnitTests
                     )
                 )
             );
-        
+
         JsonConvert.SerializeObject(block.Statements.First())
             .ShouldBe(JsonConvert.SerializeObject(variableDeclaration));
     }
-    
+
     [Fact]
     [Trait("Category", "Core")]
     public void TestCoreFunctionalityWithCalculatingGForce()
@@ -1117,53 +1089,35 @@ public class ParserUnitTests
 
         program.Functions.Keys.Count.ShouldBe(2);
         program.Units.Keys.Count.ShouldBe(2);
-        
+
         var block = Helper.GetStatementsFromMain(program);
         block.Statements.Count.ShouldBe(5);
 
-        var nUnit = program.Units["N"].Expression;
-        var nUnitExpected =
-            new UnitExpression(
-                new UnitExpression(
-                    new UnitUnaryExpression(
-                        "kg",
-                        null
-                    ),
-                    new UnitUnaryExpression(
-                        "m",
-                        null
-                    )
-                ),
-                new UnitUnaryExpression(
-                    "s",
-                    new UnitMinusPower(2)
-                )
-            );
-        
-        var gUnit = program.Units["G"].Expression;
-        var gUnitExpected =
-            new UnitExpression(
-                new UnitExpression(
-                    new UnitUnaryExpression(
-                        "N",
-                        null
-                    ),
-                    new UnitUnaryExpression(
-                        "m",
-                        new UnitPower(2)
-                    )
-                ),
-                new UnitUnaryExpression(
-                    "kg",
-                    new UnitMinusPower(2)
-                )
-            );
-        
-        JsonConvert.SerializeObject(nUnit)
-            .ShouldBe(JsonConvert.SerializeObject(nUnitExpected));
-        
-        JsonConvert.SerializeObject(gUnit)
-            .ShouldBe(JsonConvert.SerializeObject(gUnitExpected));
+        var nUnits = program.Units["N"];
+        var nUnitsExpected =
+            new UnitType(
+                new List<Unit>
+                {
+                    new("kg"),
+                    new("m"),
+                    new("s", -2)
+                });
+
+        var gUnits = program.Units["G"];
+        var gUnitsExpected =
+            new UnitType(
+                new List<Unit>
+                {
+                    new("N"),
+                    new("m", 2),
+                    new("kg", -2)
+                });
+
+        JsonConvert.SerializeObject(nUnits)
+            .ShouldBe(JsonConvert.SerializeObject(nUnitsExpected));
+
+        JsonConvert.SerializeObject(gUnits)
+            .ShouldBe(JsonConvert.SerializeObject(gUnitsExpected));
 
 
         var calculateGForce = program.Functions["calculateGForce"];
@@ -1175,44 +1129,40 @@ public class ParserUnitTests
                 new(
                     "earthMass",
                     new UnitType(
-                        new UnitUnaryExpression(
-                            "kg",
-                            null
-                        )
-                    )
+                        new List<Unit>
+                        {
+                            new("kg")
+                        })
                 ),
                 new(
                     "sunMass",
                     new UnitType(
-                        new UnitUnaryExpression(
-                            "kg",
-                            null
-                        )
-                    )
+                        new List<Unit>
+                        {
+                            new("kg")
+                        })
                 ),
                 new(
                     "earthSunDistance",
                     new UnitType(
-                        new UnitUnaryExpression(
-                            "m",
-                            null
-                        )
-                    )
+                        new List<Unit>
+                        {
+                            new("m")
+                        })
                 )
             };
 
         var returnType = calculateGForce.ReturnType;
         var returnTypeExpected =
             new UnitType(
-                new UnitUnaryExpression(
-                    "N",
-                    null
-                )
-            );
-        
+                new List<Unit>
+                {
+                    new("N")
+                });
+
         JsonConvert.SerializeObject(parameters)
             .ShouldBe(JsonConvert.SerializeObject(parametersExpected));
-        
+
         JsonConvert.SerializeObject(returnType)
             .ShouldBe(JsonConvert.SerializeObject(returnTypeExpected));
 
@@ -1226,11 +1176,10 @@ public class ParserUnitTests
                         new Parameter(
                             "G",
                             new UnitType(
-                                new UnitUnaryExpression(
-                                    "G",
-                                    null
-                                )
-                            )
+                                new List<Unit>
+                                {
+                                    new("G")
+                                })
                         ),
                         new FloatLiteral(
                             6.673199999999999e-11,
@@ -1268,11 +1217,10 @@ public class ParserUnitTests
                         new Parameter(
                             "earthMass",
                             new UnitType(
-                                new UnitUnaryExpression(
-                                    "kg",
-                                    null
-                                )
-                            )
+                                new List<Unit>
+                                {
+                                    new("kg")
+                                })
                         ),
                         new FloatLiteral(
                             5.9722e24,
@@ -1284,11 +1232,10 @@ public class ParserUnitTests
                         new Parameter(
                             "sunMass",
                             new UnitType(
-                                new UnitUnaryExpression(
-                                    "kg",
-                                    null
-                                )
-                            )
+                                new List<Unit>
+                                {
+                                    new("kg")
+                                })
                         ),
                         new FloatLiteral(
                             1.989e30,
@@ -1300,11 +1247,10 @@ public class ParserUnitTests
                         new Parameter(
                             "earthSunDistance",
                             new UnitType(
-                                new UnitUnaryExpression(
-                                    "m",
-                                    null
-                                )
-                            )
+                                new List<Unit>
+                                {
+                                    new("m")
+                                })
                         ),
                         new FloatLiteral(
                             149.24e9,
@@ -1316,11 +1262,10 @@ public class ParserUnitTests
                         new Parameter(
                             "gForce",
                             new UnitType(
-                                new UnitUnaryExpression(
-                                    "N",
-                                    null
-                                )
-                            )
+                                new List<Unit>
+                                {
+                                    new("N")
+                                })
                         ),
                         new FunctionCall(
                             "calculateGForce",
@@ -1341,11 +1286,11 @@ public class ParserUnitTests
                     )
                 }
             );
-        
+
         JsonConvert.SerializeObject(mainStatements)
             .ShouldBe(JsonConvert.SerializeObject(mainStatementsExpected));
     }
-    
+
     [Fact]
     [Trait("Category", "Error")]
     public void TestLackOfRightLogicFactor()
@@ -1355,7 +1300,7 @@ public class ParserUnitTests
                                 let x: bool = y ||
                             }
                             ";
-        
+
         var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
@@ -1363,7 +1308,7 @@ public class ParserUnitTests
         Assert.Equal("Expected TRUE or FALSE or INT or FLOAT or STRING or IDENTIFIER or LEFT_PARENTHESES token" +
                      " but received RIGHT_CURLY_BRACE on row 4 and column 29", e.Message);
     }
-    
+
     [Fact]
     [Trait("Category", "Error")]
     public void TestLackOfRightExpression()
@@ -1374,7 +1319,7 @@ public class ParserUnitTests
                                 let
                             }
                             ";
-        
+
         var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
@@ -1382,7 +1327,7 @@ public class ParserUnitTests
         Assert.Equal("Expected TRUE or FALSE or INT or FLOAT or STRING or IDENTIFIER or LEFT_PARENTHESES token" +
                      " but received LET on row 4 and column 33", e.Message);
     }
-    
+
     [Fact]
     [Trait("Category", "Error")]
     public void TestLackOfExpressionComparison()
@@ -1393,7 +1338,7 @@ public class ParserUnitTests
                                 if
                             }
                             ";
-        
+
         var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
@@ -1401,7 +1346,7 @@ public class ParserUnitTests
         Assert.Equal("Expected TRUE or FALSE or INT or FLOAT or STRING or IDENTIFIER or LEFT_PARENTHESES token" +
                      " but received IF on row 4 and column 33", e.Message);
     }
-    
+
     [Fact]
     [Trait("Category", "Error")]
     public void TestLackOfMultiplicativeExpression()
@@ -1412,7 +1357,7 @@ public class ParserUnitTests
                                 if
                             }
                             ";
-        
+
         var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
@@ -1420,7 +1365,7 @@ public class ParserUnitTests
         Assert.Equal("Expected TRUE or FALSE or INT or FLOAT or STRING or IDENTIFIER or LEFT_PARENTHESES token" +
                      " but received IF on row 4 and column 33", e.Message);
     }
-    
+
     [Fact]
     [Trait("Category", "Error")]
     public void TestLackOfAdditiveComparison()
@@ -1430,7 +1375,7 @@ public class ParserUnitTests
                                 let x: bool = y -
                             }
                             ";
-        
+
         var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
@@ -1438,7 +1383,7 @@ public class ParserUnitTests
         Assert.Equal("Expected TRUE or FALSE or INT or FLOAT or STRING or IDENTIFIER or LEFT_PARENTHESES token" +
                      " but received RIGHT_CURLY_BRACE on row 4 and column 29", e.Message);
     }
-    
+
     [Fact]
     [Trait("Category", "Error")]
     public void TestLackRightParenthesesInExpression()
@@ -1448,7 +1393,7 @@ public class ParserUnitTests
                                 let x: bool = y - (w + 5]
                             }
                             ";
-        
+
         var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
@@ -1456,7 +1401,7 @@ public class ParserUnitTests
         Assert.Equal("Expected RIGHT_PARENTHESES token" +
                      " but received RIGHT_SQUARE_BRACKET on row 3 and column 57", e.Message);
     }
-    
+
     [Fact]
     [Trait("Category", "Error")]
     public void TestLackNumInIdentifierExpression()
@@ -1466,7 +1411,7 @@ public class ParserUnitTests
                                 let x: bool = !
                             }
                             ";
-        
+
         var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
@@ -1474,7 +1419,7 @@ public class ParserUnitTests
         Assert.Equal("Expected TRUE or FALSE or INT or FLOAT or STRING or IDENTIFIER or LEFT_PARENTHESES token" +
                      " but received RIGHT_CURLY_BRACE on row 4 and column 29", e.Message);
     }
-    
+
     [Fact]
     [Trait("Category", "Error")]
     public void TestLackOfLeftParenthesesInFunctionStatement()
@@ -1483,7 +1428,7 @@ public class ParserUnitTests
                             main) -> void {
                             }
                             ";
-        
+
         var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
@@ -1491,7 +1436,7 @@ public class ParserUnitTests
         Assert.Equal("Expected LEFT_PARENTHESES token" +
                      " but received RIGHT_PARENTHESES on row 2 and column 33", e.Message);
     }
-    
+
     [Fact]
     [Trait("Category", "Error")]
     public void TestLackOfRightParenthesesInFunctionStatement()
@@ -1500,7 +1445,7 @@ public class ParserUnitTests
                             main( -> void {
                             }
                             ";
-        
+
         var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
@@ -1508,7 +1453,7 @@ public class ParserUnitTests
         Assert.Equal("Expected RIGHT_PARENTHESES token" +
                      " but received RETURN_ARROW on row 2 and column 35", e.Message);
     }
-    
+
     [Fact]
     [Trait("Category", "Error")]
     public void TestLackOfReturnArrowInFunctionStatement()
@@ -1517,7 +1462,7 @@ public class ParserUnitTests
                             main() > void {
                             }
                             ";
-        
+
         var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
@@ -1525,7 +1470,7 @@ public class ParserUnitTests
         Assert.Equal("Expected RETURN_ARROW token" +
                      " but received GREATER_THAN_OPERATOR on row 2 and column 36", e.Message);
     }
-    
+
     [Fact]
     [Trait("Category", "Error")]
     public void TestLackOfReturnTypeInFunctionStatement()
@@ -1534,7 +1479,7 @@ public class ParserUnitTests
                             main() -> {
                             }
                             ";
-        
+
         var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
@@ -1542,7 +1487,7 @@ public class ParserUnitTests
         Assert.Equal("Expected STRING_TYPE or BOOL_TYPE or VOID_TYPE or LEFT_SQUARE_BRACKET token" +
                      " but received LEFT_CURLY_BRACE on row 2 and column 39", e.Message);
     }
-    
+
     [Fact]
     [Trait("Category", "Error")]
     public void TestLackOfStartingCurlyBraceInFunctionStatement()
@@ -1551,7 +1496,7 @@ public class ParserUnitTests
                             main() -> void
                             }
                             ";
-        
+
         var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
@@ -1559,7 +1504,7 @@ public class ParserUnitTests
         Assert.Equal("Expected LEFT_CURLY_BRACE token" +
                      " but received RIGHT_CURLY_BRACE on row 3 and column 29", e.Message);
     }
-    
+
     [Fact]
     [Trait("Category", "Error")]
     public void TestWrongParameterIdentifierInFunctionStatement()
@@ -1568,7 +1513,7 @@ public class ParserUnitTests
                             myFn(x: [], 5: []) -> void {
                             }
                             ";
-        
+
         var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
@@ -1576,7 +1521,7 @@ public class ParserUnitTests
         Assert.Equal("Expected IDENTIFIER token" +
                      " but received INT on row 2 and column 41", e.Message);
     }
-    
+
     [Fact]
     [Trait("Category", "Error")]
     public void TestLackOfParameterIdentifierInFunctionStatement()
@@ -1585,7 +1530,7 @@ public class ParserUnitTests
                             myFn(x: [], ) -> void {
                             }
                             ";
-        
+
         var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
@@ -1593,7 +1538,7 @@ public class ParserUnitTests
         Assert.Equal("Expected IDENTIFIER token" +
                      " but received RIGHT_PARENTHESES on row 2 and column 41", e.Message);
     }
-    
+
     [Fact]
     [Trait("Category", "Error")]
     public void TestLackOfRightSquareBracketInUnitType()
@@ -1601,7 +1546,7 @@ public class ParserUnitTests
         const string code = @"
                             unit force: [N
                             ";
-        
+
         var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
@@ -1617,7 +1562,7 @@ public class ParserUnitTests
         const string code = @"
                             unit force: [N*]
                             ";
-        
+
         var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
@@ -1625,7 +1570,7 @@ public class ParserUnitTests
         Assert.Equal("Expected IDENTIFIER token" +
                      " but received RIGHT_SQUARE_BRACKET on row 2 and column 44", e.Message);
     }
-    
+
     [Fact]
     [Trait("Category", "Error")]
     public void TestLackIntInUnitPower()
@@ -1633,7 +1578,7 @@ public class ParserUnitTests
         const string code = @"
                             unit force: [N*m^]
                             ";
-        
+
         var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
@@ -1641,7 +1586,7 @@ public class ParserUnitTests
         Assert.Equal("Expected INT token" +
                      " but received RIGHT_SQUARE_BRACKET on row 2 and column 46", e.Message);
     }
-    
+
     [Fact]
     [Trait("Category", "Error")]
     public void TestStringInUnitPower()
@@ -1649,7 +1594,7 @@ public class ParserUnitTests
         const string code = @"
                             unit force: [N*m^s]
                             ";
-        
+
         var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
@@ -1657,7 +1602,7 @@ public class ParserUnitTests
         Assert.Equal("Expected INT token" +
                      " but received IDENTIFIER on row 2 and column 46", e.Message);
     }
-    
+
     [Fact]
     [Trait("Category", "Error")]
     public void TestLackIntInMinusUnitPower()
@@ -1665,7 +1610,7 @@ public class ParserUnitTests
         const string code = @"
                             unit force: [N*m^-true]
                             ";
-        
+
         var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
@@ -1673,7 +1618,7 @@ public class ParserUnitTests
         Assert.Equal("Expected INT token" +
                      " but received TRUE on row 2 and column 47", e.Message);
     }
-    
+
     [Fact]
     [Trait("Category", "Error")]
     public void TestStringInMinusUnitPower()
@@ -1681,7 +1626,7 @@ public class ParserUnitTests
         const string code = @"
                             unit force: [N*m^-s]
                             ";
-        
+
         var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
@@ -1689,7 +1634,7 @@ public class ParserUnitTests
         Assert.Equal("Expected INT token" +
                      " but received IDENTIFIER on row 2 and column 47", e.Message);
     }
-    
+
     [Fact]
     [Trait("Category", "Error")]
     public void TestLackOfRightCurlyBraceInBlock()
@@ -1698,7 +1643,7 @@ public class ParserUnitTests
                             main() -> void {
                             print(a)
                             ";
-        
+
         var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
@@ -1706,7 +1651,7 @@ public class ParserUnitTests
         Assert.Equal("Expected RIGHT_CURLY_BRACE token" +
                      " but received ETX on row 4 and column 29", e.Message);
     }
-    
+
     [Fact]
     [Trait("Category", "Error")]
     public void TestLackOfIdentifierInUnitDeclaration()
@@ -1714,7 +1659,7 @@ public class ParserUnitTests
         const string code = @"
                             unit 5: []
                             ";
-        
+
         var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
@@ -1722,7 +1667,7 @@ public class ParserUnitTests
         Assert.Equal("Expected IDENTIFIER token" +
                      " but received INT on row 2 and column 34", e.Message);
     }
-    
+
     [Fact]
     [Trait("Category", "Error")]
     public void TestLackOfColonInUnitDeclaration()
@@ -1730,7 +1675,7 @@ public class ParserUnitTests
         const string code = @"
                             unit x []
                             ";
-        
+
         var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
@@ -1746,7 +1691,7 @@ public class ParserUnitTests
         const string code = @"
                             unit x: ]
                             ";
-        
+
         var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
@@ -1754,7 +1699,7 @@ public class ParserUnitTests
         Assert.Equal("Expected LEFT_SQUARE_BRACKET token" +
                      " but received RIGHT_SQUARE_BRACKET on row 2 and column 37", e.Message);
     }
-    
+
     [Fact]
     [Trait("Category", "Error")]
     public void TestLackOfLeftParenthesesInFunctionCall()
@@ -1765,7 +1710,7 @@ public class ParserUnitTests
                                 mySecondFn()
                             }
                             ";
-        
+
         var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
@@ -1773,7 +1718,7 @@ public class ParserUnitTests
         Assert.Equal("Expected RIGHT_PARENTHESES token" +
                      " but received IDENTIFIER on row 4 and column 33", e.Message);
     }
-    
+
     [Fact]
     [Trait("Category", "Error")]
     public void TestLackOfExpressionInAssignment()
@@ -1783,7 +1728,7 @@ public class ParserUnitTests
                                 force = 
                             }
                             ";
-        
+
         var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
@@ -1791,7 +1736,7 @@ public class ParserUnitTests
         Assert.Equal("Expected TRUE or FALSE or INT or FLOAT or STRING or IDENTIFIER or LEFT_PARENTHESES token" +
                      " but received RIGHT_CURLY_BRACE on row 4 and column 29", e.Message);
     }
-    
+
     [Fact]
     [Trait("Category", "Error")]
     public void TestLackOfNextArgumentInFunctionCall()
@@ -1801,7 +1746,7 @@ public class ParserUnitTests
                                 f(x,)
                             }
                             ";
-        
+
         var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
@@ -1809,7 +1754,7 @@ public class ParserUnitTests
         Assert.Equal("Expected TRUE or FALSE or INT or FLOAT or STRING or IDENTIFIER or LEFT_PARENTHESES token" +
                      " but received RIGHT_PARENTHESES on row 3 and column 37", e.Message);
     }
-    
+
     [Fact]
     [Trait("Category", "Error")]
     public void TestLackOfParameterInVariableDeclaration()
@@ -1819,7 +1764,7 @@ public class ParserUnitTests
                                let = 5
                             }
                             ";
-        
+
         var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
@@ -1827,7 +1772,7 @@ public class ParserUnitTests
         Assert.Equal("Expected IDENTIFIER token" +
                      " but received ASSIGNMENT_OPERATOR on row 3 and column 36", e.Message);
     }
-    
+
     [Fact]
     [Trait("Category", "Error")]
     public void TestLackOfColonIbParameter()
@@ -1837,7 +1782,7 @@ public class ParserUnitTests
                                let x [] = 5
                             }
                             ";
-        
+
         var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
@@ -1845,7 +1790,7 @@ public class ParserUnitTests
         Assert.Equal("Expected COLON token" +
                      " but received LEFT_SQUARE_BRACKET on row 3 and column 38", e.Message);
     }
-    
+
     [Fact]
     [Trait("Category", "Error")]
     public void TestLackOfAssignOperatorInVariableDeclaration()
@@ -1855,7 +1800,7 @@ public class ParserUnitTests
                                let x: [] 5
                             }
                             ";
-        
+
         var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
@@ -1863,7 +1808,7 @@ public class ParserUnitTests
         Assert.Equal("Expected ASSIGNMENT_OPERATOR token" +
                      " but received INT on row 3 and column 42", e.Message);
     }
-    
+
     [Fact]
     [Trait("Category", "Error")]
     public void TestLackOfExpressionInVariableDeclaration()
@@ -1874,7 +1819,7 @@ public class ParserUnitTests
                                 let y: [] = 5
                             }
                             ";
-        
+
         var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
@@ -1882,8 +1827,8 @@ public class ParserUnitTests
         Assert.Equal("Expected TRUE or FALSE or INT or FLOAT or STRING or IDENTIFIER or LEFT_PARENTHESES token" +
                      " but received LET on row 4 and column 33", e.Message);
     }
-    
-        
+
+
     [Fact]
     [Trait("Category", "Error")]
     public void TestLackOfLeftParenthesesInIf()
@@ -1895,7 +1840,7 @@ public class ParserUnitTests
                                 }
                             }
                             ";
-        
+
         var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
@@ -1903,7 +1848,7 @@ public class ParserUnitTests
         Assert.Equal("Expected LEFT_PARENTHESES token" +
                      " but received RIGHT_PARENTHESES on row 3 and column 35", e.Message);
     }
-    
+
     [Fact]
     [Trait("Category", "Error")]
     public void TestLackOfConditionInIf()
@@ -1915,7 +1860,7 @@ public class ParserUnitTests
                                 }
                             }
                             ";
-        
+
         var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
@@ -1923,7 +1868,7 @@ public class ParserUnitTests
         Assert.Equal("Expected TRUE or FALSE or INT or FLOAT or STRING or IDENTIFIER or LEFT_PARENTHESES token" +
                      " but received RIGHT_PARENTHESES on row 3 and column 36", e.Message);
     }
-    
+
     [Fact]
     [Trait("Category", "Error")]
     public void TestLackOfRightParenthesesInIf()
@@ -1935,7 +1880,7 @@ public class ParserUnitTests
                                 }
                             }
                             ";
-        
+
         var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
@@ -1943,7 +1888,7 @@ public class ParserUnitTests
         Assert.Equal("Expected RIGHT_PARENTHESES token" +
                      " but received LEFT_CURLY_BRACE on row 3 and column 46", e.Message);
     }
-    
+
     [Fact]
     [Trait("Category", "Error")]
     public void TestLackOfStatementsInIf()
@@ -1953,7 +1898,7 @@ public class ParserUnitTests
                                 if(x == true)
                             }
                             ";
-        
+
         var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
@@ -1961,7 +1906,7 @@ public class ParserUnitTests
         Assert.Equal("Expected LEFT_CURLY_BRACE token" +
                      " but received RIGHT_CURLY_BRACE on row 4 and column 29", e.Message);
     }
-    
+
     [Fact]
     [Trait("Category", "Error")]
     public void TestLackOfLeftParenthesesInWhile()
@@ -1973,7 +1918,7 @@ public class ParserUnitTests
                                 }
                             }
                             ";
-        
+
         var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
@@ -1981,7 +1926,7 @@ public class ParserUnitTests
         Assert.Equal("Expected LEFT_PARENTHESES token" +
                      " but received RIGHT_PARENTHESES on row 3 and column 38", e.Message);
     }
-    
+
     [Fact]
     [Trait("Category", "Error")]
     public void TestLackOfConditionInWhile()
@@ -1993,7 +1938,7 @@ public class ParserUnitTests
                                 }
                             }
                             ";
-        
+
         var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>
@@ -2001,7 +1946,7 @@ public class ParserUnitTests
         Assert.Equal("Expected TRUE or FALSE or INT or FLOAT or STRING or IDENTIFIER or LEFT_PARENTHESES token" +
                      " but received RIGHT_PARENTHESES on row 3 and column 39", e.Message);
     }
-    
+
     [Fact]
     [Trait("Category", "Error")]
     public void TestLackOfRightParenthesesInWhile()
@@ -2013,7 +1958,7 @@ public class ParserUnitTests
                                 }
                             }
                             ";
-        
+
         var parser = Helper.PrepareParser(code);
 
         var e = Assert.Throws<ParserException>(() =>

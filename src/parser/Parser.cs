@@ -8,8 +8,7 @@ using si_unit_interpreter.parser.expression.multiplicative;
 using si_unit_interpreter.parser.expression.negate;
 using si_unit_interpreter.parser.statement;
 using si_unit_interpreter.parser.type;
-using si_unit_interpreter.parser.unit.expression;
-using si_unit_interpreter.parser.unit.expression.power;
+using si_unit_interpreter.parser.unit;
 
 namespace si_unit_interpreter.parser;
 
@@ -185,58 +184,53 @@ public class Parser
    {
        if (!_CheckAndConsume(TokenType.LEFT_SQUARE_BRACKET)) return null;
 
-       var unitExpression = TryParseUnitExpression();
+       var units = TryParseUnits();
        
        if (!_CheckAndConsume(TokenType.RIGHT_SQUARE_BRACKET))
        {
            throw new ParserException(new HashSet<TokenType>{ TokenType.RIGHT_SQUARE_BRACKET }, _lexer.Token.Type, _lexer.Token.Position);
        }
 
-       return new UnitType(unitExpression);
+       return new UnitType(units);
    }
 
-   private IUnitExpression? TryParseUnitExpression()
+   private IList<Unit> TryParseUnits()
    {
-       var leftUnitUnaryExpression = TryParseUnitUnaryExpression();
+       var units = new List<Unit>();
+       if (!_TokenIs(TokenType.IDENTIFIER)) return units;
 
-       if (leftUnitUnaryExpression == null) return null;
+       var identifier = _GetValueOfTokenAndPrepareNext();
+       var power = TryParsePower();
+       units.Add(new Unit(identifier, power));
        
        while (_CheckAndConsume(TokenType.MULTIPLICATION_OPERATOR))
        {
-           var rightUnitUnaryExpression = TryParseUnitUnaryExpression();
-           if (rightUnitUnaryExpression == null)
+           if (!_TokenIs(TokenType.IDENTIFIER))
            {
                throw new ParserException(new HashSet<TokenType>{ TokenType.IDENTIFIER }, _lexer.Token.Type, _lexer.Token.Position);
-           }
+           } 
+           identifier = _GetValueOfTokenAndPrepareNext();
+           power = TryParsePower();
            
-           leftUnitUnaryExpression = new UnitExpression(leftUnitUnaryExpression, rightUnitUnaryExpression);
+           units.Add(new Unit(identifier, power));
        }
 
-       return leftUnitUnaryExpression;
+       return units;
    }
 
-   private IUnitExpression? TryParseUnitUnaryExpression()
+   private long TryParsePower()
    {
-       if (!_TokenIs(TokenType.IDENTIFIER)) return null;
+       if (!_CheckAndConsume(TokenType.POWER_OPERATOR)) return 1;
 
-       var identifier = _GetValueOfTokenAndPrepareNext();
-       var unitPower = TryParseUnitPower();
-
-       return new UnitUnaryExpression(identifier, unitPower);
-   }
-
-   private IUnitPower? TryParseUnitPower()
-   {
-       if (!_CheckAndConsume(TokenType.POWER_OPERATOR)) return null;
-
+       long value;
        if (_CheckAndConsume(TokenType.MINUS_OPERATOR))
        {
-           var minusValue = _CheckForIntValueAndGetIt();
-           return new UnitMinusPower(minusValue);
+           value = _CheckForIntValueAndGetIt();
+           return -1 * value;
        }
 
-       var value = _CheckForIntValueAndGetIt();
-       return new UnitPower(value);
+       value = _CheckForIntValueAndGetIt();
+       return value;
    }
 
    private long _CheckForIntValueAndGetIt()
