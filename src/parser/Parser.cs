@@ -649,7 +649,7 @@ public class Parser
        
        var value = _GetValueOfTokenAndPrepareNext();
            
-       var unitType = TryParseUnitType();
+       var unitType = TryParseUnitType() ?? new UnitType(new List<Unit>());
 
        if (value?.GetType().Equals(typeof(long))) return new IntLiteral(value, unitType);
        if (value?.GetType().Equals(typeof(double))) return new FloatLiteral(value, unitType);

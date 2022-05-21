@@ -14,17 +14,18 @@ namespace si_unit_interpreter.semantic_analyzer;
 public class SemanticAnalyzerVisitor : IVisitor
 {
     private readonly LinkedList<SemanticScope> _scopes = new();
-    private readonly Dictionary<string, IType> _functions = new();
+    private readonly Dictionary<string, FunctionStatement> _functions = new();
     private IDictionary<string, UnitType> _units;
     public void Visit(TopLevel element)
     {
+        _units = element.Units;
+
         foreach (var (name, function) in element.Functions)
         {
-            _functions[name] = function.ReturnType;
+            _functions[name] = function;
             function.Accept(this);
         }
 
-        _units = element.Units;
     }
 
     public void Visit(FunctionStatement element)
@@ -51,13 +52,10 @@ public class SemanticAnalyzerVisitor : IVisitor
         {
             throw new VariableRedeclarationException(name);
         }
-        var typeVisitor = new TypeVisitor(_scopes, _functions, _units);
+        var typeVisitor = new TypeAnalyzerVisitor(_scopes, _functions, _units);
         var typeExpression = element.Expression.Accept(typeVisitor);
 
-        if (typeExpression != null)
-        {
-            _CompareTypes(variableType, typeExpression);
-        }
+        typeVisitor.CompareTypes(name, variableType, typeExpression);
         
         _scopes.Last().Variables[name] = variableType;
     }
@@ -184,12 +182,14 @@ public class SemanticAnalyzerVisitor : IVisitor
 
     public void Visit(FunctionCall element)
     {
-        var name = element.Name;
+        throw new NotImplementedException();
 
-        if (!_functions.ContainsKey(name))
-        {
-            throw new FunctionUndeclaredException(name);
-        }
+        // var name = element.Name;
+        //
+        // if (!_functions.ContainsKey(name))
+        // {
+        //     throw new FunctionUndeclaredException(name);
+        // }
     }
 
     public void Visit(Identifier element)
@@ -209,25 +209,5 @@ public class SemanticAnalyzerVisitor : IVisitor
 
     public void Visit(ReturnStatement element)
     {
-    }
-
-    private void _CompareTypes(IType left, IType right)
-    {
-        if (left.GetType() == typeof(UnitType) && right.GetType() == typeof(UnitType))
-        {
-            _CompareUnits((UnitType) left, (UnitType) right);
-        }
-    }
-
-    private void _CompareUnits(UnitType leftUnit, UnitType rightUnit)
-    {
-        foreach (var unit in leftUnit.Units)
-        {
-            var foundUnitInRight = rightUnit.Units.FirstOrDefault(u => unit.Name == u.Name && unit.Power == u.Power) != null;
-            if (!foundUnitInRight)
-            {
-                throw new UnitNotPermittedOperationException(leftUnit.Units, rightUnit.Units);
-            }
-        }
     }
 }

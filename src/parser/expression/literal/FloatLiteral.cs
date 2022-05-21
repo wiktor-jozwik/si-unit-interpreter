@@ -5,9 +5,9 @@ namespace si_unit_interpreter.parser.expression.literal;
 public class FloatLiteral: IExpression
 {
     public readonly double Value;
-    public readonly UnitType? UnitType;
+    public readonly UnitType UnitType;
     
-    public FloatLiteral(double value, UnitType? unitType)
+    public FloatLiteral(double value, UnitType unitType)
     {
         Value = value;
         UnitType = unitType;

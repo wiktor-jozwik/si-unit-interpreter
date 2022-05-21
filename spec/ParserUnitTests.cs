@@ -98,7 +98,9 @@ public class ParserUnitTests
                         new List<Unit>()
                     )
                 ),
-                new IntLiteral(5, null));
+                new IntLiteral(5, new UnitType(
+                    new List<Unit>()
+                )));
 
         JsonConvert.SerializeObject(block.Statements.First())
             .ShouldBe(JsonConvert.SerializeObject(variableDeclaration));
@@ -128,7 +130,11 @@ public class ParserUnitTests
                         new List<Unit>()
                     )
                 ),
-                new FloatLiteral(5e2, null)
+                new FloatLiteral(
+                    5e2, new UnitType(
+                        new List<Unit>()
+                    )
+                )
             );
         JsonConvert.SerializeObject(block.Statements.First())
             .ShouldBe(JsonConvert.SerializeObject(variableDeclaration));
@@ -161,7 +167,9 @@ public class ParserUnitTests
                             new("s", -2)
                         })
                 ),
-                new FloatLiteral(5.23, null)
+                new FloatLiteral(5.23, new UnitType(
+                    new List<Unit>()
+                ))
             );
 
         JsonConvert.SerializeObject(block.Statements.First())
@@ -244,7 +252,9 @@ public class ParserUnitTests
                     ),
                     new IntLiteral(
                         5,
-                        null
+                        new UnitType(
+                            new List<Unit>()
+                        )
                     )
                 )
             );
@@ -279,7 +289,9 @@ public class ParserUnitTests
                     ),
                     new IntLiteral(
                         18,
-                        null
+                        new UnitType(
+                            new List<Unit>()
+                        )
                     )
                 ),
                 new Block(
@@ -302,7 +314,9 @@ public class ParserUnitTests
                                 ),
                                 new IntLiteral(
                                     1,
-                                    null
+                                    new UnitType(
+                                        new List<Unit>()
+                                    )
                                 )
                             )
                         )
@@ -387,7 +401,9 @@ public class ParserUnitTests
                                         {
                                             new IntLiteral(
                                                 1,
-                                                null
+                                                new UnitType(
+                                                    new List<Unit>()
+                                                )
                                             )
                                         }
                                     )
@@ -431,7 +447,9 @@ public class ParserUnitTests
                                                 new MultiplicateExpression(
                                                     new IntLiteral(
                                                         2,
-                                                        null
+                                                        new UnitType(
+                                                            new List<Unit>()
+                                                        )
                                                     ),
                                                     new Identifier("x")
                                                 )
@@ -831,7 +849,9 @@ public class ParserUnitTests
                         ),
                         new IntLiteral(
                             5,
-                            null
+                            new UnitType(
+                                new List<Unit>()
+                            )
                         )
                     ),
                     new SmallerEqualThanExpression(
@@ -840,7 +860,9 @@ public class ParserUnitTests
                         ),
                         new IntLiteral(
                             40,
-                            null
+                            new UnitType(
+                                new List<Unit>()
+                            )
                         )
                     )
                 )
@@ -878,27 +900,37 @@ public class ParserUnitTests
                     new AddExpression(
                         new IntLiteral(
                             2,
-                            null
+                            new UnitType(
+                                new List<Unit>()
+                            )
                         ),
                         new MultiplicateExpression(
                             new IntLiteral(
                                 3,
-                                null
+                                new UnitType(
+                                    new List<Unit>()
+                                )
                             ),
                             new FloatLiteral(
                                 4.2,
-                                null
+                                new UnitType(
+                                    new List<Unit>()
+                                )
                             )
                         )
                     ),
                     new DivideExpression(
                         new FloatLiteral(
                             2e1,
-                            null
+                            new UnitType(
+                                new List<Unit>()
+                            )
                         ),
                         new IntLiteral(
                             8,
-                            null
+                            new UnitType(
+                                new List<Unit>()
+                            )
                         )
                     )
                 )
@@ -936,16 +968,22 @@ public class ParserUnitTests
                     new AddExpression(
                         new IntLiteral(
                             2,
-                            null
+                            new UnitType(
+                                new List<Unit>()
+                            )
                         ),
                         new IntLiteral(
                             3,
-                            null
+                            new UnitType(
+                                new List<Unit>()
+                            )
                         )
                     ),
                     new IntLiteral(
                         4,
-                        null
+                        new UnitType(
+                            new List<Unit>()
+                        )
                     )
                 )
             );
@@ -982,13 +1020,17 @@ public class ParserUnitTests
                         new MinusExpression(
                             new FloatLiteral(
                                 5.5,
-                                null
+                                new UnitType(
+                                    new List<Unit>()
+                                )
                             )
                         ),
                         new MinusExpression(
                             new IntLiteral(
                                 2,
-                                null
+                                new UnitType(
+                                    new List<Unit>()
+                                )
                             )
                         )
                     ),
@@ -1045,7 +1087,9 @@ public class ParserUnitTests
                                 new Identifier("x"),
                                 new IntLiteral(
                                     2,
-                                    null
+                                    new UnitType(
+                                        new List<Unit>()
+                                    )
                                 )
                             ),
                             new Identifier("y")
@@ -1183,7 +1227,9 @@ public class ParserUnitTests
                         ),
                         new FloatLiteral(
                             6.673199999999999e-11,
-                            null
+                            new UnitType(
+                                new List<Unit>()
+                            )
                         )
                     ),
                     new ReturnStatement(
@@ -1224,7 +1270,9 @@ public class ParserUnitTests
                         ),
                         new FloatLiteral(
                             5.9722e24,
-                            null
+                            new UnitType(
+                                new List<Unit>()
+                            )
                         )
                     ),
 
@@ -1239,7 +1287,9 @@ public class ParserUnitTests
                         ),
                         new FloatLiteral(
                             1.989e30,
-                            null
+                            new UnitType(
+                                new List<Unit>()
+                            )
                         )
                     ),
 
@@ -1254,7 +1304,9 @@ public class ParserUnitTests
                         ),
                         new FloatLiteral(
                             149.24e9,
-                            null
+                            new UnitType(
+                                new List<Unit>()
+                            )
                         )
                     ),
 
@@ -1965,5 +2017,20 @@ public class ParserUnitTests
             parser.Parse());
         Assert.Equal("Expected RIGHT_PARENTHESES token" +
                      " but received LEFT_CURLY_BRACE on row 3 and column 49", e.Message);
+    }
+    
+    [Fact]
+    [Trait("Category", "Error")]
+    public void TestUnit()
+    {
+        const string code = @"
+                            unit v: [m/s]
+                            ";
+
+        var parser = Helper.PrepareParser(code);
+        var e = Assert.Throws<ParserException>(() =>
+            parser.Parse());
+        Assert.Equal("Expected RIGHT_SQUARE_BRACKET token" +
+                     " but received DIVISION_OPERATOR on row 2 and column 39", e.Message);
     }
 }

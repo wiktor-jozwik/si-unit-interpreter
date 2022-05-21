@@ -20,6 +20,6 @@ public class FunctionCall: IExpression
 
     public IType Accept(IVisitor<IType> visitor)
     {
-        throw new NotImplementedException();
+        return visitor.Visit(this);
     }
 }

@@ -29,17 +29,17 @@
   - `let q: bool = false`
 
 - Zmienne korzystające z jednostki SI
-  - `let duration: [s] = 5`
-  - `let mass: [kg] = 10`
+  - `let duration: [s] = 5 [s]`
+  - `let mass: [kg] = 10 [kg]`
 
 - Zmienne tworzone przy użyciu złożonych jednostek SI
-  - `let speed: [m*s^-1] = 10`
-  - `let force: [kg*m*s^-2] = 270`
+  - `let speed: [m*s^-1] = 10 [m*s^-1]`
+  - `let force: [kg*m*s^-2] = 270 [kg*m*s^-2]`
 
 - Zmienne tworzone przy użyciu zdefiniowanych jednostek przez użytkownika
   ``` 
   unit N: [kg*m*s^-2]
-  let force: [N] = 270
+  let force: [N] = 270 [N]
   ```
 
 - Przykłady operacji na zmiennych z typami jednostek
@@ -53,11 +53,11 @@
   - ```
     unit J: [kg*m^2*s^-2]
       
-    let mass: [kg] = 10
-    let duration: [s] = 10
-    let distance: [m] = 20
+    let mass: [kg] = 10 [kg]
+    let duration: [s] = 10 [s]
+    let distance: [m] = 20 [m]
       
-    let speed: [m*s^-1] = length / duration
+    let speed: [m*s^-1] = distance / duration
     let energy: [J] = mass * speed*speed / 2
 
     ```
@@ -81,7 +81,7 @@
     let i: [] = 10
   
     while (i > 0) {
-      let speed: [m*s^-1] = 10 * i
+      let speed: [m*s^-1] = 10 [m*s^-1] * i
       print(speed)
       i = i-1
     }
@@ -136,9 +136,9 @@
   }
 
 
-  let earthMass: [kg] = 5.9722e24
-  let sunMass: [kg] = 1.989e30
-  let earthSunDistance: [m] = 149.24e9
+  let earthMass: [kg] = 5.9722e24 [kg]
+  let sunMass: [kg] = 1.989e30 [kg]
+  let earthSunDistance: [m] = 149.24e9 [m]
   
   let gForce: [N] = calculateGForce(earthMass, sunMass, earthSunDistance)
   
@@ -151,14 +151,17 @@
 
 ### Niewłaściwe użycia
 - ```
-  let duration: [s] = 5
-  let length: [m] = 10
+  let duration: [s] = 5 [s]
+  let length: [m] = 10 [m]
     
-  let speed: [m*s^-1] = duration / length // TypeError: 'duration / length' leads to [s*m^-1] type and does not match required [m*s^-1] type.
+  let speed: [m*s^-1] = duration / length // TypeError: [s*m^-1] type does not match required [m*s^-1] type.
   ```
 - ```
-  let s1: [m] = 20
-  let t1: [s] = 10
+  let duration: [s] = 5 // TypeError: [] type does not match required [s] type.
+  ```
+- ```
+  let s1: [m] = 5 [m]
+  let t1: [s] = 10 [s]
     
   let v: [] = s1 - t1 // OperationError: unsupported operand '-' for [m] and [s].
   ```
@@ -178,16 +181,14 @@
   }
   ```
 - ```
-  let v: [m*s^-1] = 10
+  let v: [m*s^-1] = 10 [m*s^-1]
     
   if (v > 5) {
     code block
   } // OperationError: cannot compare [m*s^-1] and [].
   ```
-- ```
-  let v: [m*s^-1] = 10
-  
-  if (v > 5) {
+- ```  
+  if (10 [m*s^-1] > 5) {
     code block
   } // OperationError: cannot compare [m*s^-1] and [].
   ```
@@ -198,7 +199,7 @@
   ```
 - ```
   let x: [] = 5
-  let mass: [kg] = 10
+  let mass: [kg] = 10 [kg]
   let y: [] = x - mass // OperationError: unsupported operand '-' for [] and [kg]
   ```
 - ```

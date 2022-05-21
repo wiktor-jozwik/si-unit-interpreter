@@ -1,3 +1,4 @@
+using si_unit_interpreter.exceptions.semantic_analyzer;
 using si_unit_interpreter.parser;
 using si_unit_interpreter.parser.expression;
 using si_unit_interpreter.parser.expression.additive;
@@ -8,17 +9,16 @@ using si_unit_interpreter.parser.expression.negate;
 using si_unit_interpreter.parser.statement;
 using si_unit_interpreter.parser.type;
 using si_unit_interpreter.parser.unit;
-using si_unit_interpreter.semantic_analyzer;
 
-namespace si_unit_interpreter;
+namespace si_unit_interpreter.semantic_analyzer;
 
-public class TypeVisitor: IVisitor<IType>
+public class TypeAnalyzerVisitor: IVisitor<IType>
 {
     private readonly LinkedList<SemanticScope> _scopes;
-    private readonly Dictionary<string, IType> _functions;
+    private readonly Dictionary<string, FunctionStatement> _functions;
     private readonly IDictionary<string, UnitType> _units;
 
-    public TypeVisitor(LinkedList<SemanticScope> scopes, Dictionary<string, IType> functions, IDictionary<string, UnitType> units)
+    public TypeAnalyzerVisitor(LinkedList<SemanticScope> scopes, Dictionary<string, FunctionStatement> functions, IDictionary<string, UnitType> units)
     {
         _scopes = scopes;
         _functions = functions;
@@ -71,12 +71,32 @@ public class TypeVisitor: IVisitor<IType>
     }
     public IType Visit(AddExpression element)
     {
-        throw new NotImplementedException();
+        var leftType = element.Left.Accept(this);
+        var rightType = element.Right.Accept(this);
+        if (leftType.GetType() == typeof(UnitType) && rightType.GetType() == typeof(UnitType))
+        {
+            CheckOperation(leftType, "+", rightType);
+            
+            // As leftType and rightType are the same we can return either
+            return leftType;
+        }
+
+        throw new Exception();
     }
 
     public IType Visit(SubtractExpression element)
     {
-        throw new NotImplementedException();
+        var leftType = element.Left.Accept(this);
+        var rightType = element.Right.Accept(this);
+        if (leftType.GetType() == typeof(UnitType) && rightType.GetType() == typeof(UnitType))
+        {
+            CheckOperation(leftType, "-", rightType);
+            
+            // As leftType and rightType are the same we can return either
+            return leftType;
+        }
+
+        throw new Exception();
     }
 
     public IType Visit(EqualExpression element)
@@ -183,7 +203,22 @@ public class TypeVisitor: IVisitor<IType>
 
     public IType Visit(FunctionCall element)
     {
-        throw new NotImplementedException();
+        var name = element.Name;
+        
+        if (_functions.TryGetValue(name, out var function))
+        {
+            var expectedNumberOfArguments = function.Parameters.Count;
+            var passedNumberOfArguments = element.Arguments.Count;
+            if (passedNumberOfArguments != expectedNumberOfArguments)
+            {
+                throw new WrongNumberOfArgumentsException(name, expectedNumberOfArguments, passedNumberOfArguments);
+            }
+
+            CompareArguments(element.Arguments, function.Parameters);            
+            
+            return function.ReturnType;
+        }
+        throw new FunctionUndeclaredException(name);
     }
 
     public IType Visit(Identifier element)
@@ -209,6 +244,19 @@ public class TypeVisitor: IVisitor<IType>
         throw new NotImplementedException();
     }
 
+    public void CompareTypes(string name, IType left, IType right)
+    {
+        if (left.GetType() == typeof(UnitType) && right.GetType() == typeof(UnitType))
+        {
+            var leftUnit = (UnitType) left;
+            var rightUnit = (UnitType) right;
+            if (!_AreUnitsTheSame(leftUnit, rightUnit))
+            {
+                throw new TypeMismatchException(name, leftUnit, rightUnit);
+            }
+        }
+    }
+    
     private static UnitType JoinTwoUnits(IList<Unit> leftUnits, IList<Unit> rightUnits)
     {
         var units = new List<Unit>();
@@ -234,5 +282,70 @@ public class TypeVisitor: IVisitor<IType>
         units.AddRange(rightUnits);
 
         return new UnitType(units);
+    }
+    
+    private void CompareArguments(IEnumerable<IExpression> passedArguments, IEnumerable<Parameter> expectedParameters)
+    {
+        foreach (var (passedArg, expectedParameter) in passedArguments.Zip(expectedParameters))
+        {
+            var passedType = passedArg.Accept(this);
+            var expectedType = expectedParameter.Type;
+            
+            CompareTypes(expectedParameter.Name, expectedType, passedType);
+        }
+    }
+
+    private void CheckOperation(IType left, string operation, IType right)
+    {
+        if (left.GetType() == typeof(UnitType) && right.GetType() == typeof(UnitType))
+        {
+            var leftUnit = (UnitType) left;
+            var rightUnit = (UnitType) right;
+            if (!_AreUnitsTheSame(leftUnit, rightUnit))
+            {
+                throw new UnpermittedOperationException(leftUnit, operation, rightUnit);
+            }
+        }
+    }
+
+    private bool _AreUnitsTheSame(UnitType leftUnit, UnitType rightUnit)
+    {
+        var evaluatedLeftUnits = _EvaluateUnit(leftUnit);        
+        var evaluatedRightUnits = _EvaluateUnit(rightUnit);        
+        
+        if (evaluatedLeftUnits.Count != evaluatedRightUnits.Count)
+        {
+            return false;
+        }
+        
+        foreach (var unit in evaluatedLeftUnits)
+        {
+            var foundUnitInRight = evaluatedRightUnits.FirstOrDefault(u => unit.Name == u.Name && unit.Power == u.Power) != null;
+            // var foundUnitInDeclaredUnits = _units.ContainsKey(unit.Name);
+            if (!foundUnitInRight)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private List<Unit> _EvaluateUnit(UnitType unitType)
+    {
+        var units = new List<Unit>();
+        foreach (var unit in unitType.Units)
+        {
+            if (_units.TryGetValue(unit.Name, out var foundUnitInDeclared))
+            {
+                units.AddRange(foundUnitInDeclared.Units);
+            }
+            else
+            {
+                units.Add(unit);
+            }
+        }
+
+        return units;
     }
 }
