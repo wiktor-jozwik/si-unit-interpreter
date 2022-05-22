@@ -4,6 +4,6 @@ public class VoidType : IType
 {
     public string Format()
     {
-        return "string";
+        return "void";
     }
 }

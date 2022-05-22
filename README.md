@@ -149,6 +149,17 @@
   printGForceInLoop(gForce, i, shouldPrint, printText)
   ```
 
+### Właściwie operacje
+- same_unit + - == != > < >= <= same_unit
+- unit / * unit
+
+- string + string
+- string == != string
+
+- bool || && != == bool 
+- !bool
+- -unit
+
 ### Niewłaściwe użycia
 - ```
   let duration: [s] = 5 [s]

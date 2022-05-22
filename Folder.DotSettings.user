@@ -4,32 +4,35 @@
   &lt;Assembly Path="/Users/jozek/.nuget/packages/mstest.testframework/2.2.10/lib/net5.0/Microsoft.VisualStudio.TestPlatform.TestFramework.dll" /&gt;
 &lt;/AssemblyExplorer&gt;</s:String>
 	<s:String x:Key="/Default/Environment/Highlighting/HighlightingSourceSnapshotLocation/@EntryValue">/Users/jozek/Library/Caches/JetBrains/Rider2021.3/resharper-host/temp/Rider/vAny/CoverageData/_.19/Snapshot/snapshot.utdcvr</s:String>
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=355260ee_002Df4a7_002D47e6_002D92fe_002D048cf1a91bfe/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="TestFunctionCallsNumberOfParameters" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=e73104ca_002Dbea4_002D4a67_002Da19d_002Dc6e5d4e4c51b/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="SemanticAnalyzerUnitTests" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
   &lt;TestAncestor&gt;
-    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.SemanticAnalyzerUnitTests.TestFunctionCallsWrongTypesOfArguments&lt;/TestId&gt;
-    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.SemanticAnalyzerUnitTests.TestFunctionCallsWrongTypesOfArgumentsWhenExpressionInvalid&lt;/TestId&gt;
-    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.SemanticAnalyzerUnitTests.TestFunctionCallsWrongNumberOfArguments&lt;/TestId&gt;
-    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.SemanticAnalyzerUnitTests.TestUnitOperationWithFunctionCallInvalid2&lt;/TestId&gt;
-    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.SemanticAnalyzerUnitTests.TestUnitOperationWithFunctionCallInvalid&lt;/TestId&gt;
-    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.SemanticAnalyzerUnitTests.TestUnitOperationWithFunctionCallValid&lt;/TestId&gt;
-    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.SemanticAnalyzerUnitTests.TestUnitAddOperationWhenOneUnitDeclaredUnitIsOnRight&lt;/TestId&gt;
-    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.SemanticAnalyzerUnitTests.TestUnitAddOperationWhenOneUnitIsAsAliasWithErrors&lt;/TestId&gt;
-    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.SemanticAnalyzerUnitTests.TestUnitAddOperationWhenOneUnitIsAsAlias&lt;/TestId&gt;
-    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.SemanticAnalyzerUnitTests.TestCoreUnitOperationsWithInlineDeclarationsWithError&lt;/TestId&gt;
-    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.SemanticAnalyzerUnitTests.TestCoreUnitOperationsWithInlineDeclarations&lt;/TestId&gt;
-    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.SemanticAnalyzerUnitTests.TestCoreUnitOperationsWithErrors2&lt;/TestId&gt;
-    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.SemanticAnalyzerUnitTests.TestCoreUnitOperationsWithErrors&lt;/TestId&gt;
-    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.SemanticAnalyzerUnitTests.TestCoreUnitOperations&lt;/TestId&gt;
-    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.SemanticAnalyzerUnitTests.TestUnitOperationWhichLeadToScalarOnRightSideInvalid&lt;/TestId&gt;
-    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.SemanticAnalyzerUnitTests.TestUnitOperationWithScalarOnLeftValid&lt;/TestId&gt;
-    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.SemanticAnalyzerUnitTests.TestUnitOperationWithScalarOnLeftInvalid&lt;/TestId&gt;
-    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.SemanticAnalyzerUnitTests.TestOperationMultiplicationAndDivisionOfUnits&lt;/TestId&gt;
-    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.SemanticAnalyzerUnitTests.TestInvalidVariableDeclarationWithUnitMismatch&lt;/TestId&gt;
-    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.SemanticAnalyzerUnitTests.TestOperationIntAndBool&lt;/TestId&gt;
-    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.SemanticAnalyzerUnitTests.TestFunctionUndeclaredInFunction&lt;/TestId&gt;
-    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.SemanticAnalyzerUnitTests.TestVariableUndeclaredInWhileCondition&lt;/TestId&gt;
+    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.SemanticAnalyzerUnitTests&lt;/TestId&gt;
   &lt;/TestAncestor&gt;
 &lt;/SessionState&gt;</s:String>
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	
 	
