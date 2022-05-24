@@ -4,12 +4,16 @@
   &lt;Assembly Path="/Users/jozek/.nuget/packages/mstest.testframework/2.2.10/lib/net5.0/Microsoft.VisualStudio.TestPlatform.TestFramework.dll" /&gt;
 &lt;/AssemblyExplorer&gt;</s:String>
 	<s:String x:Key="/Default/Environment/Highlighting/HighlightingSourceSnapshotLocation/@EntryValue">/Users/jozek/Library/Caches/JetBrains/Rider2021.3/resharper-host/temp/Rider/vAny/CoverageData/_.19/Snapshot/snapshot.utdcvr</s:String>
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=87917c03_002D06be_002D45fc_002D9e0a_002D59cbad3aebe4/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="SemanticAnalyzerUnitTests" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=b969cd67_002D87e0_002D417a_002Db05d_002D9e92d944e003/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="SemanticAnalyzerUnitTests" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
   &lt;TestAncestor&gt;
     &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.SemanticAnalyzerUnitTests&lt;/TestId&gt;
     &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.ParserUnitTests&lt;/TestId&gt;
   &lt;/TestAncestor&gt;
 &lt;/SessionState&gt;</s:String>
+	
+	
+	
+	
 	
 	
 	

@@ -3,14 +3,14 @@ using si_unit_interpreter.parser.type;
 
 namespace si_unit_interpreter.parser.statement;
 
-public class AssignStatement: IVisitable<IType>, IStatement
+public class AssignStatement: ITypeCheck, IStatement
 {
-    public readonly string Name;
+    public readonly Identifier Identifier;
     public readonly IExpression Expression;
 
-    public AssignStatement(string name, IExpression expression)
+    public AssignStatement(Identifier identifier, IExpression expression)
     {
-        Name = name;
+        Identifier = identifier;
         Expression = expression;
     }
     

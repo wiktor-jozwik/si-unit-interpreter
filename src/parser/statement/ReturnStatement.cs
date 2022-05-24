@@ -3,7 +3,7 @@ using si_unit_interpreter.parser.type;
 
 namespace si_unit_interpreter.parser.statement;
 
-public class ReturnStatement: IVisitable<IType>, IStatement
+public class ReturnStatement: ITypeCheck, IStatement
 {
     public readonly IExpression? Expression;
 

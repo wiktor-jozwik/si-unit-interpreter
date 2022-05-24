@@ -227,7 +227,7 @@ public class SemanticAnalyzerUnitTests
         var semanticAnalyzer = new SemanticAnalyzerVisitor();
         semanticAnalyzer.Visit(program);
     }
-    
+
     [Fact]
     public void TestRedeclareSameVariableAsParameter()
     {
@@ -249,7 +249,7 @@ public class SemanticAnalyzerUnitTests
             semanticAnalyzer.Visit(program));
         Assert.Equal("'zzz' is already declared", e.Message);
     }
-    
+
     [Fact]
     public void TestRedeclareSameVariableAsParameterInIf()
     {
@@ -273,7 +273,7 @@ public class SemanticAnalyzerUnitTests
             semanticAnalyzer.Visit(program));
         Assert.Equal("'var' is already declared", e.Message);
     }
-    
+
     [Fact]
     public void TestRedeclareSameVariableAsParameterInElseIf()
     {
@@ -298,7 +298,7 @@ public class SemanticAnalyzerUnitTests
             semanticAnalyzer.Visit(program));
         Assert.Equal("'varElseIf' is already declared", e.Message);
     }
-    
+
     [Fact]
     public void TestRedeclareSameVariableAsParameterInElse()
     {
@@ -892,7 +892,7 @@ public class SemanticAnalyzerUnitTests
             semanticAnalyzer.Visit(program));
         Assert.Equal("'getLength' function was invoked with 1 argument(s) but expected 2 argument(s)", e.Message);
     }
-    
+
     [Fact]
     public void TestSameVariables()
     {
@@ -1973,14 +1973,13 @@ public class SemanticAnalyzerUnitTests
             semanticAnalyzer.Visit(program));
         Assert.Equal("'myFn' return requires [] type but returned [m]", e.Message);
     }
-    
+
     [Fact]
     public void TestReAssigningValid()
     {
         const string code = @"
                             myFn() -> [m] {
                                 return 10 [m]
-                                }
                             }
                             main() -> void {
                                 let y: [m] = myFn()
@@ -1994,14 +1993,35 @@ public class SemanticAnalyzerUnitTests
         var semanticAnalyzer = new SemanticAnalyzerVisitor();
         semanticAnalyzer.Visit(program);
     }
-    
+
+    [Fact]
+    public void TestNotValidReAssigningWithVariable()
+    {
+        const string code = @"
+                            myFn() -> [m] {
+                                return 10 [m]
+                            }
+                            main() -> void {
+                                let meter: [m] = myFn()
+                                let z: [mol] = 20 [mol]
+                                meter = z
+                            }";
+
+        var parser = Helper.PrepareParser(code);
+        var program = parser.Parse();
+
+        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var e = Assert.Throws<TypeMismatchException>(() =>
+            semanticAnalyzer.Visit(program));
+        Assert.Equal("'meter' requires [m] type but received [mol]", e.Message);
+    }
+
     [Fact]
     public void TestReAssigningUnits()
     {
         const string code = @"
                             myFn() -> [m] {
                                 return 10 [m]
-                                }
                             }
                             main() -> void {
                                 let y: [m] = myFn()
@@ -2016,14 +2036,13 @@ public class SemanticAnalyzerUnitTests
             semanticAnalyzer.Visit(program));
         Assert.Equal("'y' requires [m] type but received []", e.Message);
     }
-    
+
     [Fact]
     public void TestReAssigningStringsNotValid()
     {
         const string code = @"
                             myFn() -> string {
                                 return ""test""
-                                }
                             }
                             main() -> void {
                                 let str: string = myFn()
@@ -2038,7 +2057,7 @@ public class SemanticAnalyzerUnitTests
             semanticAnalyzer.Visit(program));
         Assert.Equal("'str' requires string type but received bool", e.Message);
     }
-    
+
     [Fact]
     public void TestReAssigningStringsValid()
     {
@@ -2058,7 +2077,7 @@ public class SemanticAnalyzerUnitTests
         var semanticAnalyzer = new SemanticAnalyzerVisitor();
         semanticAnalyzer.Visit(program);
     }
-    
+
     [Fact]
     public void TestReAssigningBooleansNotValid()
     {
@@ -2079,7 +2098,7 @@ public class SemanticAnalyzerUnitTests
             semanticAnalyzer.Visit(program));
         Assert.Equal("'boolean' requires bool type but received []", e.Message);
     }
-    
+
     [Fact]
     public void TestReAssigningBooleansValid()
     {

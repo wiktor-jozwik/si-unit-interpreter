@@ -342,7 +342,7 @@ public class Parser
            throw new ParserException(_expressionTokenSet, _lexer.Token.Type, _lexer.Token.Position);
        }
 
-       return new AssignStatement(identifier, expression);
+       return new AssignStatement(new Identifier(identifier), expression);
    }
    
    private List<IExpression> TryParseArguments()

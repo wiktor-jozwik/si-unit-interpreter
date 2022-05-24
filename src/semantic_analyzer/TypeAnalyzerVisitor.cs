@@ -25,7 +25,7 @@ public class TypeAnalyzerVisitor : IVisitor<IType>
         _functionCallContext = functionCallContext;
         _functions = functions;
         _units = units;
-        
+
         // init SI units
         _defaultSiUnits = new Dictionary<string, UnitType>()
         {
@@ -39,44 +39,35 @@ public class TypeAnalyzerVisitor : IVisitor<IType>
         };
     }
 
-    public IType Visit(TopLevel element)
-    {
-        throw new NotImplementedException();
-    }
-
-    public IType Visit(FunctionStatement element)
-    {
-        throw new NotImplementedException();
-    }
-
-    public IType Visit(Block element)
-    {
-        throw new NotImplementedException();
-    }
-
     public IType Visit(VariableDeclaration element)
     {
-        throw new NotImplementedException();
-    }
+        var name = element.Parameter.Name;
+        var variableType = element.Parameter.Type;
 
-    public IType Visit(IfStatement element)
-    {
-        throw new NotImplementedException();
-    }
+        if (
+            _functionCallContext.Scopes.Any(scope => scope.Variables.Any(variables => variables.Key.Contains(name))) ||
+            _functionCallContext.Parameters.Any(param => param.Key.Contains(name))
+        )
+        {
+            throw new VariableRedeclarationException(name);
+        }
 
-    public IType Visit(ElseIfStatement element)
-    {
-        throw new NotImplementedException();
-    }
+        var typeVisitor = new TypeAnalyzerVisitor(_functionCallContext, _functions, _units);
+        var typeExpression = element.Expression.Accept(typeVisitor);
 
-    public IType Visit(WhileStatement element)
-    {
-        throw new NotImplementedException();
+        typeVisitor.CompareTypes(name, variableType, typeExpression);
+
+        return variableType;
     }
 
     public IType Visit(AssignStatement element)
     {
-        throw new NotImplementedException();
+        var variableType = element.Identifier.Accept(this);
+        var typeExpression = element.Expression.Accept(this);
+
+        CompareTypes(element.Identifier.Name, variableType, typeExpression);
+
+        return variableType;
     }
 
     public IType Visit(ReturnStatement element)
@@ -87,8 +78,8 @@ public class TypeAnalyzerVisitor : IVisitor<IType>
         {
             throw new FunctionUndeclaredException(functionName);
         }
-        var functionReturnType = function.ReturnType;
 
+        var functionReturnType = function.ReturnType;
         var returnedType = element.Expression == null ? new VoidType() : element.Expression.Accept(this);
 
         if (returnedType.GetType() == typeof(UnitType) && functionReturnType.GetType() == typeof(UnitType))
@@ -103,15 +94,107 @@ public class TypeAnalyzerVisitor : IVisitor<IType>
         {
             throw new NotValidReturnTypeException(functionName, functionReturnType, returnedType);
         }
-        
+
         return returnedType;
+    }
+
+    public IType Visit(Expression element)
+    {
+        // only valid for two booleans
+
+        var leftType = element.Left.Accept(this);
+        var rightType = element.Right.Accept(this);
+
+        if (_IsBool(leftType) && _IsBool(rightType)) return leftType;
+
+        throw new UnpermittedOperationException(leftType, "||", rightType);
+    }
+
+    public IType Visit(LogicFactor element)
+    {
+        // only valid for two booleans
+
+        var leftType = element.Left.Accept(this);
+        var rightType = element.Right.Accept(this);
+
+        if (_IsBool(leftType) && _IsBool(rightType)) return leftType;
+
+        throw new UnpermittedOperationException(leftType, "&&", rightType);
+    }
+
+    public IType Visit(EqualExpression element)
+    {
+        // only valid for two same units or two booleans or two strings
+
+        var leftType = element.Left.Accept(this);
+        var rightType = element.Right.Accept(this);
+        if (_CheckIfValidTypesForEquality(leftType, rightType)) return new BoolType();
+
+        throw new UnpermittedOperationException(leftType, "==", rightType);
+    }
+
+    public IType Visit(NotEqualExpression element)
+    {
+        // only valid for two same units or two booleans or two strings
+
+        var leftType = element.Left.Accept(this);
+        var rightType = element.Right.Accept(this);
+        if (_CheckIfValidTypesForEquality(leftType, rightType)) return new BoolType();
+
+        throw new UnpermittedOperationException(leftType, "!=", rightType);
+    }
+
+    public IType Visit(GreaterEqualThanExpression element)
+    {
+        // only valid for two same units
+
+        var leftType = element.Left.Accept(this);
+        var rightType = element.Right.Accept(this);
+        if (_CheckIfValidTypesForComparison(leftType, rightType)) return new BoolType();
+
+        throw new UnpermittedOperationException(leftType, ">=", rightType);
+    }
+
+    public IType Visit(GreaterThanExpression element)
+    {
+        // only valid for two same units
+
+        var leftType = element.Left.Accept(this);
+        var rightType = element.Right.Accept(this);
+        if (_CheckIfValidTypesForComparison(leftType, rightType)) return new BoolType();
+
+        throw new UnpermittedOperationException(leftType, ">", rightType);
+    }
+
+    public IType Visit(SmallerEqualThanExpression element)
+    {
+        // only valid for two same units
+
+        var leftType = element.Left.Accept(this);
+        var rightType = element.Right.Accept(this);
+        if (_CheckIfValidTypesForComparison(leftType, rightType)) return new BoolType();
+
+        throw new UnpermittedOperationException(leftType, "<=", rightType);
+    }
+
+    public IType Visit(SmallerThanExpression element)
+    {
+        // only valid for two same units
+
+        var leftType = element.Left.Accept(this);
+        var rightType = element.Right.Accept(this);
+        if (_CheckIfValidTypesForComparison(leftType, rightType)) return new BoolType();
+
+        throw new UnpermittedOperationException(leftType, "<", rightType);
     }
 
     public IType Visit(AddExpression element)
     {
+        // only valid for two same units or two strings
+
         var leftType = element.Left.Accept(this);
         var rightType = element.Right.Accept(this);
-        if (leftType.GetType() == typeof(UnitType) && rightType.GetType() == typeof(UnitType))
+        if (_IsUnit(leftType) && _IsUnit(rightType))
         {
             var leftUnits = (UnitType) leftType;
             var rightUnits = (UnitType) rightType;
@@ -123,7 +206,7 @@ public class TypeAnalyzerVisitor : IVisitor<IType>
             return leftType;
         }
 
-        if (leftType.GetType() == typeof(StringType) && rightType.GetType() == typeof(StringType))
+        if (_IsString(leftType) && _IsString(rightType))
         {
             return leftType;
         }
@@ -133,9 +216,11 @@ public class TypeAnalyzerVisitor : IVisitor<IType>
 
     public IType Visit(SubtractExpression element)
     {
+        // only valid for two same units
+
         var leftType = element.Left.Accept(this);
         var rightType = element.Right.Accept(this);
-        if (leftType.GetType() == typeof(UnitType) && rightType.GetType() == typeof(UnitType))
+        if (_IsUnit(leftType) && _IsUnit(rightType))
         {
             var leftUnits = (UnitType) leftType;
             var rightUnits = (UnitType) rightType;
@@ -150,58 +235,112 @@ public class TypeAnalyzerVisitor : IVisitor<IType>
         throw new UnpermittedOperationException(leftType, "-", rightType);
     }
 
-    public IType Visit(EqualExpression element)
+    public IType Visit(MultiplicateExpression element)
     {
+        // only valid for two units
+
         var leftType = element.Left.Accept(this);
         var rightType = element.Right.Accept(this);
-        if (_CheckIfValidTypesForEquality(leftType, rightType)) return new BoolType();
 
-        throw new UnpermittedOperationException(leftType, "==", rightType);
+        if (_IsUnit(leftType) && _IsUnit(rightType))
+        {
+            var leftUnits = (UnitType) leftType;
+            var rightUnits = (UnitType) rightType;
+
+            var expressionUnits = _CloneUnitList(leftUnits);
+            var divideByUnits = _CloneUnitList(rightUnits);
+            
+            return _JoinTwoUnits(expressionUnits, divideByUnits);
+        }
+
+        throw new UnpermittedOperationException(leftType, "*", rightType);
     }
 
-    public IType Visit(GreaterEqualThanExpression element)
+    public IType Visit(DivideExpression element)
     {
+        // only valid for two units
+
         var leftType = element.Left.Accept(this);
         var rightType = element.Right.Accept(this);
-        if (_CheckIfValidTypesForComparison(leftType, rightType)) return new BoolType();
 
-        throw new UnpermittedOperationException(leftType, ">=", rightType);
+        if (_IsUnit(leftType) && _IsUnit(rightType))
+        {
+            var leftUnits = (UnitType) leftType;
+            var rightUnits = (UnitType) rightType;
+
+            var expressionUnits = _CloneUnitList(leftUnits);
+            var divideByUnits = _CloneUnitList(rightUnits);
+
+            foreach (var rightUnit in divideByUnits)
+            {
+                rightUnit.Power *= -1;
+            }
+
+            return _JoinTwoUnits(expressionUnits, divideByUnits);
+        }
+
+        throw new UnpermittedOperationException(leftType, "/", rightType);
     }
 
-    public IType Visit(GreaterThanExpression element)
+    public IType Visit(NotExpression element)
     {
-        var leftType = element.Left.Accept(this);
-        var rightType = element.Right.Accept(this);
-        if (_CheckIfValidTypesForComparison(leftType, rightType)) return new BoolType();
+        // only valid for a boolean
 
-        throw new UnpermittedOperationException(leftType, ">", rightType);
+        var type = element.Child.Accept(this);
+        if (_IsBool(type)) return type;
+
+        throw new UnpermittedOperationException(type, "!");
     }
 
-    public IType Visit(NotEqualExpression element)
+    public IType Visit(MinusExpression element)
     {
-        var leftType = element.Left.Accept(this);
-        var rightType = element.Right.Accept(this);
-        if (_CheckIfValidTypesForEquality(leftType, rightType)) return new BoolType();
+        // Operator -
+        // only valid for a unit
 
-        throw new UnpermittedOperationException(leftType, "!=", rightType);
+        var type = element.Child.Accept(this);
+        if (_IsUnit(type)) return type;
+
+        throw new UnpermittedOperationException(type, "-");
     }
 
-    public IType Visit(SmallerEqualThanExpression element)
+    public IType Visit(Identifier element)
     {
-        var leftType = element.Left.Accept(this);
-        var rightType = element.Right.Accept(this);
-        if (_CheckIfValidTypesForComparison(leftType, rightType)) return new BoolType();
+        var name = element.Name;
+        foreach (var scope in _functionCallContext.Scopes)
+        {
+            if (scope.Variables.TryGetValue(name, out var type))
+            {
+                return type;
+            }
+        }
 
-        throw new UnpermittedOperationException(leftType, "<=", rightType);
+        if (_functionCallContext.Parameters.TryGetValue(name, out var parameterType))
+        {
+            return parameterType;
+        }
+
+        throw new VariableUndeclaredException(name);
     }
 
-    public IType Visit(SmallerThanExpression element)
+    public IType Visit(FunctionCall element)
     {
-        var leftType = element.Left.Accept(this);
-        var rightType = element.Right.Accept(this);
-        if (_CheckIfValidTypesForComparison(leftType, rightType)) return new BoolType();
+        var name = element.Name;
 
-        throw new UnpermittedOperationException(leftType, "<", rightType);
+        if (_functions.TryGetValue(name, out var function))
+        {
+            var expectedNumberOfArguments = function.Parameters.Count;
+            var passedNumberOfArguments = element.Arguments.Count;
+            if (passedNumberOfArguments != expectedNumberOfArguments)
+            {
+                throw new WrongNumberOfArgumentsException(name, expectedNumberOfArguments, passedNumberOfArguments);
+            }
+
+            _CompareArguments(element.Arguments, function.Parameters);
+
+            return function.ReturnType;
+        }
+
+        throw new FunctionUndeclaredException(name);
     }
 
     public IType Visit(BoolLiteral element)
@@ -224,136 +363,49 @@ public class TypeAnalyzerVisitor : IVisitor<IType>
         return new StringType();
     }
 
-    public IType Visit(DivideExpression element)
-    {
-        var leftType = element.Left.Accept(this);
-        var rightType = element.Right.Accept(this);
-
-        if (leftType.GetType() == typeof(UnitType) && rightType.GetType() == typeof(UnitType))
-        {
-            var leftUnits = (UnitType) leftType;
-            var rightUnits = (UnitType) rightType;
-
-            var expressionUnits = leftUnits.Units.Select(u => u.Clone()).ToList();
-            var divideByUnits = rightUnits.Units.Select(u => u.Clone()).ToList();
-
-            foreach (var rightUnit in divideByUnits)
-            {
-                rightUnit.Power *= -1;
-            }
-
-            return JoinTwoUnits(expressionUnits, divideByUnits);
-        }
-
-        throw new UnpermittedOperationException(leftType, "/", rightType);
-    }
-
-    public IType Visit(MultiplicateExpression element)
-    {
-        var leftType = element.Left.Accept(this);
-        var rightType = element.Right.Accept(this);
-
-        if (leftType.GetType() == typeof(UnitType) && rightType.GetType() == typeof(UnitType))
-        {
-            var leftUnits = (UnitType) leftType;
-            var rightUnits = (UnitType) rightType;
-
-            var expressionUnits = leftUnits.Units.Select(u => u.Clone()).ToList();
-            var divideByUnits = rightUnits.Units.Select(u => u.Clone()).ToList();
-
-            return JoinTwoUnits(expressionUnits, divideByUnits);
-        }
-
-        throw new UnpermittedOperationException(leftType, "*", rightType);
-    }
-
-    public IType Visit(MinusExpression element)
-    {
-        var type = element.Child.Accept(this);
-        if (_CheckTypeOfLiteral(type, typeof(UnitType))) return type;
-
-        throw new UnpermittedOperationException(type, "-");
-    }
-
-    public IType Visit(NotExpression element)
-    {
-        var type = element.Child.Accept(this);
-        if (_CheckTypeOfLiteral(type, typeof(BoolType))) return type;
-
-        throw new UnpermittedOperationException(type, "!");
-    }
-
-    public IType Visit(Expression element)
-    {
-        var leftType = element.Left.Accept(this);
-        var rightType = element.Right.Accept(this);
-
-        if (leftType.GetType() == typeof(BoolType) && rightType.GetType() == typeof(BoolType)) return leftType;
-
-        throw new UnpermittedOperationException(leftType, "||", rightType);
-    }
-
-    public IType Visit(FunctionCall element)
-    {
-        var name = element.Name;
-
-        if (_functions.TryGetValue(name, out var function))
-        {
-            var expectedNumberOfArguments = function.Parameters.Count;
-            var passedNumberOfArguments = element.Arguments.Count;
-            if (passedNumberOfArguments != expectedNumberOfArguments)
-            {
-                throw new WrongNumberOfArgumentsException(name, expectedNumberOfArguments, passedNumberOfArguments);
-            }
-
-            CompareArguments(element.Arguments, function.Parameters);
-
-            return function.ReturnType;
-        }
-
-        throw new FunctionUndeclaredException(name);
-    }
-
-    public IType Visit(Identifier element)
-    {
-        var name = element.Name;
-        foreach (var scope in _functionCallContext.Scopes)
-        {
-            if (scope.Variables.TryGetValue(name, out var type))
-            {
-                return type;
-            }
-        }
-        
-        if (_functionCallContext.Parameters.TryGetValue(name, out var parameterType))
-        {
-            return parameterType;
-        }
-
-        throw new VariableUndeclaredException(name);
-    }
-
-    public IType Visit(LogicFactor element)
-    {
-        var leftType = element.Left.Accept(this);
-        var rightType = element.Right.Accept(this);
-
-        if (leftType.GetType() == typeof(BoolType) && rightType.GetType() == typeof(BoolType)) return leftType;
-
-        throw new UnpermittedOperationException(leftType, "&&", rightType);
-    }
-
     public IType Visit(Parameter element)
     {
         throw new NotImplementedException();
     }
 
-    public void CompareTypes(string name, IType left, IType right)
+    public IType Visit(TopLevel element)
     {
-        if (left.GetType() == typeof(UnitType) && right.GetType() == typeof(UnitType))
+        throw new NotImplementedException();
+    }
+
+    public IType Visit(FunctionStatement element)
+    {
+        throw new NotImplementedException();
+    }
+
+    public IType Visit(Block element)
+    {
+        throw new NotImplementedException();
+    }
+
+    public IType Visit(IfStatement element)
+    {
+        throw new NotImplementedException();
+    }
+
+    public IType Visit(ElseIfStatement element)
+    {
+        throw new NotImplementedException();
+    }
+
+    public IType Visit(WhileStatement element)
+    {
+        throw new NotImplementedException();
+    }
+
+    // private methods
+
+    private void CompareTypes(string name, IType leftType, IType rightType)
+    {
+        if (_IsUnit(leftType) && _IsUnit(rightType))
         {
-            var leftUnit = (UnitType) left;
-            var rightUnit = (UnitType) right;
+            var leftUnit = (UnitType) leftType;
+            var rightUnit = (UnitType) rightType;
             if (!_AreUnitsTheSame(leftUnit, rightUnit))
             {
                 throw new TypeMismatchException(name, leftUnit, rightUnit);
@@ -362,13 +414,18 @@ public class TypeAnalyzerVisitor : IVisitor<IType>
             return;
         }
 
-        if (left.GetType() == typeof(BoolType) && right.GetType() == typeof(BoolType)) return;
-        if (left.GetType() == typeof(StringType) && right.GetType() == typeof(StringType)) return;
+        if (_IsBool(leftType) && _IsBool(rightType)) return;
+        if (_IsString(leftType) && _IsString(rightType)) return;
 
-        throw new TypeMismatchException(name, left, right);
+        throw new TypeMismatchException(name, leftType, rightType);
     }
 
-    private static UnitType JoinTwoUnits(IList<Unit> leftUnits, IList<Unit> rightUnits)
+    private static List<Unit> _CloneUnitList(UnitType unitType)
+    {
+        return unitType.Units.Select(u => u.Clone()).ToList();
+    }
+
+    private static UnitType _JoinTwoUnits(IList<Unit> leftUnits, IList<Unit> rightUnits)
     {
         var units = new List<Unit>();
 
@@ -396,7 +453,7 @@ public class TypeAnalyzerVisitor : IVisitor<IType>
         return new UnitType(units);
     }
 
-    private void CompareArguments(IEnumerable<IExpression> passedArguments, IEnumerable<Parameter> expectedParameters)
+    private void _CompareArguments(IEnumerable<IExpression> passedArguments, IEnumerable<Parameter> expectedParameters)
     {
         foreach (var (passedArg, expectedParameter) in passedArguments.Zip(expectedParameters))
         {
@@ -407,7 +464,27 @@ public class TypeAnalyzerVisitor : IVisitor<IType>
         }
     }
 
-    public bool _AreUnitsTheSame(UnitType leftUnit, UnitType rightUnit)
+    private bool _CheckIfValidTypesForComparison(IType leftType, IType rightType)
+    {
+        if (_IsUnit(leftType) && _IsUnit(rightType))
+        {
+            return _AreUnitsTheSame((UnitType) leftType, (UnitType) rightType);
+        }
+
+        return false;
+    }
+
+    private bool _CheckIfValidTypesForEquality(IType leftType, IType rightType)
+    {
+        if (_IsUnit(leftType) && _IsUnit(rightType))
+        {
+            return _AreUnitsTheSame((UnitType) leftType, (UnitType) rightType);
+        }
+
+        return _IsBool(leftType) && _IsBool(rightType) || _IsString(leftType) && _IsString(rightType);
+    }
+
+    private bool _AreUnitsTheSame(UnitType leftUnit, UnitType rightUnit)
     {
         var evaluatedLeftUnits = _EvaluateUnit(leftUnit);
         var evaluatedRightUnits = _EvaluateUnit(rightUnit);
@@ -452,45 +529,18 @@ public class TypeAnalyzerVisitor : IVisitor<IType>
         return units;
     }
 
-    private bool _CheckIfValidTypesForComparison(IType leftType, IType rightType)
+    private static bool _IsUnit(IType type)
     {
-        if (leftType.GetType() == typeof(UnitType) && rightType.GetType() == typeof(UnitType))
-        {
-            var leftUnits = (UnitType) leftType;
-            var rightUnits = (UnitType) rightType;
-            return _AreUnitsTheSame(leftUnits, rightUnits);
-        }
-
-        return false;
+        return type.GetType() == typeof(UnitType);
     }
 
-    private bool _CheckIfValidTypesForEquality(IType leftType, IType rightType)
+    private static bool _IsString(IType type)
     {
-        if (_CheckTypeOfLiteral(leftType, typeof(UnitType)) &&
-            _CheckTypeOfLiteral(rightType, typeof(UnitType)))
-        {
-            var leftUnits = (UnitType) leftType;
-            var rightUnits = (UnitType) rightType;
-            return _AreUnitsTheSame(leftUnits, rightUnits);
-        }
-
-        if (_CheckTypeOfLiteral(leftType, typeof(BoolType)) &&
-            _CheckTypeOfLiteral(rightType, typeof(BoolType)))
-        {
-            return true;
-        }
-
-        if (_CheckTypeOfLiteral(leftType, typeof(StringType)) &&
-            _CheckTypeOfLiteral(rightType, typeof(StringType)))
-        {
-            return true;
-        }
-
-        return false;
+        return type.GetType() == typeof(StringType);
     }
 
-    private static bool _CheckTypeOfLiteral(IType actualType, Type expectedType)
+    private static bool _IsBool(IType type)
     {
-        return actualType.GetType() == expectedType;
+        return type.GetType() == typeof(BoolType);
     }
 }

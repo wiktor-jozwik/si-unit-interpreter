@@ -1,8 +1,9 @@
 using si_unit_interpreter.parser.expression;
+using si_unit_interpreter.parser.type;
 
 namespace si_unit_interpreter.parser.statement;
 
-public class VariableDeclaration: IStatement
+public class VariableDeclaration: ITypeCheck, IStatement
 {
     public readonly Parameter Parameter;
     public readonly IExpression Expression;
@@ -16,5 +17,10 @@ public class VariableDeclaration: IStatement
     public void Accept(IVisitor visitor)
     {
         visitor.Visit(this);
+    }
+
+    public IType Accept(IVisitor<IType> visitor)
+    {
+        return visitor.Visit(this);
     }
 }

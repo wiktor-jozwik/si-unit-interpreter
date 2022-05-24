@@ -307,7 +307,7 @@ public class ParserUnitTests
                             }
                         ),
                         new AssignStatement(
-                            "y",
+                            new Identifier("y"),
                             new AddExpression(
                                 new Identifier(
                                     "y"
@@ -427,9 +427,9 @@ public class ParserUnitTests
                                 3.5,
                                 new UnitType(
                                     new List<Unit>
-                                {
-                                    new("N"),
-                                })
+                                    {
+                                        new("N"),
+                                    })
                             )
                         ),
                         new Block(
@@ -467,9 +467,9 @@ public class ParserUnitTests
                                 0,
                                 new UnitType(
                                     new List<Unit>
-                                {
-                                    new("N"),
-                                })
+                                    {
+                                        new("N"),
+                                    })
                             )
                         ),
                         new Block(
@@ -538,9 +538,9 @@ public class ParserUnitTests
                 "mass",
                 new UnitType(
                     new List<Unit>
-                {
-                    new("kg"),
-                })
+                    {
+                        new("kg"),
+                    })
             );
 
         var secondParameterExpected =
@@ -548,10 +548,10 @@ public class ParserUnitTests
                 "speed",
                 new UnitType(
                     new List<Unit>
-                {
-                    new("m"),
-                    new("s", -1)
-                })
+                    {
+                        new("m"),
+                        new("s", -1)
+                    })
             );
 
         var thirdParameterExpected =
@@ -565,9 +565,9 @@ public class ParserUnitTests
         var returnTypeExpected =
             new UnitType(
                 new List<Unit>
-            {
-                new("J"),
-            });
+                {
+                    new("J"),
+                });
 
         block.Statements.Count.ShouldBe(1);
         var returnStatement = (ReturnStatement) block.Statements.First();
@@ -617,11 +617,11 @@ public class ParserUnitTests
         var unitsExpected =
             new UnitType(
                 new List<Unit>
-            {
-                new("kg"),
-                new("m"),
-                new("s", -2)
-            });
+                {
+                    new("kg"),
+                    new("m"),
+                    new("s", -2)
+                });
 
         JsonConvert.SerializeObject(units)
             .ShouldBe(JsonConvert.SerializeObject(unitsExpected));
@@ -2018,7 +2018,7 @@ public class ParserUnitTests
         Assert.Equal("Expected RIGHT_PARENTHESES token" +
                      " but received LEFT_CURLY_BRACE on row 3 and column 49", e.Message);
     }
-    
+
     [Fact]
     [Trait("Category", "Error")]
     public void TestUnit()
