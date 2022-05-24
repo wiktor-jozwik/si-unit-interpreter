@@ -11,11 +11,6 @@ public class Identifier: IExpression
         Name = name;
     }
 
-    public void Accept(IVisitor visitor)
-    {
-        visitor.Visit(this);
-    }
-
     public IType Accept(IVisitor<IType> visitor)
     {
         return visitor.Visit(this);

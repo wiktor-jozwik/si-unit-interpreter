@@ -1973,4 +1973,126 @@ public class SemanticAnalyzerUnitTests
             semanticAnalyzer.Visit(program));
         Assert.Equal("'myFn' return requires [] type but returned [m]", e.Message);
     }
+    
+    [Fact]
+    public void TestReAssigningValid()
+    {
+        const string code = @"
+                            myFn() -> [m] {
+                                return 10 [m]
+                                }
+                            }
+                            main() -> void {
+                                let y: [m] = myFn()
+                                let z: [m] = 20 [m]
+                                y = z
+                            }";
+
+        var parser = Helper.PrepareParser(code);
+        var program = parser.Parse();
+
+        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        semanticAnalyzer.Visit(program);
+    }
+    
+    [Fact]
+    public void TestReAssigningUnits()
+    {
+        const string code = @"
+                            myFn() -> [m] {
+                                return 10 [m]
+                                }
+                            }
+                            main() -> void {
+                                let y: [m] = myFn()
+                                y = 5
+                            }";
+
+        var parser = Helper.PrepareParser(code);
+        var program = parser.Parse();
+
+        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var e = Assert.Throws<TypeMismatchException>(() =>
+            semanticAnalyzer.Visit(program));
+        Assert.Equal("'y' requires [m] type but received []", e.Message);
+    }
+    
+    [Fact]
+    public void TestReAssigningStringsNotValid()
+    {
+        const string code = @"
+                            myFn() -> string {
+                                return ""test""
+                                }
+                            }
+                            main() -> void {
+                                let str: string = myFn()
+                                str = true
+                            }";
+
+        var parser = Helper.PrepareParser(code);
+        var program = parser.Parse();
+
+        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var e = Assert.Throws<TypeMismatchException>(() =>
+            semanticAnalyzer.Visit(program));
+        Assert.Equal("'str' requires string type but received bool", e.Message);
+    }
+    
+    [Fact]
+    public void TestReAssigningStringsValid()
+    {
+        const string code = @"
+                            myFn() -> string {
+                                return ""test""
+                                }
+                            }
+                            main() -> void {
+                                let str: string = myFn()
+                                str = ""new test""
+                            }";
+
+        var parser = Helper.PrepareParser(code);
+        var program = parser.Parse();
+
+        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        semanticAnalyzer.Visit(program);
+    }
+    
+    [Fact]
+    public void TestReAssigningBooleansNotValid()
+    {
+        const string code = @"
+                            getUnit() -> [] {
+                                return 20
+                            }
+                            main() -> void {
+                                let boolean: bool = true
+                                boolean = getUnit()
+                            }";
+
+        var parser = Helper.PrepareParser(code);
+        var program = parser.Parse();
+
+        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var e = Assert.Throws<TypeMismatchException>(() =>
+            semanticAnalyzer.Visit(program));
+        Assert.Equal("'boolean' requires bool type but received []", e.Message);
+    }
+    
+    [Fact]
+    public void TestReAssigningBooleansValid()
+    {
+        const string code = @"
+                            main() -> void {
+                                let boolean: bool = false
+                                boolean = true
+                            }";
+
+        var parser = Helper.PrepareParser(code);
+        var program = parser.Parse();
+
+        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        semanticAnalyzer.Visit(program);
+    }
 }

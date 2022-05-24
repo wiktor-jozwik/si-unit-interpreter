@@ -14,19 +14,18 @@ namespace si_unit_interpreter.semantic_analyzer;
 
 public class TypeAnalyzerVisitor : IVisitor<IType>
 {
-    private readonly LinkedList<SemanticScope> _scopes;
-    private readonly SemanticScope _functionParameters;
+    private readonly FunctionCallContext _functionCallContext;
     private readonly Dictionary<string, FunctionStatement> _functions;
     private readonly IDictionary<string, UnitType> _units;
     private readonly IDictionary<string, UnitType> _defaultSiUnits;
 
-    public TypeAnalyzerVisitor(LinkedList<SemanticScope> scopes, SemanticScope functionParameters, Dictionary<string, FunctionStatement> functions,
+    public TypeAnalyzerVisitor(FunctionCallContext functionCallContext, Dictionary<string, FunctionStatement> functions,
         IDictionary<string, UnitType> units)
     {
-        _scopes = scopes;
-        _functionParameters = functionParameters;
+        _functionCallContext = functionCallContext;
         _functions = functions;
         _units = units;
+        
         // init SI units
         _defaultSiUnits = new Dictionary<string, UnitType>()
         {
@@ -82,7 +81,30 @@ public class TypeAnalyzerVisitor : IVisitor<IType>
 
     public IType Visit(ReturnStatement element)
     {
-        throw new NotImplementedException();
+        var functionName = _functionCallContext.FunctionName;
+
+        if (!_functions.TryGetValue(functionName, out var function))
+        {
+            throw new FunctionUndeclaredException(functionName);
+        }
+        var functionReturnType = function.ReturnType;
+
+        var returnedType = element.Expression == null ? new VoidType() : element.Expression.Accept(this);
+
+        if (returnedType.GetType() == typeof(UnitType) && functionReturnType.GetType() == typeof(UnitType))
+        {
+            if (!_AreUnitsTheSame((UnitType) functionReturnType, (UnitType) returnedType))
+            {
+                throw new NotValidReturnTypeException(functionName, functionReturnType, returnedType);
+            }
+        }
+
+        if (returnedType.GetType() != functionReturnType.GetType())
+        {
+            throw new NotValidReturnTypeException(functionName, functionReturnType, returnedType);
+        }
+        
+        return returnedType;
     }
 
     public IType Visit(AddExpression element)
@@ -295,7 +317,7 @@ public class TypeAnalyzerVisitor : IVisitor<IType>
     public IType Visit(Identifier element)
     {
         var name = element.Name;
-        foreach (var scope in _scopes)
+        foreach (var scope in _functionCallContext.Scopes)
         {
             if (scope.Variables.TryGetValue(name, out var type))
             {
@@ -303,7 +325,7 @@ public class TypeAnalyzerVisitor : IVisitor<IType>
             }
         }
         
-        if (_functionParameters.Variables.TryGetValue(name, out var parameterType))
+        if (_functionCallContext.Parameters.TryGetValue(name, out var parameterType))
         {
             return parameterType;
         }

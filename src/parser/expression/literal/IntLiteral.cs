@@ -12,12 +12,6 @@ public class IntLiteral: IExpression
         Value = value;
         UnitType = unitType;
     }
-
-    public void Accept(IVisitor visitor)
-    {
-        visitor.Visit(this);
-    }
-
     public IType Accept(IVisitor<IType> visitor)
     {
         return visitor.Visit(this);
