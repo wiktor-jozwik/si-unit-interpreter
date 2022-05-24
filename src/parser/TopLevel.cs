@@ -3,7 +3,7 @@ using si_unit_interpreter.parser.type;
 
 namespace si_unit_interpreter.parser;
 
-public class TopLevel: IStatement
+public class TopLevel : IStatement
 {
     public readonly IDictionary<string, FunctionStatement> Functions;
     public readonly IDictionary<string, UnitType> Units;
@@ -11,7 +11,7 @@ public class TopLevel: IStatement
     public TopLevel(
         IDictionary<string, FunctionStatement> functions,
         IDictionary<string, UnitType> units
-        )
+    )
     {
         Functions = functions;
         Units = units;

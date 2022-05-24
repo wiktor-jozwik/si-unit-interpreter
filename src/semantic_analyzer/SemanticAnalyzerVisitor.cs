@@ -101,7 +101,7 @@ public class SemanticAnalyzerVisitor : IVisitor
         var typeVisitor = new TypeAnalyzerVisitor(_functionCallContext, _functions, _units);
         element.Accept(typeVisitor);
     }
-    
+
     public void Visit(Parameter element)
     {
         _functionCallContext.Parameters[element.Name] = element.Type;

@@ -12,6 +12,7 @@ public struct Token
         Position = position;
         Value = value;
     }
+
     public Token(TokenType type, TokenPosition position)
     {
         Type = type;
@@ -28,7 +29,7 @@ public struct TokenPosition
 public enum TokenType
 {
     IDENTIFIER,
-    
+
     // Keywords
     WHILE,
     IF,
@@ -36,9 +37,9 @@ public enum TokenType
     RETURN,
     LET,
     UNIT,
-    
+
     // Single char
-    
+
     // = + - / * > < ^ !
     ASSIGNMENT_OPERATOR,
     PLUS_OPERATOR,
@@ -49,7 +50,7 @@ public enum TokenType
     SMALLER_THAN_OPERATOR,
     POWER_OPERATOR,
     NEGATE_OPERATOR,
-    
+
     // Multi char
 
     // () [] {}
@@ -58,14 +59,14 @@ public enum TokenType
 
     LEFT_SQUARE_BRACKET,
     RIGHT_SQUARE_BRACKET,
-    
+
     LEFT_CURLY_BRACE,
     RIGHT_CURLY_BRACE,
-    
+
     // ',' ':'
     COLON,
     COMMA,
-    
+
     // || && >= <= == != ->
     OR_OPERATOR,
     AND_OPERATOR,
@@ -73,7 +74,7 @@ public enum TokenType
     SMALLER_EQUAL_THAN_OPERATOR,
     EQUAL_OPERATOR,
     NOT_EQUAL_OPERATOR,
-    
+
     RETURN_ARROW,
 
     // '//'
@@ -85,7 +86,7 @@ public enum TokenType
     STRING,
     TRUE,
     FALSE,
-    
+
     // Types
     STRING_TYPE,
     BOOL_TYPE,
@@ -93,7 +94,7 @@ public enum TokenType
 
     // End of file/text
     ETX,
-    
+
     INVALID,
     UNKNOWN
 }

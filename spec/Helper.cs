@@ -11,10 +11,10 @@ public static class Helper
     {
         var byteArray = Encoding.UTF8.GetBytes(text);
         var stream = new MemoryStream(byteArray);
-        
+
         return new StreamReader(stream);
     }
-    
+
     public static Parser PrepareParser(string code)
     {
         var lexer = new CommentFilteredLexer(GetStreamReaderFromString(code));
@@ -26,5 +26,4 @@ public static class Helper
     {
         return topLevel.Functions["main"].Statements;
     }
-
 }

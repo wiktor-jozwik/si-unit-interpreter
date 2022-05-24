@@ -2,7 +2,7 @@ using si_unit_interpreter.parser.type;
 
 namespace si_unit_interpreter.parser.expression;
 
-public class Expression: IExpression
+public class Expression : IExpression
 {
     public readonly IExpression Left;
     public readonly IExpression Right;

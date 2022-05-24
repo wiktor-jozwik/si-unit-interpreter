@@ -2,7 +2,7 @@ using si_unit_interpreter.parser.type;
 
 namespace si_unit_interpreter.parser.statement;
 
-public class FunctionStatement: IStatement
+public class FunctionStatement : IStatement
 {
     public readonly IList<Parameter> Parameters;
     public readonly IType ReturnType;

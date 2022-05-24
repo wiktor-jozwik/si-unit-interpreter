@@ -3,7 +3,7 @@ using si_unit_interpreter.parser.type;
 
 namespace si_unit_interpreter.parser.statement;
 
-public class ReturnStatement: ITypeCheck, IStatement
+public class ReturnStatement : ITypeCheck, IStatement
 {
     public readonly IExpression? Expression;
 
@@ -11,7 +11,7 @@ public class ReturnStatement: ITypeCheck, IStatement
     {
         Expression = expression;
     }
-    
+
     public void Accept(IVisitor visitor)
     {
         visitor.Visit(this);

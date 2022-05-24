@@ -249,7 +249,7 @@ public class TypeAnalyzerVisitor : IVisitor<IType>
 
             var expressionUnits = _CloneUnitList(leftUnits);
             var divideByUnits = _CloneUnitList(rightUnits);
-            
+
             return _JoinTwoUnits(expressionUnits, divideByUnits);
         }
 

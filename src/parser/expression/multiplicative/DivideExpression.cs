@@ -2,7 +2,7 @@ using si_unit_interpreter.parser.type;
 
 namespace si_unit_interpreter.parser.expression.multiplicative;
 
-public class DivideExpression: IExpression
+public class DivideExpression : IExpression
 {
     public readonly IExpression Left;
     public readonly IExpression Right;
@@ -12,6 +12,7 @@ public class DivideExpression: IExpression
         Left = left;
         Right = right;
     }
+
     public IType Accept(IVisitor<IType> visitor)
     {
         return visitor.Visit(this);

@@ -2,7 +2,7 @@ using si_unit_interpreter.parser.type;
 
 namespace si_unit_interpreter.parser.expression.negate;
 
-public class MinusExpression: IExpression
+public class MinusExpression : IExpression
 {
     public readonly IExpression Child;
 

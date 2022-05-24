@@ -3,7 +3,7 @@ using si_unit_interpreter.parser.unit;
 
 namespace si_unit_interpreter.parser.type;
 
-public class UnitType: IType
+public class UnitType : IType
 {
     public IList<Unit> Units;
 
@@ -11,11 +11,11 @@ public class UnitType: IType
     {
         Units = units;
     }
-    
+
     public string Format()
     {
         var unitStringBuilder = new StringBuilder();
-        
+
         foreach (var unit in Units)
         {
             var power = "";
@@ -23,6 +23,7 @@ public class UnitType: IType
             {
                 power = $"^{unit.Power}";
             }
+
             unitStringBuilder.Append($"{unit.Name}{power}*");
         }
 
