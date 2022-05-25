@@ -3,23 +3,24 @@ using si_unit_interpreter.parser.expression;
 using si_unit_interpreter.parser.statement;
 using si_unit_interpreter.parser.type;
 
-namespace si_unit_interpreter.semantic_analyzer;
+namespace si_unit_interpreter.interpreter.semantic_analyzer;
 
 public class SemanticAnalyzerVisitor : IVisitor
 {
-    private readonly FunctionCallContext _functionCallContext = new();
+    private readonly SemanticFunctionCallContext _semanticFunctionCallContext = new();
 
     private readonly Dictionary<string, FunctionStatement> _functions = new();
     private IDictionary<string, UnitType> _units = new Dictionary<string, UnitType>();
 
+    // public SemanticAnalyzerVisitor(funtions )
     public void Visit(TopLevel element)
     {
         _units = element.Units;
 
         foreach (var (name, function) in element.Functions)
         {
-            _functionCallContext.FunctionName = name;
-            _functionCallContext.Parameters = new Dictionary<string, IType>();
+            _semanticFunctionCallContext.FunctionName = name;
+            _semanticFunctionCallContext.Parameters = new Dictionary<string, IType>();
 
             _functions[name] = function;
             function.Accept(this);
@@ -38,26 +39,26 @@ public class SemanticAnalyzerVisitor : IVisitor
 
     public void Visit(Block element)
     {
-        _functionCallContext.Scopes.AddLast(new SemanticScope());
+        _semanticFunctionCallContext.Scopes.AddLast(new SemanticScope());
         foreach (var statement in element.Statements)
         {
             statement.Accept(this);
         }
 
-        _functionCallContext.Scopes.RemoveLast();
+        _semanticFunctionCallContext.Scopes.RemoveLast();
     }
 
     public void Visit(VariableDeclaration element)
     {
-        var typeVisitor = new TypeAnalyzerVisitor(_functionCallContext, _functions, _units);
+        var typeVisitor = new TypeAnalyzerVisitor(_semanticFunctionCallContext, _functions, _units);
         var variableType = element.Accept(typeVisitor);
 
-        _functionCallContext.Scopes.Last().Variables[element.Parameter.Name] = variableType;
+        _semanticFunctionCallContext.Scopes.Last().Variables[element.Parameter.Name] = variableType;
     }
 
     public void Visit(IfStatement element)
     {
-        var typeVisitor = new TypeAnalyzerVisitor(_functionCallContext, _functions, _units);
+        var typeVisitor = new TypeAnalyzerVisitor(_semanticFunctionCallContext, _functions, _units);
 
         element.Condition.Accept(typeVisitor);
         element.Statements.Accept(this);
@@ -78,7 +79,7 @@ public class SemanticAnalyzerVisitor : IVisitor
 
     public void Visit(WhileStatement element)
     {
-        var typeVisitor = new TypeAnalyzerVisitor(_functionCallContext, _functions, _units);
+        var typeVisitor = new TypeAnalyzerVisitor(_semanticFunctionCallContext, _functions, _units);
 
         element.Condition.Accept(typeVisitor);
         element.Statements.Accept(this);
@@ -86,24 +87,24 @@ public class SemanticAnalyzerVisitor : IVisitor
 
     public void Visit(AssignStatement element)
     {
-        var typeVisitor = new TypeAnalyzerVisitor(_functionCallContext, _functions, _units);
+        var typeVisitor = new TypeAnalyzerVisitor(_semanticFunctionCallContext, _functions, _units);
         element.Accept(typeVisitor);
     }
 
     public void Visit(FunctionCall element)
     {
-        var typeVisitor = new TypeAnalyzerVisitor(_functionCallContext, _functions, _units);
+        var typeVisitor = new TypeAnalyzerVisitor(_semanticFunctionCallContext, _functions, _units);
         element.Accept(typeVisitor);
     }
 
     public void Visit(ReturnStatement element)
     {
-        var typeVisitor = new TypeAnalyzerVisitor(_functionCallContext, _functions, _units);
+        var typeVisitor = new TypeAnalyzerVisitor(_semanticFunctionCallContext, _functions, _units);
         element.Accept(typeVisitor);
     }
 
     public void Visit(Parameter element)
     {
-        _functionCallContext.Parameters[element.Name] = element.Type;
+        _semanticFunctionCallContext.Parameters[element.Name] = element.Type;
     }
 }

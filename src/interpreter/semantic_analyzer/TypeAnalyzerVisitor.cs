@@ -1,4 +1,5 @@
 using si_unit_interpreter.exceptions.semantic_analyzer;
+using si_unit_interpreter.interpreter.utils;
 using si_unit_interpreter.parser;
 using si_unit_interpreter.parser.expression;
 using si_unit_interpreter.parser.expression.additive;
@@ -10,19 +11,19 @@ using si_unit_interpreter.parser.statement;
 using si_unit_interpreter.parser.type;
 using si_unit_interpreter.parser.unit;
 
-namespace si_unit_interpreter.semantic_analyzer;
+namespace si_unit_interpreter.interpreter.semantic_analyzer;
 
 public class TypeAnalyzerVisitor : IVisitor<IType>
 {
-    private readonly FunctionCallContext _functionCallContext;
+    private readonly SemanticFunctionCallContext _semanticFunctionCallContext;
     private readonly Dictionary<string, FunctionStatement> _functions;
     private readonly IDictionary<string, UnitType> _units;
     private readonly IDictionary<string, UnitType> _defaultSiUnits;
 
-    public TypeAnalyzerVisitor(FunctionCallContext functionCallContext, Dictionary<string, FunctionStatement> functions,
+    public TypeAnalyzerVisitor(SemanticFunctionCallContext semanticFunctionCallContext, Dictionary<string, FunctionStatement> functions,
         IDictionary<string, UnitType> units)
     {
-        _functionCallContext = functionCallContext;
+        _semanticFunctionCallContext = semanticFunctionCallContext;
         _functions = functions;
         _units = units;
 
@@ -45,17 +46,16 @@ public class TypeAnalyzerVisitor : IVisitor<IType>
         var variableType = element.Parameter.Type;
 
         if (
-            _functionCallContext.Scopes.Any(scope => scope.Variables.Any(variables => variables.Key.Contains(name))) ||
-            _functionCallContext.Parameters.Any(param => param.Key.Contains(name))
+            _semanticFunctionCallContext.Scopes.Any(scope => scope.Variables.Any(variables => variables.Key.Contains(name))) ||
+            _semanticFunctionCallContext.Parameters.Any(param => param.Key.Contains(name))
         )
         {
             throw new VariableRedeclarationException(name);
         }
 
-        var typeVisitor = new TypeAnalyzerVisitor(_functionCallContext, _functions, _units);
-        var typeExpression = element.Expression.Accept(typeVisitor);
+        var typeExpression = element.Expression.Accept(this);
 
-        typeVisitor.CompareTypes(name, variableType, typeExpression);
+        CompareTypes(name, variableType, typeExpression);
 
         return variableType;
     }
@@ -72,7 +72,7 @@ public class TypeAnalyzerVisitor : IVisitor<IType>
 
     public IType Visit(ReturnStatement element)
     {
-        var functionName = _functionCallContext.FunctionName;
+        var functionName = _semanticFunctionCallContext.FunctionName;
 
         if (!_functions.TryGetValue(functionName, out var function))
         {
@@ -105,7 +105,7 @@ public class TypeAnalyzerVisitor : IVisitor<IType>
         var leftType = element.Left.Accept(this);
         var rightType = element.Right.Accept(this);
 
-        if (_IsBool(leftType) && _IsBool(rightType)) return leftType;
+        if (TypeChecker._IsBool(leftType) && TypeChecker._IsBool(rightType)) return leftType;
 
         throw new UnpermittedOperationException(leftType, "||", rightType);
     }
@@ -117,7 +117,7 @@ public class TypeAnalyzerVisitor : IVisitor<IType>
         var leftType = element.Left.Accept(this);
         var rightType = element.Right.Accept(this);
 
-        if (_IsBool(leftType) && _IsBool(rightType)) return leftType;
+        if (TypeChecker._IsBool(leftType) && TypeChecker._IsBool(rightType)) return leftType;
 
         throw new UnpermittedOperationException(leftType, "&&", rightType);
     }
@@ -194,7 +194,7 @@ public class TypeAnalyzerVisitor : IVisitor<IType>
 
         var leftType = element.Left.Accept(this);
         var rightType = element.Right.Accept(this);
-        if (_IsUnit(leftType) && _IsUnit(rightType))
+        if (TypeChecker._IsUnit(leftType) && TypeChecker._IsUnit(rightType))
         {
             var leftUnits = (UnitType) leftType;
             var rightUnits = (UnitType) rightType;
@@ -206,7 +206,7 @@ public class TypeAnalyzerVisitor : IVisitor<IType>
             return leftType;
         }
 
-        if (_IsString(leftType) && _IsString(rightType))
+        if (TypeChecker._IsString(leftType) && TypeChecker._IsString(rightType))
         {
             return leftType;
         }
@@ -220,7 +220,7 @@ public class TypeAnalyzerVisitor : IVisitor<IType>
 
         var leftType = element.Left.Accept(this);
         var rightType = element.Right.Accept(this);
-        if (_IsUnit(leftType) && _IsUnit(rightType))
+        if (TypeChecker._IsUnit(leftType) && TypeChecker._IsUnit(rightType))
         {
             var leftUnits = (UnitType) leftType;
             var rightUnits = (UnitType) rightType;
@@ -242,7 +242,7 @@ public class TypeAnalyzerVisitor : IVisitor<IType>
         var leftType = element.Left.Accept(this);
         var rightType = element.Right.Accept(this);
 
-        if (_IsUnit(leftType) && _IsUnit(rightType))
+        if (TypeChecker._IsUnit(leftType) && TypeChecker._IsUnit(rightType))
         {
             var leftUnits = (UnitType) leftType;
             var rightUnits = (UnitType) rightType;
@@ -263,7 +263,7 @@ public class TypeAnalyzerVisitor : IVisitor<IType>
         var leftType = element.Left.Accept(this);
         var rightType = element.Right.Accept(this);
 
-        if (_IsUnit(leftType) && _IsUnit(rightType))
+        if (TypeChecker._IsUnit(leftType) && TypeChecker._IsUnit(rightType))
         {
             var leftUnits = (UnitType) leftType;
             var rightUnits = (UnitType) rightType;
@@ -287,7 +287,7 @@ public class TypeAnalyzerVisitor : IVisitor<IType>
         // only valid for a boolean
 
         var type = element.Child.Accept(this);
-        if (_IsBool(type)) return type;
+        if (TypeChecker._IsBool(type)) return type;
 
         throw new UnpermittedOperationException(type, "!");
     }
@@ -298,7 +298,7 @@ public class TypeAnalyzerVisitor : IVisitor<IType>
         // only valid for a unit
 
         var type = element.Child.Accept(this);
-        if (_IsUnit(type)) return type;
+        if (TypeChecker._IsUnit(type)) return type;
 
         throw new UnpermittedOperationException(type, "-");
     }
@@ -306,7 +306,7 @@ public class TypeAnalyzerVisitor : IVisitor<IType>
     public IType Visit(Identifier element)
     {
         var name = element.Name;
-        foreach (var scope in _functionCallContext.Scopes)
+        foreach (var scope in _semanticFunctionCallContext.Scopes)
         {
             if (scope.Variables.TryGetValue(name, out var type))
             {
@@ -314,7 +314,7 @@ public class TypeAnalyzerVisitor : IVisitor<IType>
             }
         }
 
-        if (_functionCallContext.Parameters.TryGetValue(name, out var parameterType))
+        if (_semanticFunctionCallContext.Parameters.TryGetValue(name, out var parameterType))
         {
             return parameterType;
         }
@@ -402,7 +402,7 @@ public class TypeAnalyzerVisitor : IVisitor<IType>
 
     private void CompareTypes(string name, IType leftType, IType rightType)
     {
-        if (_IsUnit(leftType) && _IsUnit(rightType))
+        if (TypeChecker._IsUnit(leftType) && TypeChecker._IsUnit(rightType))
         {
             var leftUnit = (UnitType) leftType;
             var rightUnit = (UnitType) rightType;
@@ -414,8 +414,8 @@ public class TypeAnalyzerVisitor : IVisitor<IType>
             return;
         }
 
-        if (_IsBool(leftType) && _IsBool(rightType)) return;
-        if (_IsString(leftType) && _IsString(rightType)) return;
+        if (TypeChecker._IsBool(leftType) && TypeChecker._IsBool(rightType)) return;
+        if (TypeChecker._IsString(leftType) && TypeChecker._IsString(rightType)) return;
 
         throw new TypeMismatchException(name, leftType, rightType);
     }
@@ -466,7 +466,7 @@ public class TypeAnalyzerVisitor : IVisitor<IType>
 
     private bool _CheckIfValidTypesForComparison(IType leftType, IType rightType)
     {
-        if (_IsUnit(leftType) && _IsUnit(rightType))
+        if (TypeChecker._IsUnit(leftType) && TypeChecker._IsUnit(rightType))
         {
             return _AreUnitsTheSame((UnitType) leftType, (UnitType) rightType);
         }
@@ -476,12 +476,12 @@ public class TypeAnalyzerVisitor : IVisitor<IType>
 
     private bool _CheckIfValidTypesForEquality(IType leftType, IType rightType)
     {
-        if (_IsUnit(leftType) && _IsUnit(rightType))
+        if (TypeChecker._IsUnit(leftType) && TypeChecker._IsUnit(rightType))
         {
             return _AreUnitsTheSame((UnitType) leftType, (UnitType) rightType);
         }
 
-        return _IsBool(leftType) && _IsBool(rightType) || _IsString(leftType) && _IsString(rightType);
+        return TypeChecker._IsBool(leftType) && TypeChecker._IsBool(rightType) || TypeChecker._IsString(leftType) && TypeChecker._IsString(rightType);
     }
 
     private bool _AreUnitsTheSame(UnitType leftUnit, UnitType rightUnit)
@@ -527,20 +527,5 @@ public class TypeAnalyzerVisitor : IVisitor<IType>
         }
 
         return units;
-    }
-
-    private static bool _IsUnit(IType type)
-    {
-        return type.GetType() == typeof(UnitType);
-    }
-
-    private static bool _IsString(IType type)
-    {
-        return type.GetType() == typeof(StringType);
-    }
-
-    private static bool _IsBool(IType type)
-    {
-        return type.GetType() == typeof(BoolType);
     }
 }

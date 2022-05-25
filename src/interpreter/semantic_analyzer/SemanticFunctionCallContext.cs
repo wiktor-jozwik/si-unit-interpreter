@@ -1,8 +1,8 @@
 using si_unit_interpreter.parser.type;
 
-namespace si_unit_interpreter.semantic_analyzer;
+namespace si_unit_interpreter.interpreter.semantic_analyzer;
 
-public class FunctionCallContext
+public class SemanticFunctionCallContext
 {
     public string FunctionName;
     public LinkedList<SemanticScope> Scopes = new();

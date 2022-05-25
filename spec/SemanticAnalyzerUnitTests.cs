@@ -1,5 +1,5 @@
 using si_unit_interpreter.exceptions.semantic_analyzer;
-using si_unit_interpreter.semantic_analyzer;
+using si_unit_interpreter.interpreter.semantic_analyzer;
 using Xunit;
 
 namespace si_unit_interpreter.spec;

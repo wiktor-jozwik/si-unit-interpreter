@@ -1,3 +1,4 @@
+using si_unit_interpreter.interpreter;
 using si_unit_interpreter.parser.statement;
 using si_unit_interpreter.parser.type;
 
@@ -22,5 +23,10 @@ public class FunctionCall : IExpression, IStatement
     public void Accept(IVisitor visitor)
     {
         visitor.Visit(this);
+    }
+    
+    public dynamic Accept(IValueVisitor visitor)
+    {
+        return visitor.Visit(this);
     }
 }
