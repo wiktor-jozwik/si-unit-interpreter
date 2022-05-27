@@ -25,7 +25,7 @@ public class FunctionCall : IExpression, IStatement
         visitor.Visit(this);
     }
     
-    public dynamic Accept(IValueVisitor visitor)
+    public dynamic Accept(IInterpreterVisitor visitor)
     {
         return visitor.Visit(this);
     }

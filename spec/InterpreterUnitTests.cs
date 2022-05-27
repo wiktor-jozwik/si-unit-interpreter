@@ -31,20 +31,29 @@ public class InterpreterUnitTests
 
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
-        //
-        // var semanticAnalyzer = new SemanticAnalyzerVisitor();
-        // semanticAnalyzer.Visit(program);
 
-        var functions = new Dictionary<dynamic, Func<dynamic, dynamic>>
-        {
-            ["print"] = (value) =>
-            {
-                _testOutputHelper.WriteLine($"{value}");
-                return null!;
-            }
-        };
+        var testBuiltInFunctionsProvider = new TestBuiltInFunctionsProvider(_testOutputHelper);
 
-        var interpreter = new InterpreterVisitor(functions);
+        var interpreter = new InterpreterVisitor(testBuiltInFunctionsProvider);
+        interpreter.Visit(program);
+        1.ShouldBe(1);
+    }
+    
+    [Fact]
+    public void TestBigValueScalarExpression()
+    {
+        const string code = @"
+                            main() -> void {
+                                let x: [] = 5.9722e24 * 1.989e30 / (149.24e9 * 149.24e9)
+                                print(x)
+                            }";
+
+        var parser = Helper.PrepareParser(code);
+        var program = parser.Parse();
+
+        var testBuiltInFunctionsProvider = new TestBuiltInFunctionsProvider(_testOutputHelper);
+
+        var interpreter = new InterpreterVisitor(testBuiltInFunctionsProvider);
         interpreter.Visit(program);
         1.ShouldBe(1);
     }
@@ -61,10 +70,11 @@ public class InterpreterUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
-        semanticAnalyzer.Visit(program);
-        // var interpreter = new InterpreterVisitor();
-        // interpreter.Visit(program);
+        var testBuiltInFunctionsProvider = new TestBuiltInFunctionsProvider(_testOutputHelper);
+
+        var interpreter = new InterpreterVisitor(testBuiltInFunctionsProvider);
+        interpreter.Visit(program);
+        1.ShouldBe(1);
     }
     
     [Fact]
@@ -78,23 +88,143 @@ public class InterpreterUnitTests
 
                                 print(x)
                             }";
-
+        
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
-        //
-        // var semanticAnalyzer = new SemanticAnalyzerVisitor();
-        // semanticAnalyzer.Visit(program);
 
-        var functions = new Dictionary<dynamic, Func<dynamic, dynamic>>
-        {
-            ["print"] = (value) =>
-            {
-                _testOutputHelper.WriteLine($"{value}");
-                return null!;
-            }
-        };
+        var testBuiltInFunctionsProvider = new TestBuiltInFunctionsProvider(_testOutputHelper);
 
-        var interpreter = new InterpreterVisitor(functions);
+        var interpreter = new InterpreterVisitor(testBuiltInFunctionsProvider);
+        
+        interpreter.Visit(program);
+        1.ShouldBe(1);
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    [Fact]
+    public void TestCodeExecutionInIf()
+    {
+        const string code = @"
+                            main() -> void {
+                                if (5 > 2) {
+                                    print(""from if"")
+                                } 
+                            }";
+        
+        var parser = Helper.PrepareParser(code);
+        var program = parser.Parse();
+
+        var testBuiltInFunctionsProvider = new TestBuiltInFunctionsProvider(_testOutputHelper);
+
+        var interpreter = new InterpreterVisitor(testBuiltInFunctionsProvider);
+        
+        interpreter.Visit(program);
+        1.ShouldBe(1);
+    }
+    
+    [Fact]
+    public void TestCodeExecutionInIfWhenFalse()
+    {
+        const string code = @"
+                            main() -> void {
+                                if (5 < 2) {
+                                    print(""from if"")
+                                }
+                            }";
+        
+        var parser = Helper.PrepareParser(code);
+        var program = parser.Parse();
+
+        var testBuiltInFunctionsProvider = new TestBuiltInFunctionsProvider(_testOutputHelper);
+
+        var interpreter = new InterpreterVisitor(testBuiltInFunctionsProvider);
+        
+        interpreter.Visit(program);
+        1.ShouldBe(1);
+    }
+    
+    [Fact]
+    public void TestCodeExecutionInElseIf()
+    {
+        const string code = @"
+                            main() -> void {
+                                let y: bool = false 
+                                let z: bool = true
+                                if (y) {
+                                    print(""from if"")
+                                } else if (z) {
+                                    print(""from else if"")
+                                }
+                            }";
+        
+        var parser = Helper.PrepareParser(code);
+        var program = parser.Parse();
+
+        var testBuiltInFunctionsProvider = new TestBuiltInFunctionsProvider(_testOutputHelper);
+
+        var interpreter = new InterpreterVisitor(testBuiltInFunctionsProvider);
+        
+        interpreter.Visit(program);
+        1.ShouldBe(1);
+    }
+    
+    
+    [Fact]
+    public void TestCodeExecutionInSecondElseIf()
+    {
+        const string code = @"
+                            main() -> void {
+                                if (2 [m] > 5 [m]) {
+                                    print(""from if"")
+                                } else if (3 < (-3 * 8)) {
+                                    print(""from else if"")
+                                } else if (""str"" == ""str"") {
+                                    print(""from second else if"")
+                                } else {
+                                    print(""from else"")
+                                }
+                            }";
+        
+        var parser = Helper.PrepareParser(code);
+        var program = parser.Parse();
+
+        var testBuiltInFunctionsProvider = new TestBuiltInFunctionsProvider(_testOutputHelper);
+
+        var interpreter = new InterpreterVisitor(testBuiltInFunctionsProvider);
+        
+        interpreter.Visit(program);
+        1.ShouldBe(1);
+    }
+    
+    [Fact]
+    public void TestCodeExecutionInElse()
+    {
+        const string code = @"
+                            main() -> void {
+                                if (5 [K] <= (2 [K] - 7 [K])) {
+                                    print(""from if"")
+                                } else if (5 [kg] != 5 [kg]) {
+                                    print(""from else if"")
+                                } else {
+                                    print(""from else"")
+                                }
+                            }";
+        
+        var parser = Helper.PrepareParser(code);
+        var program = parser.Parse();
+
+        var testBuiltInFunctionsProvider = new TestBuiltInFunctionsProvider(_testOutputHelper);
+
+        var interpreter = new InterpreterVisitor(testBuiltInFunctionsProvider);
+        
         interpreter.Visit(program);
         1.ShouldBe(1);
     }

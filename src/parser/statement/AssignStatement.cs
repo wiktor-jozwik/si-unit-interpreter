@@ -1,3 +1,4 @@
+using si_unit_interpreter.interpreter;
 using si_unit_interpreter.parser.expression;
 using si_unit_interpreter.parser.type;
 
@@ -20,6 +21,11 @@ public class AssignStatement : ITypeCheck, IStatement
     }
 
     public IType Accept(IVisitor<IType> visitor)
+    {
+        return visitor.Visit(this);
+    }
+
+    public dynamic Accept(IInterpreterVisitor visitor)
     {
         return visitor.Visit(this);
     }

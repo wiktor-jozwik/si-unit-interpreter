@@ -1,3 +1,5 @@
+using si_unit_interpreter.interpreter;
+
 namespace si_unit_interpreter;
 
 public class MainProcessor
@@ -12,13 +14,24 @@ public class MainProcessor
     public void Run()
     {
         ValidateInput();
-
-        using var sr = new StreamReader(_args[0]);
-
-        while (!sr.EndOfStream)
+        var codePath = _args[0];
+        StreamReader streamReader;
+        try
         {
-            Console.Write((char) sr.Read());
+            streamReader = new StreamReader(codePath);  
         }
+        catch(Exception ex)
+        {
+            if (ex is FileNotFoundException or DirectoryNotFoundException)
+            {
+                Console.WriteLine($"File or directory {codePath} was not found.");
+            }
+            throw;
+        }
+
+        var interpreter = new Interpreter(streamReader);
+
+        interpreter.Run();
     }
 
     private void ValidateInput()

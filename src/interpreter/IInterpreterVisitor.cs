@@ -1,14 +1,26 @@
+using si_unit_interpreter.parser;
 using si_unit_interpreter.parser.expression;
 using si_unit_interpreter.parser.expression.additive;
 using si_unit_interpreter.parser.expression.comparison;
 using si_unit_interpreter.parser.expression.literal;
 using si_unit_interpreter.parser.expression.multiplicative;
 using si_unit_interpreter.parser.expression.negate;
+using si_unit_interpreter.parser.statement;
 
 namespace si_unit_interpreter.interpreter;
 
-public interface IValueVisitor
+public interface IInterpreterVisitor
 {
+    dynamic Visit(TopLevel element);
+    dynamic Visit(FunctionStatement element);
+    dynamic Visit(Block element);
+    dynamic Visit(VariableDeclaration element);
+    dynamic Visit(IfStatement element);
+    dynamic Visit(ElseIfStatement element);
+    dynamic Visit(WhileStatement element);
+    dynamic Visit(AssignStatement element);
+    dynamic Visit(ReturnStatement element);
+    dynamic Visit(Parameter element);
     dynamic Visit(Expression element);
     dynamic Visit(LogicFactor element);
     dynamic Visit(EqualExpression element);

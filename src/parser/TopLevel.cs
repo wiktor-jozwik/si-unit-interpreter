@@ -1,3 +1,4 @@
+using si_unit_interpreter.interpreter;
 using si_unit_interpreter.parser.statement;
 using si_unit_interpreter.parser.type;
 
@@ -20,5 +21,10 @@ public class TopLevel : IStatement
     public void Accept(IVisitor visitor)
     {
         visitor.Visit(this);
+    }
+
+    public dynamic Accept(IInterpreterVisitor visitor)
+    {
+        return visitor.Visit(this);
     }
 }

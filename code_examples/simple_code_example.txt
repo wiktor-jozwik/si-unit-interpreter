@@ -1,0 +1,13 @@
+unit N: [kg*m*s^-2]
+
+main() -> void {
+    let G: [N*m^2*kg^-2] = 6.6732e-11 [N*m^2*kg^-2]
+    
+    let earthMass: [kg] = 5.9722e24 [kg]
+    let sunMass: [kg] = 1.989e30 [kg]
+    let earthSunDistance: [m] = 149.24e9 [m]
+    
+    let gForce: [N] = G * earthMass * sunMass / power(earthSunDistance, 2)
+    print(gForce)
+}
+

@@ -1,3 +1,5 @@
+using si_unit_interpreter.interpreter;
+
 namespace si_unit_interpreter.parser.statement;
 
 public class Block: IStatement
@@ -17,5 +19,10 @@ public class Block: IStatement
     public void Accept(IVisitor visitor)
     {
         visitor.Visit(this);
+    }
+    
+    public dynamic Accept(IInterpreterVisitor visitor)
+    {
+        return visitor.Visit(this);
     }
 }
