@@ -6,5 +6,10 @@ public class FunctionCallContext
 {
     public string FunctionName;
     public LinkedList<Scope> Scopes = new();
-    public Dictionary<string, dynamic> Parameters;
+    public LinkedList<ParameterScope> ParameterScopes = new();
+}
+
+public class ParameterScope
+{
+    public List<dynamic> Parameters = new();
 }

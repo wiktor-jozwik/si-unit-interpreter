@@ -249,6 +249,30 @@ public class SemanticAnalyzerUnitTests
             semanticAnalyzer.Visit(program));
         Assert.Equal("'zzz' is already declared", e.Message);
     }
+    
+    
+    [Fact]
+    public void TestUsageOfVariableInWrongScope()
+    {
+        const string code = @"
+                            fun() -> [m] {
+                                return zzz + 5 [m]
+                            }
+                            main() -> void {
+                                let zzz: [m] = 8 [m]
+                                fun()
+                            }";
+
+        var parser = Helper.PrepareParser(code);
+        var program = parser.Parse();
+
+        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        semanticAnalyzer.Visit(program);
+        //
+        // var e = Assert.Throws<VariableRedeclarationException>(() =>
+        //     semanticAnalyzer.Visit(program));
+        // Assert.Equal("'zzz' is already declared", e.Message);
+    }
 
     [Fact]
     public void TestRedeclareSameVariableAsParameterInIf()
@@ -262,7 +286,6 @@ public class SemanticAnalyzerUnitTests
                             }
                             main() -> void {
                                 let x: [] = fun(5)
-                                }
                             }";
 
         var parser = Helper.PrepareParser(code);
@@ -287,7 +310,6 @@ public class SemanticAnalyzerUnitTests
                             }
                             main() -> void {
                                 let x: [] = fun(5)
-                                }
                             }";
 
         var parser = Helper.PrepareParser(code);
@@ -313,7 +335,6 @@ public class SemanticAnalyzerUnitTests
                             }
                             main() -> void {
                                 let x: [] = fun(5)
-                                }
                             }";
 
         var parser = Helper.PrepareParser(code);

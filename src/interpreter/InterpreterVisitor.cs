@@ -6,243 +6,318 @@ using si_unit_interpreter.parser.expression.literal;
 using si_unit_interpreter.parser.expression.multiplicative;
 using si_unit_interpreter.parser.expression.negate;
 using si_unit_interpreter.parser.statement;
-using si_unit_interpreter.parser.type;
-using si_unit_interpreter.parser.unit;
 
 namespace si_unit_interpreter.interpreter;
 
 public class InterpreterVisitor : IInterpreterVisitor
 {
     private readonly FunctionCallContext _functionCallContext = new();
-    private readonly Dictionary<string, dynamic> _functions = new();
+    private readonly Dictionary<string, FunctionStatement> _functions = new();
 
+    private readonly string _mainFunctionName;
     private readonly Dictionary<string, Func<dynamic, dynamic>> _oneArgumentFunctions;
     private readonly Dictionary<string, Func<dynamic, dynamic, dynamic>> _twoArgumentFunctions;
 
-    public InterpreterVisitor(IBuiltInFunctionsProvider builtInFunctionsProvider)
+    public InterpreterVisitor(string mainFunctionName,IBuiltInFunctionsProvider builtInFunctionsProvider)
     {
+        _mainFunctionName = mainFunctionName;
         _oneArgumentFunctions = builtInFunctionsProvider.GetOneArgumentFunctions();
         _twoArgumentFunctions = builtInFunctionsProvider.GetTwoArgumentFunctions();
     }
 
-    public dynamic Visit(TopLevel element)
+    public dynamic? Visit(TopLevel element)
     {
         foreach (var (name, function) in element.Functions)
         {
-            function.Accept(this);
+            _functions[name] = function;
         }
+
+        _functions[_mainFunctionName].Accept(this);
 
         return true;
     }
 
-    public dynamic Visit(FunctionStatement element)
-    {
-        foreach (var parameter in element.Parameters)
-        {
-            parameter.Accept(this);
-        }
-
-        element.Statements.Accept(this);
-
-        return true;
-    }
-
-    public dynamic Visit(Block element)
+    public dynamic? Visit(FunctionStatement element)
     {
         _functionCallContext.Scopes.AddLast(new Scope());
-        foreach (var statement in element.Statements)
+
+        var parameterIndex = 0;
+        foreach (var parameter in element.Parameters)
         {
-            statement.Accept(this);
+            _functionCallContext.Scopes.Last().Variables[parameter.Accept(this)] =
+                _functionCallContext.ParameterScopes.Last().Parameters[parameterIndex];
+            parameterIndex++;
         }
 
+        var functionReturnValue = element.Statements.Accept(this);
+        
         _functionCallContext.Scopes.RemoveLast();
 
-        return true;
+        return functionReturnValue;
     }
 
-    public dynamic Visit(VariableDeclaration element)
+    public dynamic? Visit(Block element)
+    {
+        dynamic? blockValue = null;
+        foreach (var statement in element.Statements)
+        {
+            blockValue = statement.Accept(this);
+        }
+
+        return blockValue;
+    }
+
+    public dynamic? Visit(VariableDeclaration element)
     {
         var variableValue = element.Expression.Accept(this);
 
         _functionCallContext.Scopes.Last().Variables[element.Parameter.Name] = variableValue;
 
-        return true;
+        return null;
     }
 
-    public dynamic Visit(IfStatement element)
+    public dynamic? Visit(IfStatement element)
     {
         var conditionValue = element.Condition.Accept(this);
 
         if (conditionValue)
         {
-            element.Statements.Accept(this);
-            return true;
+            _functionCallContext.Scopes.AddLast(new Scope());
+
+            var value = element.Statements.Accept(this);
+            
+            _functionCallContext.Scopes.RemoveLast();
+
+            return value;
         }
 
         foreach (var elseIfStatement in element.ElseIfStatements)
         {
-            if (elseIfStatement.Accept(this))
-            {
-                return true;
+            var elseIfValue = elseIfStatement.Accept(this);
+            if (elseIfValue != null) {
+                return elseIfValue;
             }
         }
 
-        element.ElseStatement.Accept(this);
-        return true;
+        _functionCallContext.Scopes.AddLast(new Scope());
+        var elseValue = element.ElseStatement.Accept(this);
+        _functionCallContext.Scopes.RemoveLast();
+        
+        return elseValue;
     }
 
-    public dynamic Visit(ElseIfStatement element)
+    public dynamic? Visit(ElseIfStatement element)
     {
         var conditionValue = element.Condition.Accept(this);
-        if (conditionValue)
+        if (!conditionValue) return null;
+        
+        _functionCallContext.Scopes.AddLast(new Scope());
+        var elseIfStatement = element.Statements.Accept(this);
+        _functionCallContext.Scopes.RemoveLast();
+        
+        return elseIfStatement;
+    }
+
+    public dynamic? Visit(WhileStatement element)
+    {
+        var conditionValue = element.Condition.Accept(this);
+        dynamic? value = null;
+        while (conditionValue)
         {
-            element.Statements.Accept(this);
-            return true;
+            _functionCallContext.Scopes.AddLast(new Scope());
+            value = element.Statements.Accept(this);
+            _functionCallContext.Scopes.RemoveLast(); 
+            
+            conditionValue = element.Condition.Accept(this);
         }
 
-        return false;
+        return value;
     }
 
-    public dynamic Visit(WhileStatement element)
+    public dynamic? Visit(AssignStatement element)
     {
-        throw new NotImplementedException();
+        var name = element.Identifier.Name;
+        foreach (var scope in _functionCallContext.Scopes)
+        {
+            if (scope.Variables.ContainsKey(name))
+            {
+                var variableValue = element.Expression.Accept(this);
+                scope.Variables[name] = variableValue!;
+            }
+        }
+
+        return null;
     }
 
-    public dynamic Visit(AssignStatement element)
+    public dynamic? Visit(ReturnStatement element)
     {
-        throw new NotImplementedException();
+        return element.Expression?.Accept(this);
     }
 
-    public dynamic Visit(ReturnStatement element)
-    {
-        throw new NotImplementedException();
-    }
-
-    public dynamic Visit(FunctionCall element)
+    public dynamic? Visit(FunctionCall element)
     {
         var name = element.Name;
 
         if (_oneArgumentFunctions.TryGetValue(name, out var function))
         {
             var arguments = element.Arguments;
-            var value = arguments[0].Accept(this);
-            function(value);
+            var argValue = arguments[0].Accept(this);
+            function(argValue);
+            return true;
         }
 
-        return true;
+        if (_functions.TryGetValue(name, out var functionStatement))
+        {
+            _functionCallContext.ParameterScopes.AddLast(new ParameterScope());
+            // _functionCallContext.Parameters = new List<dynamic>();
+            foreach (var argument in element.Arguments)
+            {
+                var argumentValue = argument.Accept(this);
+                
+                _functionCallContext.ParameterScopes.Last().Parameters.Add(argumentValue);
+
+            }
+            var functionValue = functionStatement.Accept(this);
+            _functionCallContext.ParameterScopes.RemoveLast();
+            return functionValue;
+        }
+
+        return null;
     }
 
-    public dynamic Visit(Parameter element)
+    public dynamic? Visit(Parameter element)
     {
+        return element.Name;
+        
+        // _functionCallContext.Scopes.Last().Variables[e]
         // _functionCallContext.Parameters[element.Name] = element.
-        return true;
+        return null;
     }
 
-    public dynamic Visit(Expression element)
+    public dynamic? Visit(Expression element)
     {
         return element.Left.Accept(this) || element.Right.Accept(this);
     }
 
-    public dynamic Visit(LogicFactor element)
+    public dynamic? Visit(LogicFactor element)
     {
         return element.Left.Accept(this) && element.Right.Accept(this);
     }
 
-    public dynamic Visit(EqualExpression element)
+    public dynamic? Visit(EqualExpression element)
     {
         return element.Left.Accept(this) == element.Right.Accept(this);
     }
 
-    public dynamic Visit(NotEqualExpression element)
+    public dynamic? Visit(NotEqualExpression element)
     {
         return element.Left.Accept(this) != element.Right.Accept(this);
     }
 
-    public dynamic Visit(GreaterThanExpression element)
+    public dynamic? Visit(GreaterThanExpression element)
     {
         return element.Left.Accept(this) > element.Right.Accept(this);
     }
 
-    public dynamic Visit(GreaterEqualThanExpression element)
+    public dynamic? Visit(GreaterEqualThanExpression element)
     {
         return element.Left.Accept(this) >= element.Right.Accept(this);
     }
 
-    public dynamic Visit(SmallerThanExpression element)
+    public dynamic? Visit(SmallerThanExpression element)
     {
         return element.Left.Accept(this) < element.Right.Accept(this);
     }
 
-    public dynamic Visit(SmallerEqualThanExpression element)
+    public dynamic? Visit(SmallerEqualThanExpression element)
     {
         return element.Left.Accept(this) <= element.Right.Accept(this);
     }
 
-    public dynamic Visit(AddExpression element)
+    public dynamic? Visit(AddExpression element)
     {
         return element.Left.Accept(this) + element.Right.Accept(this);
     }
 
-    public dynamic Visit(SubtractExpression element)
+    public dynamic? Visit(SubtractExpression element)
     {
         return element.Left.Accept(this) - element.Right.Accept(this);
     }
 
-    public dynamic Visit(MultiplicateExpression element)
+    public dynamic? Visit(MultiplicateExpression element)
     {
         return element.Left.Accept(this) * element.Right.Accept(this);
     }
 
-    public dynamic Visit(DivideExpression element)
+    public dynamic? Visit(DivideExpression element)
     {
-        return (double) element.Left.Accept(this) / element.Right.Accept(this);
+        var leftValue = element.Left.Accept(this);
+        var rightValue = element.Right.Accept(this);
+        if (leftValue == null && rightValue == null)
+        {
+            return null;
+        }
+
+        return (double) leftValue! / rightValue;
     }
 
-    public dynamic Visit(MinusExpression element)
+    public dynamic? Visit(MinusExpression element)
     {
         return element.Child.Accept(this) * -1;
     }
 
-    public dynamic Visit(NotExpression element)
+    public dynamic? Visit(NotExpression element)
     {
         return !element.Child.Accept(this);
     }
 
-    public dynamic Visit(Identifier element)
+    public dynamic? Visit(Identifier element)
     {
         var name = element.Name;
-        foreach (var scope in _functionCallContext.Scopes)
+        
+        var scopeClone = new LinkedList<Scope>(_functionCallContext.Scopes);
+
+        while (scopeClone.Count > 0)
         {
-            if (scope.Variables.TryGetValue(name, out var value))
+            if (scopeClone.Last().Variables.TryGetValue(name, out var value))
             {
                 return value;
             }
+            scopeClone.RemoveLast();
         }
 
-        if (_functionCallContext.Parameters.TryGetValue(name, out var parameterValue))
-        {
-            return parameterValue;
-        }
+        // foreach (var scope in _functionCallContext.Scopes)
+        // {
+        //     if (scope.Variables.TryGetValue(name, out var value))
+        //     {
+        //         return value;
+        //     }
+        // }
+
+        // if (_functionCallContext.Parameters.TryGetValue(name, out var parameterValue))
+        // {
+        //     return parameterValue;
+        // }
 
         return null!;
     }
 
-    public dynamic Visit(BoolLiteral element)
+    public dynamic? Visit(BoolLiteral element)
     {
         return element.Value;
     }
 
-    public dynamic Visit(FloatLiteral element)
+    public dynamic? Visit(FloatLiteral element)
     {
         return element.Value;
     }
 
-    public dynamic Visit(IntLiteral element)
+    public dynamic? Visit(IntLiteral element)
     {
         return element.Value;
     }
 
-    public dynamic Visit(StringLiteral element)
+    public dynamic? Visit(StringLiteral element)
     {
         return element.Value;
     }

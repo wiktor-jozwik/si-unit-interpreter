@@ -6,7 +6,7 @@ public struct Token
     public TokenPosition Position { get; }
     public dynamic? Value { get; }
 
-    public Token(TokenType type, TokenPosition position, dynamic value)
+    public Token(TokenType type, TokenPosition position, dynamic? value)
     {
         Type = type;
         Position = position;

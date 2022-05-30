@@ -5,11 +5,11 @@ namespace si_unit_interpreter.spec;
 
 public class TestBuiltInFunctionsProvider : IBuiltInFunctionsProvider
 {
-    private readonly Dictionary<string, Func<dynamic, dynamic>> _oneArgumentFunctions;
+    private readonly Dictionary<string, Func<dynamic?, dynamic?>> _oneArgumentFunctions;
 
     public TestBuiltInFunctionsProvider(ITestOutputHelper testOutputHelper)
     {
-        _oneArgumentFunctions = new Dictionary<string, Func<dynamic, dynamic>>
+        _oneArgumentFunctions = new Dictionary<string, Func<dynamic?, dynamic?>>
         {
             ["print"] = value =>
             {
@@ -19,13 +19,13 @@ public class TestBuiltInFunctionsProvider : IBuiltInFunctionsProvider
         };
     }
 
-    public Dictionary<string, Func<dynamic, dynamic>> GetOneArgumentFunctions()
+    public Dictionary<string, Func<dynamic?, dynamic?>> GetOneArgumentFunctions()
     {
         return _oneArgumentFunctions;
     }
 
-    public Dictionary<string, Func<dynamic, dynamic, dynamic>> GetTwoArgumentFunctions()
+    public Dictionary<string, Func<dynamic?, dynamic?, dynamic?>> GetTwoArgumentFunctions()
     {
-        return new Dictionary<string, Func<dynamic, dynamic, dynamic>>();
+        return new Dictionary<string, Func<dynamic?, dynamic?, dynamic?>>();
     }
 }

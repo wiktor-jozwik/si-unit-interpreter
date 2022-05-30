@@ -34,7 +34,7 @@ public class InterpreterUnitTests
 
         var testBuiltInFunctionsProvider = new TestBuiltInFunctionsProvider(_testOutputHelper);
 
-        var interpreter = new InterpreterVisitor(testBuiltInFunctionsProvider);
+        var interpreter = new InterpreterVisitor("main", testBuiltInFunctionsProvider);
         interpreter.Visit(program);
         1.ShouldBe(1);
     }
@@ -53,7 +53,7 @@ public class InterpreterUnitTests
 
         var testBuiltInFunctionsProvider = new TestBuiltInFunctionsProvider(_testOutputHelper);
 
-        var interpreter = new InterpreterVisitor(testBuiltInFunctionsProvider);
+        var interpreter = new InterpreterVisitor("main", testBuiltInFunctionsProvider);
         interpreter.Visit(program);
         1.ShouldBe(1);
     }
@@ -72,7 +72,7 @@ public class InterpreterUnitTests
 
         var testBuiltInFunctionsProvider = new TestBuiltInFunctionsProvider(_testOutputHelper);
 
-        var interpreter = new InterpreterVisitor(testBuiltInFunctionsProvider);
+        var interpreter = new InterpreterVisitor("main", testBuiltInFunctionsProvider);
         interpreter.Visit(program);
         1.ShouldBe(1);
     }
@@ -94,7 +94,7 @@ public class InterpreterUnitTests
 
         var testBuiltInFunctionsProvider = new TestBuiltInFunctionsProvider(_testOutputHelper);
 
-        var interpreter = new InterpreterVisitor(testBuiltInFunctionsProvider);
+        var interpreter = new InterpreterVisitor("main", testBuiltInFunctionsProvider);
         
         interpreter.Visit(program);
         1.ShouldBe(1);
@@ -124,7 +124,7 @@ public class InterpreterUnitTests
 
         var testBuiltInFunctionsProvider = new TestBuiltInFunctionsProvider(_testOutputHelper);
 
-        var interpreter = new InterpreterVisitor(testBuiltInFunctionsProvider);
+        var interpreter = new InterpreterVisitor("main", testBuiltInFunctionsProvider);
         
         interpreter.Visit(program);
         1.ShouldBe(1);
@@ -145,7 +145,7 @@ public class InterpreterUnitTests
 
         var testBuiltInFunctionsProvider = new TestBuiltInFunctionsProvider(_testOutputHelper);
 
-        var interpreter = new InterpreterVisitor(testBuiltInFunctionsProvider);
+        var interpreter = new InterpreterVisitor("main", testBuiltInFunctionsProvider);
         
         interpreter.Visit(program);
         1.ShouldBe(1);
@@ -170,7 +170,7 @@ public class InterpreterUnitTests
 
         var testBuiltInFunctionsProvider = new TestBuiltInFunctionsProvider(_testOutputHelper);
 
-        var interpreter = new InterpreterVisitor(testBuiltInFunctionsProvider);
+        var interpreter = new InterpreterVisitor("main", testBuiltInFunctionsProvider);
         
         interpreter.Visit(program);
         1.ShouldBe(1);
@@ -198,7 +198,7 @@ public class InterpreterUnitTests
 
         var testBuiltInFunctionsProvider = new TestBuiltInFunctionsProvider(_testOutputHelper);
 
-        var interpreter = new InterpreterVisitor(testBuiltInFunctionsProvider);
+        var interpreter = new InterpreterVisitor("main", testBuiltInFunctionsProvider);
         
         interpreter.Visit(program);
         1.ShouldBe(1);
@@ -223,9 +223,289 @@ public class InterpreterUnitTests
 
         var testBuiltInFunctionsProvider = new TestBuiltInFunctionsProvider(_testOutputHelper);
 
-        var interpreter = new InterpreterVisitor(testBuiltInFunctionsProvider);
+        var interpreter = new InterpreterVisitor("main", testBuiltInFunctionsProvider);
         
         interpreter.Visit(program);
         1.ShouldBe(1);
     }
+    
+    [Fact]
+    public void TestCodeExecutionInWhile()
+    {
+        const string code = @"
+                            main() -> void {
+                                let i: [] = 10
+                                while(i > 0) {
+                                    print(i)
+                                    i = i - 1
+                                }
+                            }";
+        
+        var parser = Helper.PrepareParser(code);
+        var program = parser.Parse();
+
+        var testBuiltInFunctionsProvider = new TestBuiltInFunctionsProvider(_testOutputHelper);
+
+        var interpreter = new InterpreterVisitor("main", testBuiltInFunctionsProvider);
+        
+        interpreter.Visit(program);
+        1.ShouldBe(1);
+    }
+    
+    [Fact]
+    public void TestCodeExecutionWithFunction()
+    {
+        const string code = @"
+                            getAcetylocholinoesterazaValue() -> [mol] {
+                                return 5 [mol] * 12
+                            }
+
+                            main() -> void {
+                                let x: [] = getAcetylocholinoesterazaValue() / 6 [mol]
+                                print(x)
+                            }";
+        
+        var parser = Helper.PrepareParser(code);
+        var program = parser.Parse();
+
+        var testBuiltInFunctionsProvider = new TestBuiltInFunctionsProvider(_testOutputHelper);
+
+        var interpreter = new InterpreterVisitor("main", testBuiltInFunctionsProvider);
+        
+        interpreter.Visit(program);
+        1.ShouldBe(1);
+    }
+    
+    [Fact]
+    public void TestCodeExecutionWithFunctionAndParameters()
+    {
+        const string code = @"
+                            getAcetylocholinoesterazaValue(x: [mol]) -> [mol] {
+                                return x * 12e23
+                            }
+
+                            main() -> void {
+                                let acetylo: [mol] = 43e-23 [mol]
+                                let value: [] = getAcetylocholinoesterazaValue(acetylo) / 6 [mol]
+                                print(value)
+                            }";
+        
+        var parser = Helper.PrepareParser(code);
+        var program = parser.Parse();
+
+        var testBuiltInFunctionsProvider = new TestBuiltInFunctionsProvider(_testOutputHelper);
+
+        var interpreter = new InterpreterVisitor("main", testBuiltInFunctionsProvider);
+        
+        interpreter.Visit(program);
+        1.ShouldBe(1);
+    }
+    
+    [Fact]
+    public void TestCallFunctionWithParameter()
+    {
+        const string code = @"
+                            printValue(x: [m]) -> void {
+                                print(x)
+                            }
+
+                            main() -> void {
+                                let distance: [m] = 2.1e2 [m]
+                                printValue(distance)
+                            }";
+        
+        var parser = Helper.PrepareParser(code);
+        var program = parser.Parse();
+
+        var testBuiltInFunctionsProvider = new TestBuiltInFunctionsProvider(_testOutputHelper);
+
+        var interpreter = new InterpreterVisitor("main", testBuiltInFunctionsProvider);
+        
+        interpreter.Visit(program);
+        1.ShouldBe(1);
+    }
+    
+    [Fact]
+    public void TestIfInFunctionWithParameterWhenConditionIsTrue()
+    {
+        const string code = @"
+                            printMeters(x: [m]) -> void {
+                                if (x > 10 [m]) {
+                                    print(""x is more than 10 meters"")
+                                    print(x)
+                                }
+                            }
+
+                            main() -> void {
+                                let distance: [m] = 10.01 [m]
+                                printMeters(distance)
+                            }";
+        
+        var parser = Helper.PrepareParser(code);
+        var program = parser.Parse();
+
+        var testBuiltInFunctionsProvider = new TestBuiltInFunctionsProvider(_testOutputHelper);
+
+        var interpreter = new InterpreterVisitor("main", testBuiltInFunctionsProvider);
+        
+        interpreter.Visit(program);
+        1.ShouldBe(1);
+    }
+    
+    [Fact]
+    public void TestIfInFunctionWithParameterWhenConditionIsFalse()
+    {
+        const string code = @"
+                            printMeters(x: [m]) -> void {
+                                if (x >= 10 [m]) {
+                                    print(""x is more or equal than 10 meters"")
+                                    print(x)
+                                } else {
+                                    print(""x is less than 10 meters"")
+                                    print(x)
+                                }
+                            }
+
+                            main() -> void {
+                                let distance: [m] = 9.99 [m]
+                                printMeters(distance)
+                            }";
+        
+        var parser = Helper.PrepareParser(code);
+        var program = parser.Parse();
+
+        var testBuiltInFunctionsProvider = new TestBuiltInFunctionsProvider(_testOutputHelper);
+
+        var interpreter = new InterpreterVisitor("main", testBuiltInFunctionsProvider);
+        
+        interpreter.Visit(program);
+        1.ShouldBe(1);
+    }
+    
+    [Fact]
+    public void TestWhileInFunctionWhichTakeVariableFromParameter()
+    {
+        const string code = @"
+                            countTo(to: []) -> void {
+                                let x: [] = 0
+                                while (x <= to) {
+                                    print(x)
+                                    x = x + 1
+                                }
+                            }
+
+                            main() -> void {
+                                countTo(20)
+                            }";
+        
+        var parser = Helper.PrepareParser(code);
+        var program = parser.Parse();
+
+        var testBuiltInFunctionsProvider = new TestBuiltInFunctionsProvider(_testOutputHelper);
+
+        var interpreter = new InterpreterVisitor("main", testBuiltInFunctionsProvider);
+        
+        interpreter.Visit(program);
+        1.ShouldBe(1);
+    }
+
+    [Fact]
+    public void TestRecursiveFunction()
+    {
+        const string code = @"
+                            fibonacci(n: []) -> [] {
+                                if (n <= 1) {
+                                    return n
+                                } else {
+                                    return fibonacci(n-1) + fibonacci(n-2)
+                                }
+                            }
+
+                            main() -> void {
+                                let fibonacciValue: [] = fibonacci(12)
+                                print(fibonacciValue)
+                            }";
+        
+        var parser = Helper.PrepareParser(code);
+        var program = parser.Parse();
+
+        var testBuiltInFunctionsProvider = new TestBuiltInFunctionsProvider(_testOutputHelper);
+
+        var interpreter = new InterpreterVisitor("main", testBuiltInFunctionsProvider);
+        
+        interpreter.Visit(program);
+        1.ShouldBe(1);
+    }
+    
+    [Fact]
+    public void TestPassingVariableByCopyToFunction()
+    {
+        const string code = @"
+                            myFn(mass: [kg]) -> void {
+                                mass = mass + 10 [kg]
+                                print(mass)
+                            }
+
+                            main() -> void {
+                                let m: [kg] = 50 [kg]
+                                myFn(m)
+                                print(m)
+                            }";
+        
+        var parser = Helper.PrepareParser(code);
+        var program = parser.Parse();
+
+        var testBuiltInFunctionsProvider = new TestBuiltInFunctionsProvider(_testOutputHelper);
+
+        var interpreter = new InterpreterVisitor("main", testBuiltInFunctionsProvider);
+        
+        interpreter.Visit(program);
+        1.ShouldBe(1);
+    }
+    
+    [Fact]
+    public void TestPassingTwoArgumentsToFunction()
+    {
+        const string code = @"
+                            getDistance(x: []) -> [m] {
+                                // 1
+                                return 5 [m] / x
+                            }
+                            getDuration(x: []) -> [s] {
+                                // 25
+                                return 5 [s] * x
+                            }
+                            
+                            calculateVelocity(distance: [m], duration: [s]) -> [m*s^-1] {
+                                // 1 / 25
+                                return distance / duration
+                            }
+
+                            main() -> void {
+                                let x: [m] = getDistance(10)
+                                let y: [s] = getDuration(5)
+                                let v1: [m*s^-1] = calculateVelocity(getDistance(10), getDuration(5))
+                                let v2: [m*s^-1] = calculateVelocity(x, y)
+
+                                print(v1)
+                                print(v2)
+                            }";
+        
+        var parser = Helper.PrepareParser(code);
+        var program = parser.Parse();
+
+        var testBuiltInFunctionsProvider = new TestBuiltInFunctionsProvider(_testOutputHelper);
+
+        var interpreter = new InterpreterVisitor("main", testBuiltInFunctionsProvider);
+        
+        interpreter.Visit(program);
+        1.ShouldBe(1);
+    }
+
+    [Fact]
+    public void TestRunningFunctionFromFunction()
+    {
+        // TODO
+    }
+    
 }

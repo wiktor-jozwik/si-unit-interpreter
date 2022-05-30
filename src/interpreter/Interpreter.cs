@@ -21,9 +21,10 @@ public class Interpreter
         var builtInFunctionsProvider = new BuiltInFunctionsProvider();
         var semanticAnalyzerVisitor = new SemanticAnalyzerVisitor();
         
-        var interpreterVisitor = new InterpreterVisitor(builtInFunctionsProvider);
+        var interpreterVisitor = new InterpreterVisitor("main", builtInFunctionsProvider);
         
         var topLevelObject = parser.Parse();
+        // TODO enable semantic analyzer
         // _semanticAnalyzerVisitor.Visit(topLevelObject);
         interpreterVisitor.Visit(topLevelObject);
     }

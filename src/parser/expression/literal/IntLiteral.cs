@@ -18,7 +18,7 @@ public class IntLiteral : IExpression
     {
         return visitor.Visit(this);
     }
-    public dynamic Accept(IInterpreterVisitor visitor)
+    public dynamic? Accept(IInterpreterVisitor visitor)
     {
         return visitor.Visit(this);
     }
