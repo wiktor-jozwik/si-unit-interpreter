@@ -798,6 +798,45 @@ public class SemanticAnalyzerUnitTests
         var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         semanticAnalyzer.Visit(program);
     }
+    
+    [Fact]
+    public void TestUnitEvaluationReturnFromFunction()
+    {
+        const string code = @"
+                            unit N: [kg*m*s^-2]
+                            calculateGForce(m1: [kg], m2: [kg], distance: [m]) -> [N] {
+                                return 6.6732e-11 [N*m^2*kg^-2] * m1 * m2 / (distance * distance)
+                            }
+                            main() -> void {
+                                let gForce: [N] = calculateGForce(200 [kg], 4500 [kg], 8000 [m])
+                            }";
+
+        var parser = Helper.PrepareParser(code);
+        var program = parser.Parse();
+
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
+        semanticAnalyzer.Visit(program);
+    }
+    
+    [Fact]
+    public void TestBigUnits()
+    {
+        const string code = @"
+                            unit R: [kg*m^2*s^-3*A^-2]
+                            unit V: [kg*m^2*A^-1*s^-3]
+
+                            calculateElectricity(resistance: [R], voltage: [V]) -> [A] {
+                                return voltage / resistance
+                            }";
+
+        var parser = Helper.PrepareParser(code);
+        var program = parser.Parse();
+
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
+        semanticAnalyzer.Visit(program);
+    }
 
     [Fact]
     public void TestCoreUnitOperationsWithInlineDeclarationsWithError()

@@ -1,3 +1,4 @@
+using si_unit_interpreter.exceptions.interpreter;
 using si_unit_interpreter.parser;
 using si_unit_interpreter.parser.expression;
 using si_unit_interpreter.parser.expression.additive;
@@ -7,7 +8,7 @@ using si_unit_interpreter.parser.expression.multiplicative;
 using si_unit_interpreter.parser.expression.negate;
 using si_unit_interpreter.parser.statement;
 
-namespace si_unit_interpreter.interpreter;
+namespace si_unit_interpreter.interpreter.interpreter;
 
 public class InterpreterVisitor : IInterpreterVisitor
 {
@@ -31,8 +32,15 @@ public class InterpreterVisitor : IInterpreterVisitor
         {
             _functions[name] = function;
         }
-
-        _functions[_mainFunctionName].Accept(this);
+        
+        if (_functions.TryGetValue(_mainFunctionName, out var mainFunction))
+        {
+            mainFunction.Accept(this);
+        }
+        else
+        {
+            throw new LackOfMainFunctionException();
+        }
 
         return true;
     }
@@ -50,7 +58,7 @@ public class InterpreterVisitor : IInterpreterVisitor
         }
 
         var functionReturnValue = element.Statements.Accept(this);
-        
+
         _functionCallContext.Scopes.RemoveLast();
 
         return functionReturnValue;
@@ -85,7 +93,7 @@ public class InterpreterVisitor : IInterpreterVisitor
             _functionCallContext.Scopes.AddLast(new Scope());
 
             var value = element.Statements.Accept(this);
-            
+
             _functionCallContext.Scopes.RemoveLast();
 
             return value;
@@ -94,7 +102,8 @@ public class InterpreterVisitor : IInterpreterVisitor
         foreach (var elseIfStatement in element.ElseIfStatements)
         {
             var elseIfValue = elseIfStatement.Accept(this);
-            if (elseIfValue != null) {
+            if (elseIfValue != null)
+            {
                 return elseIfValue;
             }
         }
@@ -102,7 +111,7 @@ public class InterpreterVisitor : IInterpreterVisitor
         _functionCallContext.Scopes.AddLast(new Scope());
         var elseValue = element.ElseStatement.Accept(this);
         _functionCallContext.Scopes.RemoveLast();
-        
+
         return elseValue;
     }
 
@@ -110,11 +119,11 @@ public class InterpreterVisitor : IInterpreterVisitor
     {
         var conditionValue = element.Condition.Accept(this);
         if (!conditionValue) return null;
-        
+
         _functionCallContext.Scopes.AddLast(new Scope());
         var elseIfStatement = element.Statements.Accept(this);
         _functionCallContext.Scopes.RemoveLast();
-        
+
         return elseIfStatement;
     }
 
@@ -126,8 +135,8 @@ public class InterpreterVisitor : IInterpreterVisitor
         {
             _functionCallContext.Scopes.AddLast(new Scope());
             value = element.Statements.Accept(this);
-            _functionCallContext.Scopes.RemoveLast(); 
-            
+            _functionCallContext.Scopes.RemoveLast();
+
             conditionValue = element.Condition.Accept(this);
         }
 
@@ -169,14 +178,13 @@ public class InterpreterVisitor : IInterpreterVisitor
         if (_functions.TryGetValue(name, out var functionStatement))
         {
             _functionCallContext.ParameterScopes.AddLast(new ParameterScope());
-            // _functionCallContext.Parameters = new List<dynamic>();
             foreach (var argument in element.Arguments)
             {
                 var argumentValue = argument.Accept(this);
-                
-                _functionCallContext.ParameterScopes.Last().Parameters.Add(argumentValue);
 
+                _functionCallContext.ParameterScopes.Last().Parameters.Add(argumentValue);
             }
+
             var functionValue = functionStatement.Accept(this);
             _functionCallContext.ParameterScopes.RemoveLast();
             return functionValue;
@@ -185,13 +193,9 @@ public class InterpreterVisitor : IInterpreterVisitor
         return null;
     }
 
-    public dynamic? Visit(Parameter element)
+    public dynamic Visit(Parameter element)
     {
         return element.Name;
-        
-        // _functionCallContext.Scopes.Last().Variables[e]
-        // _functionCallContext.Parameters[element.Name] = element.
-        return null;
     }
 
     public dynamic? Visit(Expression element)
@@ -251,14 +255,7 @@ public class InterpreterVisitor : IInterpreterVisitor
 
     public dynamic? Visit(DivideExpression element)
     {
-        var leftValue = element.Left.Accept(this);
-        var rightValue = element.Right.Accept(this);
-        // if (leftValue == null && rightValue == null)
-        // {
-        //     return null;
-        // }
-
-        return (double) leftValue! / rightValue;
+        return (double) element.Left.Accept(this)! / element.Right.Accept(this);
     }
 
     public dynamic? Visit(MinusExpression element)
@@ -274,7 +271,7 @@ public class InterpreterVisitor : IInterpreterVisitor
     public dynamic? Visit(Identifier element)
     {
         var name = element.Name;
-        
+
         var scopeClone = new LinkedList<Scope>(_functionCallContext.Scopes);
 
         while (scopeClone.Count > 0)
@@ -283,21 +280,9 @@ public class InterpreterVisitor : IInterpreterVisitor
             {
                 return value;
             }
+
             scopeClone.RemoveLast();
         }
-
-        // foreach (var scope in _functionCallContext.Scopes)
-        // {
-        //     if (scope.Variables.TryGetValue(name, out var value))
-        //     {
-        //         return value;
-        //     }
-        // }
-
-        // if (_functionCallContext.Parameters.TryGetValue(name, out var parameterValue))
-        // {
-        //     return parameterValue;
-        // }
 
         return null!;
     }

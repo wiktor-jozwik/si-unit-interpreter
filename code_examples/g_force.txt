@@ -1,0 +1,16 @@
+unit N: [kg*m*s^-2]
+
+calculateGForce(m: [kg], r: [m]) -> [m*s^-2] {
+    let G: [N*m^2*kg^-2] = 6.6732e-11 [N*m^2*kg^-2]
+
+    return G * m / (r * r)
+}
+
+main() -> void {    
+    let earthMass: [kg] = 5.9722e24 [kg]
+    let earthR: [m] = 6.38e6 [m]
+    
+    print("Earth on g equals:")
+    print(calculateGForce(earthMass, earthR))
+}
+

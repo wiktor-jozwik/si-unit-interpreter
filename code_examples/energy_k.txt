@@ -1,17 +1,19 @@
 // Energia kinetyczna - Ek = mv^2 / 2 
 
-unit J: [kg*m^2*s^-2]
-
 main() -> void {
-    let mass: [kg] = 10
+    let mass: [kg] = 10 [kg]
     
-    let duration: [s] = 10
-    let distance: [m] = 20
+    let duration: [s] = 10 [s]
+    let distance: [m] = 20 [m]
     
     let speed: [m*s^-1] = distance / duration
-    let energy: [J] = mass * speed * speed / 2
-    
-    let printoutString: string = "Energy equals: "
-    print(printoutString)
-    print(energy) // Should print Energy equals: ... J
+
+    print("Energy equals: ")
+    print(calculateKEnergy(mass, speed, 2))
+}
+
+unit J: [kg*m^2*s^-2]
+
+calculateKEnergy(m: [kg], v: [m*s^-1], scalar: []) -> [J] {
+    return m * v * v / scalar
 }

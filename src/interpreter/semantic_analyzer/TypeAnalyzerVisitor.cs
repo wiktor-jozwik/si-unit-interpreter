@@ -254,10 +254,10 @@ public class TypeAnalyzerVisitor : ITypeVisitor
             var leftUnits = (UnitType) leftType;
             var rightUnits = (UnitType) rightType;
 
-            var expressionUnits = _CloneUnitList(leftUnits);
-            var divideByUnits = _CloneUnitList(rightUnits);
+            var left = _EvaluateUnit(_CloneUnitList(leftUnits));
+            var right = _EvaluateUnit(_CloneUnitList(rightUnits));
 
-            return _JoinTwoUnits(expressionUnits, divideByUnits);
+            return _JoinTwoUnits(left, right);
         }
 
         throw new UnpermittedOperationException(leftType, "*", rightType);
@@ -275,15 +275,15 @@ public class TypeAnalyzerVisitor : ITypeVisitor
             var leftUnits = (UnitType) leftType;
             var rightUnits = (UnitType) rightType;
 
-            var expressionUnits = _CloneUnitList(leftUnits);
-            var divideByUnits = _CloneUnitList(rightUnits);
+            var left = _EvaluateUnit(_CloneUnitList(leftUnits));
+            var right = _EvaluateUnit(_CloneUnitList(rightUnits));
 
-            foreach (var rightUnit in divideByUnits)
+            foreach (var rightUnit in right)
             {
                 rightUnit.Power *= -1;
             }
 
-            return _JoinTwoUnits(expressionUnits, divideByUnits);
+            return _JoinTwoUnits(left, right);
         }
 
         throw new UnpermittedOperationException(leftType, "/", rightType);
@@ -437,7 +437,7 @@ public class TypeAnalyzerVisitor : ITypeVisitor
         return unitType.Units.Select(u => u.Clone()).ToList();
     }
 
-    private static UnitType _JoinTwoUnits(IList<Unit> leftUnits, IList<Unit> rightUnits)
+    private UnitType _JoinTwoUnits(IList<Unit> leftUnits, IList<Unit> rightUnits)
     {
         var units = new List<Unit>();
 
@@ -498,8 +498,8 @@ public class TypeAnalyzerVisitor : ITypeVisitor
 
     private bool _AreUnitsTheSame(UnitType leftUnit, UnitType rightUnit)
     {
-        var evaluatedLeftUnits = _EvaluateUnit(leftUnit);
-        var evaluatedRightUnits = _EvaluateUnit(rightUnit);
+        var evaluatedLeftUnits = _EvaluateUnit(leftUnit.Units);
+        var evaluatedRightUnits = _EvaluateUnit(rightUnit.Units);
 
         if (evaluatedLeftUnits.Count != evaluatedRightUnits.Count)
         {
@@ -519,14 +519,14 @@ public class TypeAnalyzerVisitor : ITypeVisitor
         return true;
     }
 
-    private List<Unit> _EvaluateUnit(UnitType unitType)
+    private List<Unit> _EvaluateUnit(IList<Unit> unitsToEvaluate)
     {
         var units = new List<Unit>();
-        foreach (var unit in unitType.Units)
+        foreach (var unit in unitsToEvaluate)
         {
             if (_units.TryGetValue(unit.Name, out var foundUnitInDeclared))
             {
-                units.AddRange(foundUnitInDeclared.Units);
+                units.AddRange(_CloneUnitList(foundUnitInDeclared));
             }
             else if (!_defaultSiUnits.ContainsKey(unit.Name))
             {
@@ -538,7 +538,35 @@ public class TypeAnalyzerVisitor : ITypeVisitor
             }
         }
 
+        units = _AddSameUnitsWithinUnit(units);
+
         return units;
+    }
+
+    private static List<Unit> _AddSameUnitsWithinUnit(IList<Unit> units)
+    {
+        // N - kg*m*s^-2
+        // [kg^3*m^-1*s^-2*m^2*kg^-2]
+        var newUnitList = new List<Unit>();
+
+        for (var i = 0; i < units.Count; i++)
+        {
+            for (int j = i+1; j < units.Count; j++)
+            {
+                if (units[i].Name == units[j].Name)
+                {
+                    units[i].Power += units[j].Power;
+                    units = units.Where(u => u != units[j]).ToList();
+                }  
+            }
+            
+            if (units[i].Power != 0)
+            {
+                newUnitList.Add(units[i]);
+            }
+        }
+
+        return newUnitList;
     }
 
     private static bool _IsUnit(IType type)

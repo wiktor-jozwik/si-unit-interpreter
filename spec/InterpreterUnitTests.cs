@@ -1,5 +1,7 @@
 using Shouldly;
+using si_unit_interpreter.exceptions.interpreter;
 using si_unit_interpreter.interpreter;
+using si_unit_interpreter.interpreter.interpreter;
 using si_unit_interpreter.interpreter.semantic_analyzer;
 using Xunit;
 using Xunit.Abstractions;
@@ -260,7 +262,7 @@ public class InterpreterUnitTests
         interpreter.Visit(program);
         consoleOutput.GetOutput().ShouldBe("from else\n");
     }
-    
+
     [Fact]
     public void TestNotCondition()
     {
@@ -631,6 +633,28 @@ public class InterpreterUnitTests
         semanticAnalyzer.Visit(program);
         interpreter.Visit(program);
         consoleOutput.GetOutput().ShouldBe("-5\n");
+    }
+
+    [Fact]
+    public void TestLackOfMainFunction()
+    {
+        const string code = @"
+                            getX(var: [s]) -> [s] {
+                                return 20 [s] - var
+                            }
+                            ";
+
+        var parser = Helper.PrepareParser(code);
+        var program = parser.Parse();
+
+
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+
+        var interpreter = new InterpreterVisitor("main", builtinFunctionsProvider);
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
+        semanticAnalyzer.Visit(program);
+
+        Assert.Throws<LackOfMainFunctionException>(() => interpreter.Visit(program));
     }
 }
 

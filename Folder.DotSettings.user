@@ -4,12 +4,29 @@
   &lt;Assembly Path="/Users/jozek/.nuget/packages/mstest.testframework/2.2.10/lib/net5.0/Microsoft.VisualStudio.TestPlatform.TestFramework.dll" /&gt;
 &lt;/AssemblyExplorer&gt;</s:String>
 	<s:String x:Key="/Default/Environment/Highlighting/HighlightingSourceSnapshotLocation/@EntryValue">/Users/jozek/Library/Caches/JetBrains/Rider2021.3/resharper-host/temp/Rider/vAny/CoverageData/_.19/Snapshot/snapshot.utdcvr</s:String>
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=7ec3b829_002D3038_002D4118_002Da894_002Df42fea7c2c95/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="All tests from &amp;lt;si-unit-interpreter&amp;gt;" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
-  &lt;Project Location="/Users/jozek/studia/SEM6/TKOM/projekt/si-unit-interpreter" Presentation="&amp;lt;si-unit-interpreter&amp;gt;" /&gt;
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=0ba3fa12_002D92fa_002D4169_002Dbb46_002D7085c702103a/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="TestUnitEvaluationReturnFromFunction #2" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;TestAncestor&gt;
+    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.SemanticAnalyzerUnitTests.TestUnitEvaluationReturnFromFunction&lt;/TestId&gt;
+    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.InterpreterAcceptanceTests.TestGravityExample&lt;/TestId&gt;
+    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.InterpreterAcceptanceTests.TestGForceExample&lt;/TestId&gt;
+    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.InterpreterAcceptanceTests.TestElectricityExample&lt;/TestId&gt;
+    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.SemanticAnalyzerUnitTests.TestBigUnits&lt;/TestId&gt;
+  &lt;/TestAncestor&gt;
 &lt;/SessionState&gt;</s:String>
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=b5d78854_002D750f_002D4e1d_002D8488_002Dc8b31e0c26db/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="All tests from &amp;lt;si-unit-interpreter&amp;gt; #2" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
-  &lt;Project Location="/Users/jozek/studia/SEM6/TKOM/projekt/si-unit-interpreter" Presentation="&amp;lt;si-unit-interpreter&amp;gt;" /&gt;
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=87c1b0bf_002D15cd_002D4518_002D9c9c_002Dcb4294904cce/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="TestUnitEvaluationReturnFromFunction" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;TestAncestor&gt;
+    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.SemanticAnalyzerUnitTests.TestUnitEvaluationReturnFromFunction&lt;/TestId&gt;
+  &lt;/TestAncestor&gt;
 &lt;/SessionState&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=880d1636_002D9dd2_002D416c_002D9ea3_002D9708b2d48efe/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="TestBigUnits" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;TestAncestor&gt;
+    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.SemanticAnalyzerUnitTests.TestBigUnits&lt;/TestId&gt;
+    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.InterpreterUnitTests.TestLackOfMainFunction&lt;/TestId&gt;
+    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.InterpreterAcceptanceTests.TestElectricityExample&lt;/TestId&gt;
+  &lt;/TestAncestor&gt;
+&lt;/SessionState&gt;</s:String>
+	
+	
 	
 	
 	

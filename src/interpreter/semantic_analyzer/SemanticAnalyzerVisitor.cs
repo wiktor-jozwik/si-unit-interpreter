@@ -20,7 +20,6 @@ public class SemanticAnalyzerVisitor : IVisitor
         _builtInFunctions = builtInFunctionsAndItsTypes;
     }
 
-    // public SemanticAnalyzerVisitor(funtions )
     public void Visit(TopLevel element)
     {
         _units = element.Units;
