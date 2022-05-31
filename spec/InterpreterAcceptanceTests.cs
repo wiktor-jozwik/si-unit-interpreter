@@ -43,6 +43,25 @@ public class InterpreterAcceptanceTests
         mainProcessor.Run();
         consoleOutput.GetOutput().ShouldBe("1.7699774792265277\n");
     }
+    
+    [Fact]
+    public void TestEnergyKExample()
+    {
+        var codeBaseUrl = new Uri(Assembly.GetExecutingAssembly().Location);
+        var codeBasePath = Uri.UnescapeDataString(codeBaseUrl.AbsolutePath);
+        var dirPath = Path.GetDirectoryName(codeBasePath);
+        var path = Path.Combine(dirPath!, "code_examples", "energy_k.txt");
+
+        string[] args =
+        {
+            path
+        };
+        var mainProcessor = new MainProcessor(args);
+
+        using var consoleOutput = new ConsoleOutput();
+        mainProcessor.Run();
+        consoleOutput.GetOutput().ShouldBe("Energy equals: \n20\n");
+    }
 
     public class ConsoleOutput : IDisposable
     {

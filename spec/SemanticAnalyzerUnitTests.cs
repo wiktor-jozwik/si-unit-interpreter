@@ -890,7 +890,7 @@ public class SemanticAnalyzerUnitTests
         var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<TypeMismatchException>(() =>
             semanticAnalyzer.Visit(program));
-        Assert.Equal("'force' requires [N] type but received [N*m]", e.Message);
+        Assert.Equal("'force' requires [N] type but received [kg*m^2*s^-2]", e.Message);
     }
 
     [Fact]
