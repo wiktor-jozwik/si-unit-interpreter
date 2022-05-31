@@ -1,9 +1,10 @@
 using si_unit_interpreter.interpreter;
+using si_unit_interpreter.interpreter.semantic_analyzer;
 using si_unit_interpreter.parser.type;
 
 namespace si_unit_interpreter.parser.expression.literal;
 
-public class StringLiteral : IExpression, IVisitable<string>
+public class StringLiteral : IExpression
 {
     public readonly string Value;
 
@@ -12,12 +13,7 @@ public class StringLiteral : IExpression, IVisitable<string>
         Value = value;
     }
 
-    public IType Accept(IVisitor<IType> visitor)
-    {
-        return visitor.Visit(this);
-    }
-    
-    public string Accept(IVisitor<string> visitor)
+    public IType Accept(ITypeVisitor visitor)
     {
         return visitor.Visit(this);
     }

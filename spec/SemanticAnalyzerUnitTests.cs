@@ -1,4 +1,5 @@
 using si_unit_interpreter.exceptions.semantic_analyzer;
+using si_unit_interpreter.interpreter;
 using si_unit_interpreter.interpreter.semantic_analyzer;
 using Xunit;
 
@@ -18,7 +19,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
 
         var e = Assert.Throws<VariableRedeclarationException>(() =>
             semanticAnalyzer.Visit(program));
@@ -39,7 +41,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
 
         var e = Assert.Throws<VariableRedeclarationException>(() =>
             semanticAnalyzer.Visit(program));
@@ -62,7 +65,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
 
         var e = Assert.Throws<VariableRedeclarationException>(() =>
             semanticAnalyzer.Visit(program));
@@ -87,7 +91,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
 
         var e = Assert.Throws<VariableRedeclarationException>(() =>
             semanticAnalyzer.Visit(program));
@@ -109,7 +114,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
 
         var e = Assert.Throws<VariableRedeclarationException>(() =>
             semanticAnalyzer.Visit(program));
@@ -132,7 +138,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
 
         var e = Assert.Throws<VariableRedeclarationException>(() =>
             semanticAnalyzer.Visit(program));
@@ -154,7 +161,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
 
         var e = Assert.Throws<VariableRedeclarationException>(() =>
             semanticAnalyzer.Visit(program));
@@ -176,7 +184,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
 
         var e = Assert.Throws<VariableRedeclarationException>(() =>
             semanticAnalyzer.Visit(program));
@@ -202,7 +211,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
 
         var e = Assert.Throws<VariableRedeclarationException>(() =>
             semanticAnalyzer.Visit(program));
@@ -224,7 +234,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         semanticAnalyzer.Visit(program);
     }
 
@@ -244,13 +255,14 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<VariableRedeclarationException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("'zzz' is already declared", e.Message);
     }
-    
-    
+
+
     [Fact]
     public void TestUsageOfVariableInWrongScope()
     {
@@ -266,12 +278,11 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
-        semanticAnalyzer.Visit(program);
-        //
-        // var e = Assert.Throws<VariableRedeclarationException>(() =>
-        //     semanticAnalyzer.Visit(program));
-        // Assert.Equal("'zzz' is already declared", e.Message);
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
+        var e = Assert.Throws<VariableUndeclaredException>(() =>
+            semanticAnalyzer.Visit(program));
+        Assert.Equal("'zzz' is not defined", e.Message);
     }
 
     [Fact]
@@ -291,7 +302,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<VariableRedeclarationException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("'var' is already declared", e.Message);
@@ -315,7 +327,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<VariableRedeclarationException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("'varElseIf' is already declared", e.Message);
@@ -340,7 +353,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<VariableRedeclarationException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("'varElse' is already declared", e.Message);
@@ -364,7 +378,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         semanticAnalyzer.Visit(program);
     }
 
@@ -379,7 +394,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
 
         var e = Assert.Throws<VariableUndeclaredException>(() =>
             semanticAnalyzer.Visit(program));
@@ -399,7 +415,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
 
         var e = Assert.Throws<VariableUndeclaredException>(() =>
             semanticAnalyzer.Visit(program));
@@ -419,7 +436,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
 
         var e = Assert.Throws<VariableUndeclaredException>(() =>
             semanticAnalyzer.Visit(program));
@@ -437,7 +455,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
 
         var e = Assert.Throws<FunctionUndeclaredException>(() =>
             semanticAnalyzer.Visit(program));
@@ -455,7 +474,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<TypeMismatchException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("'s' requires [m] type but received []", e.Message);
@@ -475,7 +495,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<TypeMismatchException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("'z' requires [m^2*s^-3] type but received [m^2*s^-2]", e.Message);
@@ -495,7 +516,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         semanticAnalyzer.Visit(program);
     }
 
@@ -512,7 +534,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<UnpermittedOperationException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("Unsupported operator '+' for [m] and [s]", e.Message);
@@ -529,7 +552,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<UnpermittedOperationException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("Unsupported operator '-' for [kg] and [m^2*s^-2]", e.Message);
@@ -548,7 +572,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<UnpermittedOperationException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("Unsupported operator '-' for [s] and [m]", e.Message);
@@ -569,7 +594,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         semanticAnalyzer.Visit(program);
     }
 
@@ -584,7 +610,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<UnitUndeclaredException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("'N' is not defined", e.Message);
@@ -601,7 +628,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<UnitUndeclaredException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("'k' is not defined", e.Message);
@@ -618,7 +646,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         semanticAnalyzer.Visit(program);
     }
 
@@ -634,7 +663,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<TypeMismatchException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("'scalar' requires [] type but received [m*s^-1]", e.Message);
@@ -651,7 +681,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         semanticAnalyzer.Visit(program);
     }
 
@@ -666,7 +697,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<TypeMismatchException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("'l' requires [cd] type but received []", e.Message);
@@ -692,7 +724,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         semanticAnalyzer.Visit(program);
     }
 
@@ -716,7 +749,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<TypeMismatchException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("'acceleration' requires [m*s^-1] type but received [m*s^-2]", e.Message);
@@ -741,7 +775,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<TypeMismatchException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("'force' requires [N] type but received [m*s^-2]", e.Message);
@@ -759,7 +794,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         semanticAnalyzer.Visit(program);
     }
 
@@ -775,7 +811,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<TypeMismatchException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("'f' requires [N] type but received [kg*m]", e.Message);
@@ -793,7 +830,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         semanticAnalyzer.Visit(program);
     }
 
@@ -809,7 +847,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<TypeMismatchException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("'force' requires [N] type but received [N*m]", e.Message);
@@ -827,7 +866,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         semanticAnalyzer.Visit(program);
     }
 
@@ -846,7 +886,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         semanticAnalyzer.Visit(program);
     }
 
@@ -865,7 +906,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<TypeMismatchException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("'s' requires [m] type but received [s]", e.Message);
@@ -886,7 +928,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<TypeMismatchException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("'length' requires [m] type but received []", e.Message);
@@ -907,7 +950,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
 
         var e = Assert.Throws<WrongNumberOfArgumentsException>(() =>
             semanticAnalyzer.Visit(program));
@@ -931,7 +975,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
 
         semanticAnalyzer.Visit(program);
     }
@@ -950,7 +995,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
 
         var e = Assert.Throws<TypeMismatchException>(() =>
             semanticAnalyzer.Visit(program));
@@ -975,7 +1021,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
 
         var e = Assert.Throws<TypeMismatchException>(() =>
             semanticAnalyzer.Visit(program));
@@ -999,7 +1046,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
 
         var e = Assert.Throws<TypeMismatchException>(() =>
             semanticAnalyzer.Visit(program));
@@ -1018,7 +1066,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
 
         var e = Assert.Throws<UnpermittedOperationException>(() =>
             semanticAnalyzer.Visit(program));
@@ -1036,7 +1085,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         semanticAnalyzer.Visit(program);
     }
 
@@ -1051,7 +1101,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         semanticAnalyzer.Visit(program);
     }
 
@@ -1066,7 +1117,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         semanticAnalyzer.Visit(program);
     }
 
@@ -1081,7 +1133,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         semanticAnalyzer.Visit(program);
     }
 
@@ -1096,7 +1149,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         semanticAnalyzer.Visit(program);
     }
 
@@ -1112,7 +1166,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         semanticAnalyzer.Visit(program);
     }
 
@@ -1127,7 +1182,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<UnpermittedOperationException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("Unsupported operator '==' for [m] and [s]", e.Message);
@@ -1144,7 +1200,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<UnpermittedOperationException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("Unsupported operator '==' for [m] and bool", e.Message);
@@ -1161,7 +1218,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<UnpermittedOperationException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("Unsupported operator '!=' for bool and string", e.Message);
@@ -1178,7 +1236,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         semanticAnalyzer.Visit(program);
     }
 
@@ -1193,7 +1252,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<TypeMismatchException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("'x' requires [] type but received bool", e.Message);
@@ -1210,7 +1270,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<UnpermittedOperationException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("Unsupported operator '>' for [m] and [s]", e.Message);
@@ -1230,7 +1291,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<UnpermittedOperationException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("Unsupported operator '!=' for [m] and [s]", e.Message);
@@ -1249,7 +1311,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
 
         var e = Assert.Throws<UnpermittedOperationException>(() =>
             semanticAnalyzer.Visit(program));
@@ -1271,7 +1334,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
 
         var e = Assert.Throws<UnpermittedOperationException>(() =>
             semanticAnalyzer.Visit(program));
@@ -1293,7 +1357,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<UnpermittedOperationException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("Unsupported operator '-' for [] and bool", e.Message);
@@ -1315,7 +1380,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         semanticAnalyzer.Visit(program);
     }
 
@@ -1333,7 +1399,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<UnpermittedOperationException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("Unsupported operator '>' for [kg] and []", e.Message);
@@ -1353,7 +1420,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<UnpermittedOperationException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("Unsupported operator '<' for [kg] and [s]", e.Message);
@@ -1372,7 +1440,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<UnpermittedOperationException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("Unsupported operator '==' for [kg] and [mol]", e.Message);
@@ -1391,7 +1460,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<UnpermittedOperationException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("Unsupported operator '!=' for [mol] and [s]", e.Message);
@@ -1413,7 +1483,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<UnpermittedOperationException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("Unsupported operator '>=' for string and string", e.Message);
@@ -1432,7 +1503,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<UnpermittedOperationException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("Unsupported operator '<=' for string and string", e.Message);
@@ -1453,7 +1525,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<UnpermittedOperationException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("Unsupported operator '<=' for bool and bool", e.Message);
@@ -1470,7 +1543,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<UnpermittedOperationException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("Unsupported operator '*' for bool and bool", e.Message);
@@ -1487,7 +1561,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<UnpermittedOperationException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("Unsupported operator '/' for [] and bool", e.Message);
@@ -1504,7 +1579,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<UnpermittedOperationException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("Unsupported operator '+' for bool and string", e.Message);
@@ -1521,7 +1597,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<UnpermittedOperationException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("Unsupported operator '+' for [] and string", e.Message);
@@ -1538,7 +1615,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<UnpermittedOperationException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("Unsupported operator '*' for string and [m]", e.Message);
@@ -1555,7 +1633,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         semanticAnalyzer.Visit(program);
     }
 
@@ -1570,7 +1649,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<UnpermittedOperationException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("Unsupported operator '-' for string and string", e.Message);
@@ -1591,7 +1671,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         semanticAnalyzer.Visit(program);
     }
 
@@ -1610,7 +1691,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         semanticAnalyzer.Visit(program);
     }
 
@@ -1629,7 +1711,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<TypeMismatchException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("'b1' requires bool type but received []", e.Message);
@@ -1646,7 +1729,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<UnpermittedOperationException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("Unsupported operator '||' for [m] and bool", e.Message);
@@ -1663,7 +1747,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<UnpermittedOperationException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("Unsupported operator '||' for [m] and [m]", e.Message);
@@ -1680,7 +1765,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<UnpermittedOperationException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("Unsupported operator '&&' for string and string", e.Message);
@@ -1700,7 +1786,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<UnpermittedOperationException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("Unsupported operator '+' for [m] and void", e.Message);
@@ -1717,7 +1804,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<UnpermittedOperationException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("Unsupported operator '-' for string type", e.Message);
@@ -1734,7 +1822,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         semanticAnalyzer.Visit(program);
     }
 
@@ -1749,7 +1838,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<UnpermittedOperationException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("Unsupported operator '-' for bool type", e.Message);
@@ -1766,7 +1856,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<UnpermittedOperationException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("Unsupported operator '!' for string type", e.Message);
@@ -1784,7 +1875,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<UnpermittedOperationException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("Unsupported operator '!' for [] type", e.Message);
@@ -1805,7 +1897,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         semanticAnalyzer.Visit(program);
     }
 
@@ -1823,7 +1916,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<NotValidReturnTypeException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("'boolFn' return requires bool type but returned []", e.Message);
@@ -1843,7 +1937,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         semanticAnalyzer.Visit(program);
     }
 
@@ -1861,7 +1956,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<NotValidReturnTypeException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("'stringFn' return requires string type but returned bool", e.Message);
@@ -1878,7 +1974,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         semanticAnalyzer.Visit(program);
     }
 
@@ -1893,7 +1990,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<NotValidReturnTypeException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("'main' return requires void type but returned [m]", e.Message);
@@ -1917,7 +2015,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         semanticAnalyzer.Visit(program);
     }
 
@@ -1939,7 +2038,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<NotValidReturnTypeException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("'myFn' return requires [m] type but returned [s]", e.Message);
@@ -1963,7 +2063,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<NotValidReturnTypeException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("'myFn22' return requires [kg] type but returned [A]", e.Message);
@@ -1989,7 +2090,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<NotValidReturnTypeException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("'myFn' return requires [] type but returned [m]", e.Message);
@@ -2011,7 +2113,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         semanticAnalyzer.Visit(program);
     }
 
@@ -2031,7 +2134,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<TypeMismatchException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("'meter' requires [m] type but received [mol]", e.Message);
@@ -2052,7 +2156,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<TypeMismatchException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("'y' requires [m] type but received []", e.Message);
@@ -2073,7 +2178,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<TypeMismatchException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("'str' requires string type but received bool", e.Message);
@@ -2095,7 +2201,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         semanticAnalyzer.Visit(program);
     }
 
@@ -2114,7 +2221,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         var e = Assert.Throws<TypeMismatchException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("'boolean' requires bool type but received []", e.Message);
@@ -2132,7 +2240,8 @@ public class SemanticAnalyzerUnitTests
         var parser = Helper.PrepareParser(code);
         var program = parser.Parse();
 
-        var semanticAnalyzer = new SemanticAnalyzerVisitor();
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         semanticAnalyzer.Visit(program);
     }
 }

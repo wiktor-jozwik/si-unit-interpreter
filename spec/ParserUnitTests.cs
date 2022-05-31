@@ -146,7 +146,7 @@ public class ParserUnitTests
     {
         const string code = @"
                              main() -> void {
-                                 let speed: [m*s^-2] = 5.23
+                                 let speed: [m*s^-2] = 5.23 [m*s^-2]
                              }";
 
         var parser = Helper.PrepareParser(code);
@@ -168,8 +168,12 @@ public class ParserUnitTests
                         })
                 ),
                 new FloatLiteral(5.23, new UnitType(
-                    new List<Unit>()
-                ))
+                    new List<Unit>
+                    {
+                        new("m"),
+                        new("s", -2)
+                    })
+                )
             );
 
         JsonConvert.SerializeObject(block.Statements.First())

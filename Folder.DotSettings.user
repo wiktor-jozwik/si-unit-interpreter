@@ -4,26 +4,19 @@
   &lt;Assembly Path="/Users/jozek/.nuget/packages/mstest.testframework/2.2.10/lib/net5.0/Microsoft.VisualStudio.TestPlatform.TestFramework.dll" /&gt;
 &lt;/AssemblyExplorer&gt;</s:String>
 	<s:String x:Key="/Default/Environment/Highlighting/HighlightingSourceSnapshotLocation/@EntryValue">/Users/jozek/Library/Caches/JetBrains/Rider2021.3/resharper-host/temp/Rider/vAny/CoverageData/_.19/Snapshot/snapshot.utdcvr</s:String>
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=a7948f8d_002D8403_002D4bfc_002D9eae_002D358a1ab412a1/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="TestCodeExecutionInIf" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
-  &lt;TestAncestor&gt;
-    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.InterpreterUnitTests.TestCodeExecutionInIf&lt;/TestId&gt;
-    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.InterpreterUnitTests.TestCodeExecutionInIfWhenFalse&lt;/TestId&gt;
-    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.InterpreterUnitTests.TestCodeExecutionInElseIf&lt;/TestId&gt;
-    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.InterpreterUnitTests.TestCodeExecutionInSecondElseIf&lt;/TestId&gt;
-    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.InterpreterUnitTests.TestCodeExecutionInElse&lt;/TestId&gt;
-    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.InterpreterUnitTests.TestCodeExecutionInWhile&lt;/TestId&gt;
-    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.InterpreterUnitTests.TestCodeExecutionWithFunction&lt;/TestId&gt;
-    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.InterpreterUnitTests.TestCodeExecutionWithFunctionAndParameters&lt;/TestId&gt;
-    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.InterpreterUnitTests.TestCallFunctionWithParameter&lt;/TestId&gt;
-    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.InterpreterUnitTests.TestIfInFunctionWithParameterWhenConditionIsTrue&lt;/TestId&gt;
-    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.InterpreterUnitTests.TestIfInFunctionWithParameterWhenConditionIsFalse&lt;/TestId&gt;
-    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.InterpreterUnitTests.TestWhileInFunctionWhichTakeVariableFromParameter&lt;/TestId&gt;
-    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.InterpreterUnitTests.TestRecursiveFunction&lt;/TestId&gt;
-    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.InterpreterUnitTests.TestPassingVariableByCopyToFunction&lt;/TestId&gt;
-    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.InterpreterUnitTests.TestPassingTwoArgumentsToFunction&lt;/TestId&gt;
-    &lt;TestId&gt;xUnit::BC1ADEBF-F4F8-F8B4-A51A-AAF892F6E006::net6.0::si_unit_interpreter.spec.InterpreterUnitTests.TestRunningFunctionFromFunction&lt;/TestId&gt;
-  &lt;/TestAncestor&gt;
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=7ec3b829_002D3038_002D4118_002Da894_002Df42fea7c2c95/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="All tests from &amp;lt;si-unit-interpreter&amp;gt;" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;Project Location="/Users/jozek/studia/SEM6/TKOM/projekt/si-unit-interpreter" Presentation="&amp;lt;si-unit-interpreter&amp;gt;" /&gt;
 &lt;/SessionState&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=b5d78854_002D750f_002D4e1d_002D8488_002Dc8b31e0c26db/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="All tests from &amp;lt;si-unit-interpreter&amp;gt; #2" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;Project Location="/Users/jozek/studia/SEM6/TKOM/projekt/si-unit-interpreter" Presentation="&amp;lt;si-unit-interpreter&amp;gt;" /&gt;
+&lt;/SessionState&gt;</s:String>
+	
+	
+	
+	
+	
+	
+	
 	
 	
 	

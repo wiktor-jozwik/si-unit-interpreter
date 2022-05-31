@@ -19,13 +19,13 @@ public class Interpreter
         var parser = new Parser(lexer);
         
         var builtInFunctionsProvider = new BuiltInFunctionsProvider();
-        var semanticAnalyzerVisitor = new SemanticAnalyzerVisitor();
         
+        var semanticAnalyzerVisitor = new SemanticAnalyzerVisitor(builtInFunctionsProvider);
         var interpreterVisitor = new InterpreterVisitor("main", builtInFunctionsProvider);
         
         var topLevelObject = parser.Parse();
-        // TODO enable semantic analyzer
-        // _semanticAnalyzerVisitor.Visit(topLevelObject);
+
+        semanticAnalyzerVisitor.Visit(topLevelObject);
         interpreterVisitor.Visit(topLevelObject);
     }
 }

@@ -1,4 +1,5 @@
 using si_unit_interpreter.interpreter;
+using si_unit_interpreter.interpreter.semantic_analyzer;
 using si_unit_interpreter.parser.statement;
 using si_unit_interpreter.parser.type;
 
@@ -15,7 +16,7 @@ public class FunctionCall : IExpression, IStatement
         Arguments = arguments;
     }
 
-    public IType Accept(IVisitor<IType> visitor)
+    public IType Accept(ITypeVisitor visitor)
     {
         return visitor.Visit(this);
     }

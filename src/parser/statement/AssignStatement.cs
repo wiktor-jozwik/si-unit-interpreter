@@ -1,4 +1,5 @@
 using si_unit_interpreter.interpreter;
+using si_unit_interpreter.interpreter.semantic_analyzer;
 using si_unit_interpreter.parser.expression;
 using si_unit_interpreter.parser.type;
 
@@ -20,7 +21,7 @@ public class AssignStatement : ITypeCheck, IStatement
         visitor.Visit(this);
     }
 
-    public IType Accept(IVisitor<IType> visitor)
+    public IType Accept(ITypeVisitor visitor)
     {
         return visitor.Visit(this);
     }

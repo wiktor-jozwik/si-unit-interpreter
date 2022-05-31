@@ -18,7 +18,7 @@ public class InterpreterVisitor : IInterpreterVisitor
     private readonly Dictionary<string, Func<dynamic, dynamic>> _oneArgumentFunctions;
     private readonly Dictionary<string, Func<dynamic, dynamic, dynamic>> _twoArgumentFunctions;
 
-    public InterpreterVisitor(string mainFunctionName,IBuiltInFunctionsProvider builtInFunctionsProvider)
+    public InterpreterVisitor(string mainFunctionName, BuiltInFunctionsProvider builtInFunctionsProvider)
     {
         _mainFunctionName = mainFunctionName;
         _oneArgumentFunctions = builtInFunctionsProvider.GetOneArgumentFunctions();
@@ -253,10 +253,10 @@ public class InterpreterVisitor : IInterpreterVisitor
     {
         var leftValue = element.Left.Accept(this);
         var rightValue = element.Right.Accept(this);
-        if (leftValue == null && rightValue == null)
-        {
-            return null;
-        }
+        // if (leftValue == null && rightValue == null)
+        // {
+        //     return null;
+        // }
 
         return (double) leftValue! / rightValue;
     }

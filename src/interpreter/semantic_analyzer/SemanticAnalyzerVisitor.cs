@@ -10,7 +10,15 @@ public class SemanticAnalyzerVisitor : IVisitor
     private readonly SemanticFunctionCallContext _semanticFunctionCallContext = new();
 
     private readonly Dictionary<string, FunctionStatement> _functions = new();
+    private readonly Dictionary<string, IType> _builtInFunctions;
     private IDictionary<string, UnitType> _units = new Dictionary<string, UnitType>();
+    
+
+    public SemanticAnalyzerVisitor(BuiltInFunctionsProvider builtInFunctionsProvider)
+    {
+        var builtInFunctionsAndItsTypes = builtInFunctionsProvider.GetOneArgumentFunctionReturnTypes();
+        _builtInFunctions = builtInFunctionsAndItsTypes;
+    }
 
     // public SemanticAnalyzerVisitor(funtions )
     public void Visit(TopLevel element)
@@ -50,7 +58,7 @@ public class SemanticAnalyzerVisitor : IVisitor
 
     public void Visit(VariableDeclaration element)
     {
-        var typeVisitor = new TypeAnalyzerVisitor(_semanticFunctionCallContext, _functions, _units);
+        var typeVisitor = new TypeAnalyzerVisitor(_semanticFunctionCallContext, _functions, _builtInFunctions, _units);
         var variableType = element.Accept(typeVisitor);
 
         _semanticFunctionCallContext.Scopes.Last().Variables[element.Parameter.Name] = variableType;
@@ -58,7 +66,7 @@ public class SemanticAnalyzerVisitor : IVisitor
 
     public void Visit(IfStatement element)
     {
-        var typeVisitor = new TypeAnalyzerVisitor(_semanticFunctionCallContext, _functions, _units);
+        var typeVisitor = new TypeAnalyzerVisitor(_semanticFunctionCallContext, _functions, _builtInFunctions, _units);
 
         element.Condition.Accept(typeVisitor);
         element.Statements.Accept(this);
@@ -79,7 +87,7 @@ public class SemanticAnalyzerVisitor : IVisitor
 
     public void Visit(WhileStatement element)
     {
-        var typeVisitor = new TypeAnalyzerVisitor(_semanticFunctionCallContext, _functions, _units);
+        var typeVisitor = new TypeAnalyzerVisitor(_semanticFunctionCallContext, _functions, _builtInFunctions, _units);
 
         element.Condition.Accept(typeVisitor);
         element.Statements.Accept(this);
@@ -87,19 +95,19 @@ public class SemanticAnalyzerVisitor : IVisitor
 
     public void Visit(AssignStatement element)
     {
-        var typeVisitor = new TypeAnalyzerVisitor(_semanticFunctionCallContext, _functions, _units);
+        var typeVisitor = new TypeAnalyzerVisitor(_semanticFunctionCallContext, _functions, _builtInFunctions, _units);
         element.Accept(typeVisitor);
     }
 
     public void Visit(FunctionCall element)
     {
-        var typeVisitor = new TypeAnalyzerVisitor(_semanticFunctionCallContext, _functions, _units);
+        var typeVisitor = new TypeAnalyzerVisitor(_semanticFunctionCallContext, _functions, _builtInFunctions, _units);
         element.Accept(typeVisitor);
     }
 
     public void Visit(ReturnStatement element)
     {
-        var typeVisitor = new TypeAnalyzerVisitor(_semanticFunctionCallContext, _functions, _units);
+        var typeVisitor = new TypeAnalyzerVisitor(_semanticFunctionCallContext, _functions, _builtInFunctions, _units);
         element.Accept(typeVisitor);
     }
 

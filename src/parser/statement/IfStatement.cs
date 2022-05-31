@@ -1,4 +1,5 @@
 using si_unit_interpreter.interpreter;
+using si_unit_interpreter.interpreter.semantic_analyzer;
 using si_unit_interpreter.parser.expression;
 
 namespace si_unit_interpreter.parser.statement;

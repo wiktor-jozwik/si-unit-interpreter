@@ -12,18 +12,21 @@ using si_unit_interpreter.parser.unit;
 
 namespace si_unit_interpreter.interpreter.semantic_analyzer;
 
-public class TypeAnalyzerVisitor : IVisitor<IType>
+public class TypeAnalyzerVisitor : ITypeVisitor
 {
     private readonly SemanticFunctionCallContext _semanticFunctionCallContext;
     private readonly Dictionary<string, FunctionStatement> _functions;
+    private readonly Dictionary<string, IType> _builtInFunctions;
     private readonly IDictionary<string, UnitType> _units;
     private readonly IDictionary<string, UnitType> _defaultSiUnits;
 
     public TypeAnalyzerVisitor(SemanticFunctionCallContext semanticFunctionCallContext, Dictionary<string, FunctionStatement> functions,
+        Dictionary<string, IType> builtInFunctions,
         IDictionary<string, UnitType> units)
     {
         _semanticFunctionCallContext = semanticFunctionCallContext;
         _functions = functions;
+        _builtInFunctions = builtInFunctions;
         _units = units;
 
         // init SI units
@@ -72,6 +75,11 @@ public class TypeAnalyzerVisitor : IVisitor<IType>
     public IType Visit(ReturnStatement element)
     {
         var functionName = _semanticFunctionCallContext.FunctionName;
+
+        if (_builtInFunctions.TryGetValue(functionName, out var type))
+        {
+            return type;
+        }
 
         if (!_functions.TryGetValue(functionName, out var function))
         {
@@ -324,6 +332,11 @@ public class TypeAnalyzerVisitor : IVisitor<IType>
     public IType Visit(FunctionCall element)
     {
         var name = element.Name;
+        
+        if (_builtInFunctions.TryGetValue(name, out var type))
+        {
+            return type;
+        }
 
         if (_functions.TryGetValue(name, out var function))
         {
