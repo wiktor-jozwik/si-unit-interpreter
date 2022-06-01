@@ -12,13 +12,7 @@ namespace si_unit_interpreter.interpreter.semantic_analyzer;
 
 public interface ITypeVisitor
 {
-    IType Visit(TopLevel element);
-    IType Visit(FunctionStatement element);
-    IType Visit(Block element);
     IType Visit(VariableDeclaration element);
-    IType Visit(IfStatement element);
-    IType Visit(ElseIfStatement element);
-    IType Visit(WhileStatement element);
     IType Visit(AssignStatement element);
     IType Visit(ReturnStatement element);
     IType Visit(AddExpression element);
@@ -41,5 +35,4 @@ public interface ITypeVisitor
     IType Visit(FunctionCall element);
     IType Visit(Identifier element);
     IType Visit(LogicFactor element);
-    IType Visit(Parameter element);
 }

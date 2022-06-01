@@ -7,12 +7,12 @@ namespace si_unit_interpreter.interpreter.semantic_analyzer;
 
 public class SemanticAnalyzerVisitor : IVisitor
 {
-    private readonly SemanticFunctionCallContext _semanticFunctionCallContext = new();
+    private SemanticFunctionCallContext? _semanticFunctionCallContext;
 
     private readonly Dictionary<string, FunctionStatement> _functions = new();
     private readonly Dictionary<string, IType> _builtInFunctions;
     private IDictionary<string, UnitType> _units = new Dictionary<string, UnitType>();
-    
+
 
     public SemanticAnalyzerVisitor(BuiltInFunctionsProvider builtInFunctionsProvider)
     {
@@ -26,11 +26,13 @@ public class SemanticAnalyzerVisitor : IVisitor
 
         foreach (var (name, function) in element.Functions)
         {
-            _semanticFunctionCallContext.FunctionName = name;
-            _semanticFunctionCallContext.Parameters = new Dictionary<string, IType>();
-
             _functions[name] = function;
-            function.Accept(this);
+        }
+
+        foreach (var (name, functionStatement) in _functions)
+        {
+            _semanticFunctionCallContext = new SemanticFunctionCallContext(name, new Dictionary<string, IType>());
+            functionStatement.Accept(this);
         }
     }
 
@@ -46,26 +48,26 @@ public class SemanticAnalyzerVisitor : IVisitor
 
     public void Visit(Block element)
     {
-        _semanticFunctionCallContext.Scopes.AddLast(new SemanticScope());
+        _semanticFunctionCallContext?.Scopes.AddLast(new SemanticScope());
         foreach (var statement in element.Statements)
         {
             statement.Accept(this);
         }
 
-        _semanticFunctionCallContext.Scopes.RemoveLast();
+        _semanticFunctionCallContext?.Scopes.RemoveLast();
     }
 
     public void Visit(VariableDeclaration element)
     {
-        var typeVisitor = new TypeAnalyzerVisitor(_semanticFunctionCallContext, _functions, _builtInFunctions, _units);
+        var typeVisitor = new TypeAnalyzerVisitor(_semanticFunctionCallContext!, _functions, _builtInFunctions, _units);
         var variableType = element.Accept(typeVisitor);
 
-        _semanticFunctionCallContext.Scopes.Last().Variables[element.Parameter.Name] = variableType;
+        _semanticFunctionCallContext!.Scopes.Last().Variables[element.Parameter.Name] = variableType;
     }
 
     public void Visit(IfStatement element)
     {
-        var typeVisitor = new TypeAnalyzerVisitor(_semanticFunctionCallContext, _functions, _builtInFunctions, _units);
+        var typeVisitor = new TypeAnalyzerVisitor(_semanticFunctionCallContext!, _functions, _builtInFunctions, _units);
 
         element.Condition.Accept(typeVisitor);
         element.Statements.Accept(this);
@@ -86,7 +88,7 @@ public class SemanticAnalyzerVisitor : IVisitor
 
     public void Visit(WhileStatement element)
     {
-        var typeVisitor = new TypeAnalyzerVisitor(_semanticFunctionCallContext, _functions, _builtInFunctions, _units);
+        var typeVisitor = new TypeAnalyzerVisitor(_semanticFunctionCallContext!, _functions, _builtInFunctions, _units);
 
         element.Condition.Accept(typeVisitor);
         element.Statements.Accept(this);
@@ -94,24 +96,24 @@ public class SemanticAnalyzerVisitor : IVisitor
 
     public void Visit(AssignStatement element)
     {
-        var typeVisitor = new TypeAnalyzerVisitor(_semanticFunctionCallContext, _functions, _builtInFunctions, _units);
+        var typeVisitor = new TypeAnalyzerVisitor(_semanticFunctionCallContext!, _functions, _builtInFunctions, _units);
         element.Accept(typeVisitor);
     }
 
     public void Visit(FunctionCall element)
     {
-        var typeVisitor = new TypeAnalyzerVisitor(_semanticFunctionCallContext, _functions, _builtInFunctions, _units);
+        var typeVisitor = new TypeAnalyzerVisitor(_semanticFunctionCallContext!, _functions, _builtInFunctions, _units);
         element.Accept(typeVisitor);
     }
 
     public void Visit(ReturnStatement element)
     {
-        var typeVisitor = new TypeAnalyzerVisitor(_semanticFunctionCallContext, _functions, _builtInFunctions, _units);
+        var typeVisitor = new TypeAnalyzerVisitor(_semanticFunctionCallContext!, _functions, _builtInFunctions, _units);
         element.Accept(typeVisitor);
     }
 
     public void Visit(Parameter element)
     {
-        _semanticFunctionCallContext.Parameters[element.Name] = element.Type;
+        _semanticFunctionCallContext!.Parameters[element.Name] = element.Type;
     }
 }

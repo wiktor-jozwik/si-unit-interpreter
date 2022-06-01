@@ -251,13 +251,10 @@ public class TypeAnalyzerVisitor : ITypeVisitor
 
         if (_IsUnit(leftType) && _IsUnit(rightType))
         {
-            var leftUnits = (UnitType) leftType;
-            var rightUnits = (UnitType) rightType;
+            var leftUnits = _EvaluateUnit(_CloneUnitList((UnitType) leftType));
+            var rightUnits = _EvaluateUnit(_CloneUnitList((UnitType) rightType));
 
-            var left = _EvaluateUnit(_CloneUnitList(leftUnits));
-            var right = _EvaluateUnit(_CloneUnitList(rightUnits));
-
-            return _JoinTwoUnits(left, right);
+            return _JoinTwoUnits(leftUnits, rightUnits);
         }
 
         throw new UnpermittedOperationException(leftType, "*", rightType);
@@ -272,18 +269,15 @@ public class TypeAnalyzerVisitor : ITypeVisitor
 
         if (_IsUnit(leftType) && _IsUnit(rightType))
         {
-            var leftUnits = (UnitType) leftType;
-            var rightUnits = (UnitType) rightType;
+            var leftUnits = _EvaluateUnit(_CloneUnitList((UnitType) leftType));
+            var rightUnits = _EvaluateUnit(_CloneUnitList((UnitType) rightType));
 
-            var left = _EvaluateUnit(_CloneUnitList(leftUnits));
-            var right = _EvaluateUnit(_CloneUnitList(rightUnits));
-
-            foreach (var rightUnit in right)
+            foreach (var rightUnit in rightUnits)
             {
                 rightUnit.Power *= -1;
             }
 
-            return _JoinTwoUnits(left, right);
+            return _JoinTwoUnits(leftUnits, rightUnits);
         }
 
         throw new UnpermittedOperationException(leftType, "/", rightType);
@@ -375,41 +369,6 @@ public class TypeAnalyzerVisitor : ITypeVisitor
         return new StringType();
     }
 
-    public IType Visit(Parameter element)
-    {
-        throw new NotImplementedException();
-    }
-
-    public IType Visit(TopLevel element)
-    {
-        throw new NotImplementedException();
-    }
-
-    public IType Visit(FunctionStatement element)
-    {
-        throw new NotImplementedException();
-    }
-
-    public IType Visit(Block element)
-    {
-        throw new NotImplementedException();
-    }
-
-    public IType Visit(IfStatement element)
-    {
-        throw new NotImplementedException();
-    }
-
-    public IType Visit(ElseIfStatement element)
-    {
-        throw new NotImplementedException();
-    }
-
-    public IType Visit(WhileStatement element)
-    {
-        throw new NotImplementedException();
-    }
-
     // private methods
 
     private void CompareTypes(string name, IType leftType, IType rightType)
@@ -437,7 +396,7 @@ public class TypeAnalyzerVisitor : ITypeVisitor
         return unitType.Units.Select(u => u.Clone()).ToList();
     }
 
-    private UnitType _JoinTwoUnits(IList<Unit> leftUnits, IList<Unit> rightUnits)
+    private static UnitType _JoinTwoUnits(IList<Unit> leftUnits, IList<Unit> rightUnits)
     {
         var units = new List<Unit>();
 
@@ -545,19 +504,16 @@ public class TypeAnalyzerVisitor : ITypeVisitor
 
     private static List<Unit> _AddSameUnitsWithinUnit(IList<Unit> units)
     {
-        // N - kg*m*s^-2
-        // [kg^3*m^-1*s^-2*m^2*kg^-2]
         var newUnitList = new List<Unit>();
 
         for (var i = 0; i < units.Count; i++)
         {
-            for (int j = i+1; j < units.Count; j++)
+            for (var j = i+1; j < units.Count; j++)
             {
-                if (units[i].Name == units[j].Name)
-                {
-                    units[i].Power += units[j].Power;
-                    units = units.Where(u => u != units[j]).ToList();
-                }  
+                if (units[i].Name != units[j].Name) continue;
+                
+                units[i].Power += units[j].Power;
+                units = units.Where(u => u != units[j]).ToList();
             }
             
             if (units[i].Power != 0)

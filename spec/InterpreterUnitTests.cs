@@ -4,19 +4,11 @@ using si_unit_interpreter.interpreter;
 using si_unit_interpreter.interpreter.interpreter;
 using si_unit_interpreter.interpreter.semantic_analyzer;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace si_unit_interpreter.spec;
 
 public class InterpreterUnitTests
 {
-    private readonly ITestOutputHelper _testOutputHelper;
-
-    public InterpreterUnitTests(ITestOutputHelper testOutputHelper)
-    {
-        _testOutputHelper = testOutputHelper;
-    }
-
     [Fact]
     public void TestUnitVelocityExpression()
     {
@@ -634,6 +626,38 @@ public class InterpreterUnitTests
         interpreter.Visit(program);
         consoleOutput.GetOutput().ShouldBe("-5\n");
     }
+    
+        
+    [Fact]
+    public void TestDifferentFunctionsOrder()
+    {
+        const string code = @"
+                            getX(var: [s]) -> [s] {
+                                return 20 [s] - var
+                            }
+                            main() -> void {
+                                let x: [s] = getY(25 [s])
+
+                                print(x)
+                            }
+                            getY(w: [s]) -> [s] {
+                                return getX(w)
+                            }";
+
+        var parser = Helper.PrepareParser(code);
+        var program = parser.Parse();
+
+
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+
+        var interpreter = new InterpreterVisitor("main", builtinFunctionsProvider);
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
+
+        using var consoleOutput = new ConsoleOutput();
+        semanticAnalyzer.Visit(program);
+        interpreter.Visit(program);
+        consoleOutput.GetOutput().ShouldBe("-5\n");
+    }
 
     [Fact]
     public void TestLackOfMainFunction()
@@ -655,29 +679,5 @@ public class InterpreterUnitTests
         semanticAnalyzer.Visit(program);
 
         Assert.Throws<LackOfMainFunctionException>(() => interpreter.Visit(program));
-    }
-}
-
-public class ConsoleOutput : IDisposable
-{
-    private readonly StringWriter _stringWriter;
-    private readonly TextWriter _originalOutput;
-
-    public ConsoleOutput()
-    {
-        _stringWriter = new StringWriter();
-        _originalOutput = Console.Out;
-        Console.SetOut(_stringWriter);
-    }
-
-    public string GetOutput()
-    {
-        return _stringWriter.ToString();
-    }
-
-    public void Dispose()
-    {
-        Console.SetOut(_originalOutput);
-        _stringWriter.Dispose();
     }
 }

@@ -17,22 +17,20 @@ public class InterpreterVisitor : IInterpreterVisitor
 
     private readonly string _mainFunctionName;
     private readonly Dictionary<string, Func<dynamic, dynamic>> _oneArgumentFunctions;
-    private readonly Dictionary<string, Func<dynamic, dynamic, dynamic>> _twoArgumentFunctions;
 
     public InterpreterVisitor(string mainFunctionName, BuiltInFunctionsProvider builtInFunctionsProvider)
     {
         _mainFunctionName = mainFunctionName;
         _oneArgumentFunctions = builtInFunctionsProvider.GetOneArgumentFunctions();
-        _twoArgumentFunctions = builtInFunctionsProvider.GetTwoArgumentFunctions();
     }
 
-    public dynamic? Visit(TopLevel element)
+    public dynamic Visit(TopLevel element)
     {
         foreach (var (name, function) in element.Functions)
         {
             _functions[name] = function;
         }
-        
+
         if (_functions.TryGetValue(_mainFunctionName, out var mainFunction))
         {
             mainFunction.Accept(this);
@@ -53,7 +51,7 @@ public class InterpreterVisitor : IInterpreterVisitor
         foreach (var parameter in element.Parameters)
         {
             _functionCallContext.Scopes.Last().Variables[parameter.Accept(this)] =
-                _functionCallContext.ParameterScopes.Last().Parameters[parameterIndex];
+                _functionCallContext.ParameterScopes.Last()[parameterIndex];
             parameterIndex++;
         }
 
@@ -79,7 +77,7 @@ public class InterpreterVisitor : IInterpreterVisitor
     {
         var variableValue = element.Expression.Accept(this);
 
-        _functionCallContext.Scopes.Last().Variables[element.Parameter.Name] = variableValue;
+        _functionCallContext.Scopes.Last().Variables[element.Parameter.Name] = variableValue!;
 
         return null;
     }
@@ -177,12 +175,12 @@ public class InterpreterVisitor : IInterpreterVisitor
 
         if (_functions.TryGetValue(name, out var functionStatement))
         {
-            _functionCallContext.ParameterScopes.AddLast(new ParameterScope());
+            _functionCallContext.ParameterScopes.AddLast(new List<dynamic>());
             foreach (var argument in element.Arguments)
             {
                 var argumentValue = argument.Accept(this);
 
-                _functionCallContext.ParameterScopes.Last().Parameters.Add(argumentValue);
+                _functionCallContext.ParameterScopes.Last().Add(argumentValue);
             }
 
             var functionValue = functionStatement.Accept(this);
@@ -268,7 +266,7 @@ public class InterpreterVisitor : IInterpreterVisitor
         return !element.Child.Accept(this);
     }
 
-    public dynamic? Visit(Identifier element)
+    public dynamic Visit(Identifier element)
     {
         var name = element.Name;
 
@@ -287,22 +285,22 @@ public class InterpreterVisitor : IInterpreterVisitor
         return null!;
     }
 
-    public dynamic? Visit(BoolLiteral element)
+    public dynamic Visit(BoolLiteral element)
     {
         return element.Value;
     }
 
-    public dynamic? Visit(FloatLiteral element)
+    public dynamic Visit(FloatLiteral element)
     {
         return element.Value;
     }
 
-    public dynamic? Visit(IntLiteral element)
+    public dynamic Visit(IntLiteral element)
     {
         return element.Value;
     }
 
-    public dynamic? Visit(StringLiteral element)
+    public dynamic Visit(StringLiteral element)
     {
         return element.Value;
     }
