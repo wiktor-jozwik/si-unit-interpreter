@@ -2,14 +2,16 @@
 
 unit J: [kg*m^2*s^-2]
 
-let mass: [kg] = 10
-
-let duration: [s] = 10
-let distance: [m] = 20
-
-let speed: [m*s^-1] = distance / duration
-let energy: [J] = mass * speed * speed / 2
-
-let printoutString: string = "Energy equals: "
-print(printoutString)
-print(energy) // Should print Energy equals: ... J
+main() -> void {
+    let mass: [kg] = 10
+    
+    let duration: [s] = 10
+    let distance: [m] = 20
+    
+    let speed: [m*s^-1] = distance / duration
+    let energy: [J] = mass * speed * speed / 2
+    
+    let printoutString: string = "Energy equals: "
+    print(printoutString)
+    print(energy) // Should print Energy equals: ... J
+}

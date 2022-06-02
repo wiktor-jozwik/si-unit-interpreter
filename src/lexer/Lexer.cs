@@ -1,7 +1,7 @@
 using System.Text;
 using si_unit_interpreter.exceptions.lexer;
 
-namespace si_unit_interpreter;
+namespace si_unit_interpreter.lexer;
 
 public class Lexer
 {
@@ -11,10 +11,11 @@ public class Lexer
     private char _character;
     private TokenPosition _currentPosition;
 
-    private readonly Dictionary<string, TokenType> _keywordDictionary;
-    private readonly Dictionary<char, TokenType> _singleCharOperatorDictionary;
-    private readonly Dictionary<string, TokenType> _multiCharOperatorDictionary;
-    private readonly Dictionary<char, Func<(TokenType, string)>> _collidingOperatorsDictionary;
+    private readonly Dictionary<string, TokenType> _keywordMap;
+    private readonly Dictionary<string, char> _escapeCharsMap;
+    private readonly Dictionary<char, TokenType> _singleCharOperatorMap;
+    private readonly Dictionary<string, TokenType> _multiCharOperatorMap;
+    private readonly Dictionary<char, Func<(TokenType, string)>> _collidingOperatorsMap;
 
     private readonly int _maxCommentLength;
     private readonly int _maxIdentifierLength;
@@ -42,11 +43,10 @@ public class Lexer
         _maxExponentSize = maxExponentSize;
         _maxIntSize = maxIntSize;
 
-        _keywordDictionary = new Dictionary<string, TokenType>
+        _keywordMap = new Dictionary<string, TokenType>
         {
             ["let"] = TokenType.LET,
             ["unit"] = TokenType.UNIT,
-            ["fn"] = TokenType.FUNCTION,
             ["return"] = TokenType.RETURN,
             ["if"] = TokenType.IF,
             ["else"] = TokenType.ELSE,
@@ -58,7 +58,16 @@ public class Lexer
             ["false"] = TokenType.FALSE,
         };
         
-        _singleCharOperatorDictionary = new Dictionary<char, TokenType>
+        
+        _escapeCharsMap = new Dictionary<string, char>()
+        {
+            ["\\\""] = '\"',
+            ["\\\n"] = '\n',
+            ["\\\t"] = '\t',
+            ["\\\\"] = '\\'
+        };
+        
+        _singleCharOperatorMap = new Dictionary<char, TokenType>
         {
             ['+'] = TokenType.PLUS_OPERATOR,
             ['/'] = TokenType.DIVISION_OPERATOR,
@@ -78,13 +87,13 @@ public class Lexer
             [':'] = TokenType.COLON,
         };
         
-        _multiCharOperatorDictionary = new Dictionary<string, TokenType>
+        _multiCharOperatorMap = new Dictionary<string, TokenType>
         {
             ["||"] = TokenType.OR_OPERATOR,
             ["&&"] = TokenType.AND_OPERATOR,
         };
 
-        _collidingOperatorsDictionary = new Dictionary<char, Func<(TokenType, string)>>
+        _collidingOperatorsMap = new Dictionary<char, Func<(TokenType, string)>>
         {
             ['>'] = ()=> _DetermineOperator('=',TokenType.GREATER_THAN_OPERATOR, TokenType.GREATER_EQUAL_THAN_OPERATOR),
             ['<'] = ()=> _DetermineOperator('=',TokenType.SMALLER_THAN_OPERATOR, TokenType.SMALLER_EQUAL_THAN_OPERATOR),
@@ -103,17 +112,15 @@ public class Lexer
         var operatorString = $"{_character}";
         
         GetNextCharacter();
-        if (_character == multiOperatorNextChar)
-        {
-            operatorString += _character;
-            GetNextCharacter();
-            return (multiOperator, operatorString);
-        }
+        if (_character != multiOperatorNextChar) return (singleOperator, operatorString);
+        
+        operatorString += _character;
+        GetNextCharacter();
+        return (multiOperator, operatorString);
 
-        return (singleOperator, operatorString);
     }
 
-    public void GetNextToken()
+    public virtual void GetNextToken()
     {
         SkipWhites();
         if (
@@ -132,17 +139,15 @@ public class Lexer
         _character = (char)_streamReader.Read();
         _currentPosition.ColumnNumber++;
 
-        if (_character is '\n' or '\r')
+        if (_character is not ('\n' or '\r')) return;
+        
+        var escapingChars = new List<string> {"\n\r", "\r\n"};
+        if (escapingChars.Contains($"{_character}{(char)_streamReader.Peek()}"))
         {
-            var escapingChars = new List<string> {"\n\r", "\r\n"};
-            
-            if (escapingChars.Contains($"{_character}{(char)_streamReader.Peek()}"))
-            {
-                _streamReader.Read();
-            }
-            _currentPosition.ColumnNumber = 0;
-            _currentPosition.RowNumber++;
+            _streamReader.Read();
         }
+        _currentPosition.ColumnNumber = 0;
+        _currentPosition.RowNumber++;
     }
 
     private void SkipWhites()
@@ -166,22 +171,20 @@ public class Lexer
         if (_character != '/') return false;
 
         var commentDivisionPosition = _currentPosition;
-
         GetNextCharacter();
 
         if (_character == '/')
         {
             var comment = new StringBuilder();
-            
             GetNextCharacter();
 
             while (_character != '\n' && (_character != '\uffff' || !_streamReader.EndOfStream))
             {
-                comment.Append(_character);
-                if (comment.Length > _maxCommentLength)
+                if (comment.Length == _maxCommentLength)
                 {
                     throw new CommentExceededLengthException($"Comment can have maximum: {_maxCommentLength} chars.");
                 }
+                comment.Append(_character);
                 GetNextCharacter();
             }
                 
@@ -189,7 +192,7 @@ public class Lexer
             return true;
         }
 
-        Token = new Token(_singleCharOperatorDictionary['/'], commentDivisionPosition, "/");
+        Token = new Token(_singleCharOperatorMap['/'], commentDivisionPosition, "/");
         return true;
     }
 
@@ -202,17 +205,16 @@ public class Lexer
         var value = new StringBuilder();
         while (char.IsLetter(_character) || _character == '_' || char.IsDigit(_character))
         {
-            value.Append(_character);
-            if (value.Length > _maxIdentifierLength)
+            if (value.Length == _maxIdentifierLength)
             {
                 throw new IdentifierExceededLengthException($"Identifier can have maximum: {_maxIdentifierLength} chars.");
             }
+            value.Append(_character);
             GetNextCharacter();
         }
-
         var stringValue = value.ToString();
 
-        if (_keywordDictionary.TryGetValue(stringValue, out var tokenType))
+        if (_keywordMap.TryGetValue(stringValue, out var tokenType))
         {
             Token = new Token(tokenType, identifierPosition);
             return true;
@@ -227,38 +229,36 @@ public class Lexer
         if (_character != '\"') return false;
 
         var text = new StringBuilder();
-
         var textPosition = _currentPosition;
-
         GetNextCharacter();
 
         while (_character != '\"' && _character != '\uffff')
         {
+            if (text.Length == _maxTextLength) throw new TextExceededLengthException($"Text can have maximum: {_maxTextLength} chars.");
+
             if (_character == '\\')
             {
                 GetNextCharacter();
-                text.Append($"\\{_character}");
+                if (_escapeCharsMap.TryGetValue($"\\{_character}", out var escapeChar))
+                {
+                    text.Append(escapeChar);
+                }
+                else
+                {
+                    throw new UnknownEscapeCharException();
+                }
             }
             else
             {
                 text.Append(_character);
             }
             
-            if (text.Length > _maxTextLength)
-            {
-                throw new TextExceededLengthException($"Text can have maximum: {_maxTextLength} chars.");
-            }
-            
             GetNextCharacter();
         }
         
-        if (_character != '\"')
-        {
-            throw new TextEndingQuoteNotFoundException("There should be ending quote provided.");
-        }
-        
+        if (_character != '\"') throw new TextEndingQuoteNotFoundException();
+
         GetNextCharacter();
-        
         Token = new Token(TokenType.STRING, textPosition, text.ToString());
         return true;
     }
@@ -287,7 +287,6 @@ public class Lexer
         }
 
         double number = intPart;
-
         if (fractionPartSuccess)
         {
             number += fractionPart / Math.Pow(10, decimalPlaces);
@@ -305,7 +304,7 @@ public class Lexer
     {
         var operatorPosition = _currentPosition;
 
-        if (_singleCharOperatorDictionary.TryGetValue(_character, out var singleOperatorTokenType))
+        if (_singleCharOperatorMap.TryGetValue(_character, out var singleOperatorTokenType))
         {
             Token = new Token(singleOperatorTokenType, operatorPosition, char.ToString(_character));
             
@@ -313,7 +312,7 @@ public class Lexer
             return true;
         }
         
-        if (_collidingOperatorsDictionary.TryGetValue(_character, out var determineOperator))
+        if (_collidingOperatorsMap.TryGetValue(_character, out var determineOperator))
         {
             var (singleOrMultiTokenType, operatorString) = determineOperator();
             
@@ -323,9 +322,8 @@ public class Lexer
 
         var multiOperator = $"{_character}{(char)_streamReader.Peek()}";
 
-        if (_multiCharOperatorDictionary.TryGetValue(multiOperator, out var multiOperatorTokenType))
+        if (_multiCharOperatorMap.TryGetValue(multiOperator, out var multiOperatorTokenType))
         {
-            // as there was only a Peek() it's necessary to consume character
             GetNextCharacter();
             Token = new Token(multiOperatorTokenType, operatorPosition, multiOperator);
             
@@ -344,17 +342,12 @@ public class Lexer
         if (_character != '0')
         {
             intPart = _character - '0';
-
             GetNextCharacter();
 
             while (char.IsDigit(_character))
             {
                 intPart = intPart * 10 + _character - '0';
-                
-                if (intPart > _maxIntSize)
-                {
-                    throw new NumberExceededSizeException($"Number can be up to: {_maxIntSize}");
-                }
+                if (intPart > _maxIntSize) throw new NumberExceededSizeException($"Number can be up to: {_maxIntSize}");
 
                 GetNextCharacter();
             }
@@ -377,11 +370,9 @@ public class Lexer
         long fractionPart = 0;
         var decimalPlaces = 0;
 
-
         if (_character != '.') return (fractionPartSuccess, fractionPart, decimalPlaces);
         
         GetNextCharacter();
-
         while (char.IsDigit(_character))
         {
             fractionPart = fractionPart * 10 + _character - '0';
@@ -408,7 +399,6 @@ public class Lexer
         if (_character != 'e') return (exponentPartSuccess, minusFactor, exponentPart);
         
         GetNextCharacter();
-
         if (_character == '-')
         {
             minusFactor = -1;
@@ -418,11 +408,7 @@ public class Lexer
         while (char.IsDigit(_character))
         {
             exponentPart = exponentPart * 10 + _character - '0';
-            
-            if (exponentPart > _maxExponentSize)
-            {
-                throw new ExponentPartExceededSizeException($"Exponent part can be up to: {_maxExponentSize}");
-            }
+            if (exponentPart > _maxExponentSize) throw new ExponentPartExceededSizeException($"Exponent part can be up to: {_maxExponentSize}");
             
             GetNextCharacter();
         }

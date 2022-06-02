@@ -1,5 +1,5 @@
-using System.Text;
 using si_unit_interpreter.exceptions.lexer;
+using si_unit_interpreter.lexer;
 using Xunit;
 
 namespace si_unit_interpreter.spec;
@@ -115,18 +115,6 @@ public class LexerUnitTests
         Assert.Equal(TokenType.UNIT, token.Type);        
     }
    
-    [Fact]
-    [Trait("Category", "SingleToken")]
-    [Trait("Category", "Keyword")]
-    public void TestFunctionKeywordToken()
-    {
-        const string functionText = "fn";
-        
-        var token = GetSingleTokenFromLexerByText(functionText);
-        
-        Assert.Equal(TokenType.FUNCTION, token.Type);        
-    }
-    
     [Fact]
     [Trait("Category", "SingleToken")]
     [Trait("Category", "Keyword")]
@@ -332,7 +320,19 @@ public class LexerUnitTests
         var token = GetSingleTokenFromLexerByText(stringText);
         
         Assert.Equal(TokenType.STRING, token.Type);      
-        Assert.Equal("escaped \\\"string\\\" with \\\\ \\\\", token.Value);
+        Assert.Equal("escaped \"string\" with \\ \\", token.Value);
+    }
+    
+    [Fact]
+    [Trait("Category", "SingleToken")]
+    [Trait("Category", "String")]
+    public void TestTextWithNotKnownEscapingChars()
+    {
+        const string s = "not known \\\r";
+        const string stringText = $"\"{s}\"";
+        
+        Assert.Throws<UnknownEscapeCharException>(() =>
+            GetSingleTokenFromLexerByText(stringText));
     }
 
     [Fact]
@@ -359,9 +359,8 @@ public class LexerUnitTests
         const string s = "my string ";
         const string stringText = $"\"{s}";
         
-        var e = Assert.Throws<TextEndingQuoteNotFoundException>(() =>
+        Assert.Throws<TextEndingQuoteNotFoundException>(() =>
             GetSingleTokenFromLexerByText(stringText));
-        Assert.Equal("There should be ending quote provided.", e.Message);
     }
     
     // TryBuildNumber
@@ -954,7 +953,7 @@ public class LexerUnitTests
         Assert.Equal(TokenType.STRING_TYPE, tokens[3].Type); 
         Assert.Equal(TokenType.ASSIGNMENT_OPERATOR, tokens[4].Type);        
         Assert.Equal(TokenType.STRING, tokens[5].Type);        
-        Assert.Equal("my string with \\\\ \\\n \\\t escape chars", tokens[5].Value);
+        Assert.Equal("my string with \\ \n \t escape chars", tokens[5].Value);
         Assert.Equal(TokenType.ETX, tokens[6].Type);
     }
     
@@ -1256,70 +1255,69 @@ public class LexerUnitTests
     [Trait("Category", "Core")]
     public void TestFunctionTokens()
     {
-        const string code = "fn calculateForceDelta(N1: [N], N2: [N], scalar: []) -> [N] {" +
+        const string code = "calculateForceDelta(N1: [N], N2: [N], scalar: []) -> [N] {" +
                             "\nreturn (N2-N1) * scalar }";
 
         var tokens = GetAllTokensFromLexerByText(code);
         
-        Assert.Equal(TokenType.FUNCTION, tokens[0].Type);
-        Assert.Equal(TokenType.IDENTIFIER, tokens[1].Type);  
-        Assert.Equal("calculateForceDelta", tokens[1].Value);
-        Assert.Equal(TokenType.LEFT_PARENTHESES, tokens[2].Type);
+        Assert.Equal(TokenType.IDENTIFIER, tokens[0].Type);  
+        Assert.Equal("calculateForceDelta", tokens[0].Value);
+        Assert.Equal(TokenType.LEFT_PARENTHESES, tokens[1].Type);
         
-        Assert.Equal(TokenType.IDENTIFIER, tokens[3].Type);  
-        Assert.Equal("N1", tokens[3].Value); 
-        Assert.Equal(TokenType.COLON, tokens[4].Type);
-        Assert.Equal(TokenType.LEFT_SQUARE_BRACKET, tokens[5].Type);
-        Assert.Equal(TokenType.IDENTIFIER, tokens[6].Type);  
-        Assert.Equal("N", tokens[6].Value);  
-        Assert.Equal(TokenType.RIGHT_SQUARE_BRACKET, tokens[7].Type); 
+        Assert.Equal(TokenType.IDENTIFIER, tokens[2].Type);  
+        Assert.Equal("N1", tokens[2].Value); 
+        Assert.Equal(TokenType.COLON, tokens[3].Type);
+        Assert.Equal(TokenType.LEFT_SQUARE_BRACKET, tokens[4].Type);
+        Assert.Equal(TokenType.IDENTIFIER, tokens[5].Type);  
+        Assert.Equal("N", tokens[5].Value);  
+        Assert.Equal(TokenType.RIGHT_SQUARE_BRACKET, tokens[6].Type); 
         
-        Assert.Equal(TokenType.COMMA, tokens[8].Type);
+        Assert.Equal(TokenType.COMMA, tokens[7].Type);
 
-        Assert.Equal(TokenType.IDENTIFIER, tokens[9].Type);  
-        Assert.Equal("N2", tokens[9].Value); 
-        Assert.Equal(TokenType.COLON, tokens[10].Type);
-        Assert.Equal(TokenType.LEFT_SQUARE_BRACKET, tokens[11].Type);
-        Assert.Equal(TokenType.IDENTIFIER, tokens[12].Type);  
-        Assert.Equal("N", tokens[12].Value);  
-        Assert.Equal(TokenType.RIGHT_SQUARE_BRACKET, tokens[13].Type); 
+        Assert.Equal(TokenType.IDENTIFIER, tokens[8].Type);  
+        Assert.Equal("N2", tokens[8].Value); 
+        Assert.Equal(TokenType.COLON, tokens[9].Type);
+        Assert.Equal(TokenType.LEFT_SQUARE_BRACKET, tokens[10].Type);
+        Assert.Equal(TokenType.IDENTIFIER, tokens[11].Type);  
+        Assert.Equal("N", tokens[11].Value);  
+        Assert.Equal(TokenType.RIGHT_SQUARE_BRACKET, tokens[12].Type); 
         
-        Assert.Equal(TokenType.COMMA, tokens[14].Type);
+        Assert.Equal(TokenType.COMMA, tokens[13].Type);
 
-        Assert.Equal(TokenType.IDENTIFIER, tokens[15].Type);  
-        Assert.Equal("scalar", tokens[15].Value); 
-        Assert.Equal(TokenType.COLON, tokens[16].Type);
-        Assert.Equal(TokenType.LEFT_SQUARE_BRACKET, tokens[17].Type);
-        Assert.Equal(TokenType.RIGHT_SQUARE_BRACKET, tokens[18].Type); 
-        Assert.Equal(TokenType.RIGHT_PARENTHESES, tokens[19].Type); 
+        Assert.Equal(TokenType.IDENTIFIER, tokens[14].Type);  
+        Assert.Equal("scalar", tokens[14].Value); 
+        Assert.Equal(TokenType.COLON, tokens[15].Type);
+        Assert.Equal(TokenType.LEFT_SQUARE_BRACKET, tokens[16].Type);
+        Assert.Equal(TokenType.RIGHT_SQUARE_BRACKET, tokens[17].Type); 
+        Assert.Equal(TokenType.RIGHT_PARENTHESES, tokens[18].Type); 
         
-        Assert.Equal(TokenType.RETURN_ARROW, tokens[20].Type); 
+        Assert.Equal(TokenType.RETURN_ARROW, tokens[19].Type); 
 
-        Assert.Equal(TokenType.LEFT_SQUARE_BRACKET, tokens[21].Type);
-        Assert.Equal(TokenType.IDENTIFIER, tokens[22].Type);  
-        Assert.Equal("N", tokens[22].Value);  
-        Assert.Equal(TokenType.RIGHT_SQUARE_BRACKET, tokens[23].Type); 
+        Assert.Equal(TokenType.LEFT_SQUARE_BRACKET, tokens[20].Type);
+        Assert.Equal(TokenType.IDENTIFIER, tokens[21].Type);  
+        Assert.Equal("N", tokens[21].Value);  
+        Assert.Equal(TokenType.RIGHT_SQUARE_BRACKET, tokens[22].Type); 
         
-        Assert.Equal(TokenType.LEFT_CURLY_BRACE, tokens[24].Type);
+        Assert.Equal(TokenType.LEFT_CURLY_BRACE, tokens[23].Type);
         
-        Assert.Equal(TokenType.RETURN, tokens[25].Type);
+        Assert.Equal(TokenType.RETURN, tokens[24].Type);
 
-        Assert.Equal(TokenType.LEFT_PARENTHESES, tokens[26].Type);
-        Assert.Equal(TokenType.IDENTIFIER, tokens[27].Type);  
-        Assert.Equal("N2", tokens[27].Value); 
-        Assert.Equal(TokenType.MINUS_OPERATOR, tokens[28].Type);
-        Assert.Equal(TokenType.IDENTIFIER, tokens[29].Type);  
-        Assert.Equal("N1", tokens[29].Value); 
-        Assert.Equal(TokenType.RIGHT_PARENTHESES, tokens[30].Type); 
+        Assert.Equal(TokenType.LEFT_PARENTHESES, tokens[25].Type);
+        Assert.Equal(TokenType.IDENTIFIER, tokens[26].Type);  
+        Assert.Equal("N2", tokens[26].Value); 
+        Assert.Equal(TokenType.MINUS_OPERATOR, tokens[27].Type);
+        Assert.Equal(TokenType.IDENTIFIER, tokens[28].Type);  
+        Assert.Equal("N1", tokens[28].Value); 
+        Assert.Equal(TokenType.RIGHT_PARENTHESES, tokens[29].Type); 
         
-        Assert.Equal(TokenType.MULTIPLICATION_OPERATOR, tokens[31].Type);
+        Assert.Equal(TokenType.MULTIPLICATION_OPERATOR, tokens[30].Type);
 
-        Assert.Equal(TokenType.IDENTIFIER, tokens[32].Type);  
-        Assert.Equal("scalar", tokens[32].Value); 
+        Assert.Equal(TokenType.IDENTIFIER, tokens[31].Type);  
+        Assert.Equal("scalar", tokens[31].Value); 
         
-        Assert.Equal(TokenType.RIGHT_CURLY_BRACE, tokens[33].Type); 
+        Assert.Equal(TokenType.RIGHT_CURLY_BRACE, tokens[32].Type); 
 
-        Assert.Equal(TokenType.ETX, tokens[34].Type);
+        Assert.Equal(TokenType.ETX, tokens[33].Type);
     }
 
 
@@ -1478,7 +1476,7 @@ public class LexerUnitTests
         long maxIntSize = 10000
         )
     {
-        var streamReader = GetStreamReaderFromString(textToLexer);
+        var streamReader = Helper.GetStreamReaderFromString(textToLexer);
         var lexer = new Lexer(
             streamReader, 
             maxCommentLength,
@@ -1497,7 +1495,7 @@ public class LexerUnitTests
 
     private static List<Token> GetAllTokensFromLexerByText(string textToLexer)
     {
-        var streamReader = GetStreamReaderFromString(textToLexer);
+        var streamReader = Helper.GetStreamReaderFromString(textToLexer);
         var lexer = new Lexer(streamReader);     
         
         var tokens = new List<Token>();
@@ -1517,11 +1515,5 @@ public class LexerUnitTests
     }
 
 
-    private static StreamReader GetStreamReaderFromString(string text)
-    {
-        var byteArray = Encoding.UTF8.GetBytes(text);
-        var stream = new MemoryStream(byteArray);
-        
-        return new StreamReader(stream);
-    }
+
 }

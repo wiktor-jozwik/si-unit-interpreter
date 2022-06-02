@@ -1,6 +1,3 @@
-using System;
-using System.IO;
-
 namespace si_unit_interpreter;
 
 public class MainProcessor
