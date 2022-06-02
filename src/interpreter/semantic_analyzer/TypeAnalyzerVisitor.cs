@@ -1,5 +1,4 @@
 using si_unit_interpreter.exceptions.semantic_analyzer;
-using si_unit_interpreter.parser;
 using si_unit_interpreter.parser.expression;
 using si_unit_interpreter.parser.expression.additive;
 using si_unit_interpreter.parser.expression.comparison;
@@ -14,17 +13,18 @@ namespace si_unit_interpreter.interpreter.semantic_analyzer;
 
 public class TypeAnalyzerVisitor : ITypeVisitor
 {
-    private readonly SemanticFunctionCallContext _semanticFunctionCallContext;
+    private readonly LinkedList<SemanticFunctionCallContext> _semanticFunctionCallContexts;
     private readonly Dictionary<string, FunctionStatement> _functions;
     private readonly Dictionary<string, IType> _builtInFunctions;
     private readonly IDictionary<string, UnitType> _units;
     private readonly IDictionary<string, UnitType> _defaultSiUnits;
 
-    public TypeAnalyzerVisitor(SemanticFunctionCallContext semanticFunctionCallContext, Dictionary<string, FunctionStatement> functions,
+    public TypeAnalyzerVisitor(LinkedList<SemanticFunctionCallContext> semanticFunctionCallContexts,
+        Dictionary<string, FunctionStatement> functions,
         Dictionary<string, IType> builtInFunctions,
         IDictionary<string, UnitType> units)
     {
-        _semanticFunctionCallContext = semanticFunctionCallContext;
+        _semanticFunctionCallContexts = semanticFunctionCallContexts;
         _functions = functions;
         _builtInFunctions = builtInFunctions;
         _units = units;
@@ -48,8 +48,8 @@ public class TypeAnalyzerVisitor : ITypeVisitor
         var variableType = element.Parameter.Type;
 
         if (
-            _semanticFunctionCallContext.Scopes.Any(scope => scope.Variables.Any(variables => variables.Key.Contains(name))) ||
-            _semanticFunctionCallContext.Parameters.Any(param => param.Key.Contains(name))
+            _GetAllScopesOfCurrentFunctionCall()
+            .Any(scope => scope.Variables.Any(variables => variables.Key.Contains(name)))
         )
         {
             throw new VariableRedeclarationException(name);
@@ -74,7 +74,7 @@ public class TypeAnalyzerVisitor : ITypeVisitor
 
     public IType Visit(ReturnStatement element)
     {
-        var functionName = _semanticFunctionCallContext.FunctionName;
+        var functionName = _GetNameOfCurrentFunctionName();
 
         if (_builtInFunctions.TryGetValue(functionName, out var type))
         {
@@ -307,7 +307,7 @@ public class TypeAnalyzerVisitor : ITypeVisitor
     public IType Visit(Identifier element)
     {
         var name = element.Name;
-        foreach (var scope in _semanticFunctionCallContext.Scopes)
+        foreach (var scope in _GetAllScopesOfCurrentFunctionCall())
         {
             if (scope.Variables.TryGetValue(name, out var type))
             {
@@ -315,7 +315,7 @@ public class TypeAnalyzerVisitor : ITypeVisitor
             }
         }
 
-        if (_semanticFunctionCallContext.Parameters.TryGetValue(name, out var parameterType))
+        if (_GetLastScopeOfCurrentFunctionCall().Variables.TryGetValue(name, out var parameterType))
         {
             return parameterType;
         }
@@ -326,7 +326,7 @@ public class TypeAnalyzerVisitor : ITypeVisitor
     public IType Visit(FunctionCall element)
     {
         var name = element.Name;
-        
+
         if (_builtInFunctions.TryGetValue(name, out var type))
         {
             return type;
@@ -508,14 +508,14 @@ public class TypeAnalyzerVisitor : ITypeVisitor
 
         for (var i = 0; i < units.Count; i++)
         {
-            for (var j = i+1; j < units.Count; j++)
+            for (var j = i + 1; j < units.Count; j++)
             {
                 if (units[i].Name != units[j].Name) continue;
-                
+
                 units[i].Power += units[j].Power;
                 units = units.Where(u => u != units[j]).ToList();
             }
-            
+
             if (units[i].Power != 0)
             {
                 newUnitList.Add(units[i]);
@@ -538,5 +538,20 @@ public class TypeAnalyzerVisitor : ITypeVisitor
     private static bool _IsBool(IType type)
     {
         return type.GetType() == typeof(BoolType);
+    }
+
+    private LinkedList<SemanticScope> _GetAllScopesOfCurrentFunctionCall()
+    {
+        return _semanticFunctionCallContexts.Last().Scopes;
+    }
+
+    private SemanticScope _GetLastScopeOfCurrentFunctionCall()
+    {
+        return _semanticFunctionCallContexts.Last().Scopes.Last();
+    }
+
+    private string _GetNameOfCurrentFunctionName()
+    {
+        return _semanticFunctionCallContexts.Last().FunctionName;
     }
 }

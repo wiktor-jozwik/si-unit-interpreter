@@ -13,8 +13,7 @@ namespace si_unit_interpreter.interpreter.interpreter;
 
 public class InterpreterVisitor : IInterpreterVisitor
 {
-    // stos function call contextow
-    private readonly FunctionCallContext _functionCallContext = new();
+    private readonly LinkedList<FunctionCallContext> _functionCallContexts = new();
     private readonly Dictionary<string, FunctionStatement> _functions = new();
 
     private readonly string _mainFunctionName;
@@ -38,6 +37,8 @@ public class InterpreterVisitor : IInterpreterVisitor
 
         if (_functions.TryGetValue(_mainFunctionName, out var mainFunction))
         {
+            _AddNewEmptyFunctionCallContext();
+
             mainFunction.Accept(this);
         }
         else
@@ -50,18 +51,6 @@ public class InterpreterVisitor : IInterpreterVisitor
 
     public dynamic? Visit(FunctionStatement element)
     {
-        // do wyrzucenia???
-        _functionCallContext.Scopes.AddLast(new Scope());
-
-        // to w function call
-        var parameterIndex = 0;
-        foreach (var parameter in element.Parameters)
-        {
-            _functionCallContext.Scopes.Last().Variables[parameter.Accept(this)] =
-                _functionCallContext.ParameterScopes.Last().Parameters[parameterIndex];
-            parameterIndex++;
-        }
-
         var functionReturnValue = element.Statements.Accept(this);
 
         if (functionReturnValue == null)
@@ -81,8 +70,6 @@ public class InterpreterVisitor : IInterpreterVisitor
                 }
             }
         }
-
-        _functionCallContext.Scopes.RemoveLast();
 
         return functionReturnValue;
     }
@@ -105,7 +92,7 @@ public class InterpreterVisitor : IInterpreterVisitor
     {
         var variableValue = element.Expression.Accept(this);
 
-        _functionCallContext.Scopes.Last().Variables[element.Parameter.Name] = variableValue!;
+        _GetLastScopeOfCurrentFunctionCall().Variables[element.Parameter.Name] = variableValue!;
 
         return null;
     }
@@ -116,11 +103,9 @@ public class InterpreterVisitor : IInterpreterVisitor
 
         if (conditionValue)
         {
-            _functionCallContext.Scopes.AddLast(new Scope());
-
+            _AddNewScopeToCurrentFunctionCallContext();
             var value = element.Statements.Accept(this);
-
-            _functionCallContext.Scopes.RemoveLast();
+            _RemoveLastScopeFromCurrentFunctionCallContext();
 
             return value;
         }
@@ -133,9 +118,9 @@ public class InterpreterVisitor : IInterpreterVisitor
             return elseIfStatement.Accept(this);
         }
 
-        _functionCallContext.Scopes.AddLast(new Scope());
+        _AddNewScopeToCurrentFunctionCallContext();
         var elseValue = element.ElseStatement.Accept(this);
-        _functionCallContext.Scopes.RemoveLast();
+        _RemoveLastScopeFromCurrentFunctionCallContext();
 
         return elseValue;
     }
@@ -145,9 +130,9 @@ public class InterpreterVisitor : IInterpreterVisitor
         var conditionValue = element.Condition.Accept(this);
         if (!conditionValue) return null;
 
-        _functionCallContext.Scopes.AddLast(new Scope());
+        _AddNewScopeToCurrentFunctionCallContext();
         var elseIfStatementValue = element.Statements.Accept(this);
-        _functionCallContext.Scopes.RemoveLast();
+        _RemoveLastScopeFromCurrentFunctionCallContext();
 
         return elseIfStatementValue;
     }
@@ -159,9 +144,9 @@ public class InterpreterVisitor : IInterpreterVisitor
         var iteration = 0;
         while (conditionValue)
         {
-            _functionCallContext.Scopes.AddLast(new Scope());
+            _AddNewScopeToCurrentFunctionCallContext();
             value = element.Statements.Accept(this);
-            _functionCallContext.Scopes.RemoveLast();
+            _RemoveLastScopeFromCurrentFunctionCallContext();
 
             if (value != null)
             {
@@ -182,7 +167,7 @@ public class InterpreterVisitor : IInterpreterVisitor
     public dynamic? Visit(AssignStatement element)
     {
         var name = element.Identifier.Name;
-        foreach (var scope in _functionCallContext.Scopes)
+        foreach (var scope in _GetAllScopesOfCurrentFunctionCall())
         {
             if (scope.Variables.ContainsKey(name))
             {
@@ -196,7 +181,6 @@ public class InterpreterVisitor : IInterpreterVisitor
 
     public dynamic? Visit(ReturnStatement element)
     {
-        // return true for void or evaluated value for rest
         return element.Expression == null ? new VoidReturn() : element.Expression?.Accept(this);
     }
 
@@ -214,18 +198,17 @@ public class InterpreterVisitor : IInterpreterVisitor
 
         if (_functions.TryGetValue(name, out var functionStatement))
         {
-            // functionStatement ma parametry a one maja nazwy wiec zamiast ParameterScope -> Scope
-            _functionCallContext.ParameterScopes.AddLast(new ParameterScope());
-            // powolanie nowego function call contextu, umieszczenie parametrow
-            foreach (var argument in element.Arguments)
+            var argumentsValues = element.Arguments.Select(arg => arg.Accept(this)).ToList();
+            
+            _AddNewEmptyFunctionCallContext();
+            foreach (var (argumentValue, functionParameter) in argumentsValues.Zip(functionStatement.Parameters))
             {
-                var argumentValue = argument.Accept(this);
-
-                _functionCallContext.ParameterScopes.Last().Parameters.Add(argumentValue);
+                _GetLastScopeOfCurrentFunctionCall().Variables[functionParameter.Name] = argumentValue!;
             }
-
+            
             var functionValue = functionStatement.Accept(this);
-            _functionCallContext.ParameterScopes.RemoveLast();
+            
+            _RemoveLastFunctionCallContext();
             return functionValue;
         }
 
@@ -312,7 +295,7 @@ public class InterpreterVisitor : IInterpreterVisitor
     {
         var name = element.Name;
 
-        var scopeClone = new LinkedList<Scope>(_functionCallContext.Scopes);
+        var scopeClone = new LinkedList<Scope>(_GetAllScopesOfCurrentFunctionCall());
 
         while (scopeClone.Count > 0)
         {
@@ -347,5 +330,37 @@ public class InterpreterVisitor : IInterpreterVisitor
     public dynamic Visit(StringLiteral element)
     {
         return element.Value;
+    }
+
+    private void _AddNewEmptyFunctionCallContext()
+    {
+        var functionCallContext = new FunctionCallContext();
+        functionCallContext.Scopes.AddLast(new Scope());
+        _functionCallContexts.AddLast(functionCallContext);
+    }
+
+    private void _RemoveLastFunctionCallContext()
+    {
+        _functionCallContexts.RemoveLast();
+    }
+
+    private void _AddNewScopeToCurrentFunctionCallContext()
+    {
+        _functionCallContexts.Last().Scopes.AddLast(new Scope());
+    }
+    
+    private void _RemoveLastScopeFromCurrentFunctionCallContext()
+    {
+        _functionCallContexts.Last().Scopes.RemoveLast();
+    }
+
+    private LinkedList<Scope> _GetAllScopesOfCurrentFunctionCall()
+    {
+        return _functionCallContexts.Last().Scopes;
+    }
+
+    private Scope _GetLastScopeOfCurrentFunctionCall()
+    {
+        return _functionCallContexts.Last().Scopes.Last();
     }
 }

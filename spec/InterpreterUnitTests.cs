@@ -911,34 +911,6 @@ public class InterpreterUnitTests
         interpreter.Visit(program);
         consoleOutput.GetOutput().ShouldBe("from else\nshould be printed\n");
     }
-    
-    // [Fact]
-    // public void TestCheckScopes()
-    // {
-    //     const string code = @"
-    //                         myPrint(var: [s]) -> void {
-    //                             print(var)
-    //                             print(x)
-    //                         }
-    //                         main() -> void {
-    //                             let x: [] = 20
-    //                             myPrint(25 [s])
-    //                         }";
-    //
-    //     var parser = Helper.PrepareParser(code);
-    //     var program = parser.Parse();
-    //
-    //
-    //     var builtinFunctionsProvider = new BuiltInFunctionsProvider();
-    //
-    //     var interpreter = new InterpreterVisitor("main", builtinFunctionsProvider);
-    //     var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
-    //
-    //     using var consoleOutput = new ConsoleOutput();
-    //     semanticAnalyzer.Visit(program);
-    //     interpreter.Visit(program);
-    //     consoleOutput.GetOutput().ShouldBe("from else\nshould be printed\n");
-    // }
 
     [Fact]
     public void TestLackOfMainFunction()

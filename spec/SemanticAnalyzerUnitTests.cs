@@ -2326,4 +2326,54 @@ public class SemanticAnalyzerUnitTests
         var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
         semanticAnalyzer.Visit(program);
     }
+    
+    [Fact]
+    public void TestScopes()
+    {
+        const string code = @"
+                            myPrint(x: [s]) -> void {
+                                print(x)
+                            }
+                            myFn(var: [s]) -> void {
+                                myPrint(var)
+                                myPrint(mainScope)
+                            }
+                            main() -> void {
+                                let mainScope: [] = 20
+                                myFn(25 [s])
+                            }";
+    
+        var parser = Helper.PrepareParser(code);
+        var program = parser.Parse();
+
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
+        var e = Assert.Throws<VariableUndeclaredException>(() =>
+            semanticAnalyzer.Visit(program));
+        Assert.Equal("'mainScope' is not defined", e.Message);
+    }
+    
+    [Fact]
+    public void TestFunctionCallParameter()
+    {
+        const string code = @"
+                            mySecFn(x: []) -> void {
+                                print(x)
+                            }
+                            myPrint() -> void {
+                                mySecFn(x)
+                            }
+                            main() -> void {
+                                myPrint()
+                            }";
+    
+        var parser = Helper.PrepareParser(code);
+        var program = parser.Parse();
+
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
+        var e = Assert.Throws<VariableUndeclaredException>(() =>
+            semanticAnalyzer.Visit(program));
+        Assert.Equal("'x' is not defined", e.Message);
+    }
 }
