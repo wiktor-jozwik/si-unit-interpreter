@@ -7,6 +7,7 @@ using si_unit_interpreter.parser.expression.literal;
 using si_unit_interpreter.parser.expression.multiplicative;
 using si_unit_interpreter.parser.expression.negate;
 using si_unit_interpreter.parser.statement;
+using si_unit_interpreter.parser.type;
 
 namespace si_unit_interpreter.interpreter.interpreter;
 
@@ -60,6 +61,24 @@ public class InterpreterVisitor : IInterpreterVisitor
 
         var functionReturnValue = element.Statements.Accept(this);
 
+        if (functionReturnValue == null)
+        {
+            if (element.ReturnType.GetType() != typeof(VoidType))
+            {
+                throw new LackOfValidReturnException();
+            }
+        }
+        else
+        {
+            if (functionReturnValue.GetType() == typeof(VoidReturn))
+            {
+                if (element.ReturnType.GetType() != typeof(VoidType))
+                {
+                    throw new LackOfValidReturnException();
+                }
+            }
+        }
+
         _functionCallContext.Scopes.RemoveLast();
 
         return functionReturnValue;
@@ -67,13 +86,16 @@ public class InterpreterVisitor : IInterpreterVisitor
 
     public dynamic? Visit(Block element)
     {
-        dynamic? blockValue = null;
         foreach (var statement in element.Statements)
         {
-            blockValue = statement.Accept(this);
+            var blockValue = statement.Accept(this);
+            if (blockValue != null)
+            {
+                return blockValue;
+            }
         }
 
-        return blockValue;
+        return null;
     }
 
     public dynamic? Visit(VariableDeclaration element)
@@ -122,10 +144,11 @@ public class InterpreterVisitor : IInterpreterVisitor
         if (!conditionValue) return null;
 
         _functionCallContext.Scopes.AddLast(new Scope());
-        var elseIfStatement = element.Statements.Accept(this);
+        var elseIfStatementValue = element.Statements.Accept(this);
         _functionCallContext.Scopes.RemoveLast();
 
-        return elseIfStatement;
+        // return evaluated valued or true just to mark that elseIf was processed
+        return elseIfStatementValue == null ? true : elseIfStatementValue;
     }
 
     public dynamic? Visit(WhileStatement element)
@@ -138,6 +161,11 @@ public class InterpreterVisitor : IInterpreterVisitor
             _functionCallContext.Scopes.AddLast(new Scope());
             value = element.Statements.Accept(this);
             _functionCallContext.Scopes.RemoveLast();
+
+            if (value != null)
+            {
+                return value;
+            }
 
             conditionValue = element.Condition.Accept(this);
             iteration += 1;
@@ -167,7 +195,8 @@ public class InterpreterVisitor : IInterpreterVisitor
 
     public dynamic? Visit(ReturnStatement element)
     {
-        return element.Expression?.Accept(this);
+        // return true for void or evaluated value for rest
+        return element.Expression == null ? new VoidReturn() : element.Expression?.Accept(this);
     }
 
     public dynamic? Visit(FunctionCall element)
@@ -179,7 +208,7 @@ public class InterpreterVisitor : IInterpreterVisitor
             var arguments = element.Arguments;
             var argValue = arguments[0].Accept(this);
             function(argValue);
-            return true;
+            return null;
         }
 
         if (_functions.TryGetValue(name, out var functionStatement))
@@ -194,6 +223,7 @@ public class InterpreterVisitor : IInterpreterVisitor
 
             var functionValue = functionStatement.Accept(this);
             _functionCallContext.ParameterScopes.RemoveLast();
+            // TODO
             return functionValue;
         }
 
@@ -275,7 +305,7 @@ public class InterpreterVisitor : IInterpreterVisitor
         return !element.Child.Accept(this);
     }
 
-    public dynamic Visit(Identifier element)
+    public dynamic? Visit(Identifier element)
     {
         var name = element.Name;
 
@@ -291,7 +321,7 @@ public class InterpreterVisitor : IInterpreterVisitor
             scopeClone.RemoveLast();
         }
 
-        return null!;
+        return null;
     }
 
     public dynamic Visit(BoolLiteral element)

@@ -206,6 +206,8 @@ public class InterpreterUnitTests
                                     print(""from else if"")
                                 } else if (""str"" == ""str"") {
                                     print(""from second else if"")
+                                } else if (""str"" != ""str"") {
+                                    print(""from third else if"")
                                 } else {
                                     print(""from else"")
                                 }
@@ -626,8 +628,8 @@ public class InterpreterUnitTests
         interpreter.Visit(program);
         consoleOutput.GetOutput().ShouldBe("-5\n");
     }
-    
-        
+
+
     [Fact]
     public void TestDifferentFunctionsOrder()
     {
@@ -660,6 +662,257 @@ public class InterpreterUnitTests
     }
 
     [Fact]
+    public void TestInstructionsAfterReturn()
+    {
+        const string code = @"
+                            getX(var: [s]) -> [s] {
+                                return 20 [s] - var
+                                print(var) // should not be triggered and getX returned 20 - var
+                            }
+                            main() -> void {
+                                let x: [s] = getX(-40 [s])
+
+                                print(x)
+                            }";
+
+        var parser = Helper.PrepareParser(code);
+        var program = parser.Parse();
+
+
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+
+        var interpreter = new InterpreterVisitor("main", builtinFunctionsProvider);
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
+
+        using var consoleOutput = new ConsoleOutput();
+        semanticAnalyzer.Visit(program);
+        interpreter.Visit(program);
+        consoleOutput.GetOutput().ShouldBe("60\n");
+    }
+
+    [Fact]
+    public void TestInstructionsAfterReturnInIfs()
+    {
+        const string code = @"
+                            main() -> void {
+                                let x: [kg] = 20 [kg]
+                                let y: [kg] = 18.5 [kg]
+                                if (x != y) {
+                                    print(""x != y"")
+                                    return
+                                } else {
+                                    print(""x == y"")
+                                }
+                                print(x)
+                            }";
+
+        var parser = Helper.PrepareParser(code);
+        var program = parser.Parse();
+
+
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+
+        var interpreter = new InterpreterVisitor("main", builtinFunctionsProvider);
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
+
+        using var consoleOutput = new ConsoleOutput();
+        semanticAnalyzer.Visit(program);
+        interpreter.Visit(program);
+        consoleOutput.GetOutput().ShouldBe("x != y\n");
+    }
+
+    [Fact]
+    public void TestLackOfReturn()
+    {
+        const string code = @"
+                            getX(var: [s]) -> [s] {
+                                print(var)
+                            }
+                            main() -> void {
+                                let x: [s] = getX(25 [s])
+
+                                print(x)
+                            }";
+
+        var parser = Helper.PrepareParser(code);
+        var program = parser.Parse();
+
+
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+
+        var interpreter = new InterpreterVisitor("main", builtinFunctionsProvider);
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
+
+        using var consoleOutput = new ConsoleOutput();
+        semanticAnalyzer.Visit(program);
+        Assert.Throws<LackOfValidReturnException>(() => interpreter.Visit(program));
+    }
+
+    [Fact]
+    public void TestReturnInWhileFromVoidFunction()
+    {
+        const string code = @"
+                            main() -> void {
+                                let x: [s] = 16 [s]
+                                let y: [s] = 10 [s]
+                                while (x >= 0 [s]) {
+                                    if (x - y <= 0 [s]) {
+                                        print(""returning"")
+                                        return
+                                    } 
+                                    x = x - 1 [s]
+                                    print(x)
+                                }
+
+                                print(y)
+                            }";
+
+        var parser = Helper.PrepareParser(code);
+        var program = parser.Parse();
+
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+
+        var interpreter = new InterpreterVisitor("main", builtinFunctionsProvider);
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
+
+        using var consoleOutput = new ConsoleOutput();
+        semanticAnalyzer.Visit(program);
+        interpreter.Visit(program);
+        consoleOutput.GetOutput().ShouldBe("15\n14\n13\n12\n11\n10\nreturning\n");
+    }
+
+    [Fact]
+    public void TestReturnInWhileFromUnitFunction()
+    {
+        const string code = @"
+                            getX() -> [s] {
+                                let x: [s] = 14 [s]
+                                let y: [s] = 10 [s]
+                                while (x >= 0 [s]) {
+                                    if (x - y <= 0 [s]) {
+                                        print(""returning"")
+                                        return x
+                                    } 
+                                    x = x - 1 [s]
+                                    print(x)
+                                }
+
+                                print(y)
+                            }
+                            main() -> void {
+                                let x: [s] = getX()
+
+                                print(x)
+                            }";
+
+        var parser = Helper.PrepareParser(code);
+        var program = parser.Parse();
+
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+
+        var interpreter = new InterpreterVisitor("main", builtinFunctionsProvider);
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
+
+        using var consoleOutput = new ConsoleOutput();
+        semanticAnalyzer.Visit(program);
+        interpreter.Visit(program);
+        consoleOutput.GetOutput().ShouldBe("13\n12\n11\n10\nreturning\n10\n");
+    }
+
+    [Fact]
+    public void TestReturnInMiddleElseIf()
+    {
+        const string code = @"
+                            main() -> void {
+                                if (2 [m] > 5 [m]) {
+                                    print(""from if"")
+                                } else if (3 < (-3 * 8)) {
+                                    print(""from else if"")
+                                } else if (""str"" != ""str"") {
+                                    print(""from second else if"")
+                                } else if (""str"" == ""str"") {
+                                    print(""from third else if"")
+                                    print(""returning"")
+                                    return
+                                } else {
+                                    print(""from else"")
+                                }
+                            }";
+
+        var parser = Helper.PrepareParser(code);
+        var program = parser.Parse();
+
+
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+
+        var interpreter = new InterpreterVisitor("main", builtinFunctionsProvider);
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
+
+        using var consoleOutput = new ConsoleOutput();
+        semanticAnalyzer.Visit(program);
+        interpreter.Visit(program);
+        consoleOutput.GetOutput().ShouldBe("from third else if\nreturning\n");
+    }
+
+    [Fact]
+    public void TestReturnFromElse()
+    {
+        const string code = @"
+                            main() -> void {
+                                if (2 [m] > 5 [m]) {
+                                    print(""from if"")
+                                } else {
+                                    print(""from else"")
+                                    return
+                                }
+                                print(""should not be printed"")
+                            }";
+
+        var parser = Helper.PrepareParser(code);
+        var program = parser.Parse();
+
+
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+
+        var interpreter = new InterpreterVisitor("main", builtinFunctionsProvider);
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
+
+        using var consoleOutput = new ConsoleOutput();
+        semanticAnalyzer.Visit(program);
+        interpreter.Visit(program);
+        consoleOutput.GetOutput().ShouldBe("from else\n");
+    }
+
+
+    [Fact]
+    public void TestElseWithoutReturn()
+    {
+        const string code = @"
+                            main() -> void {
+                                if (2 [m] > 5 [m]) {
+                                    print(""from if"")
+                                } else {
+                                    print(""from else"")
+                                }
+                                print(""should be printed"")
+                            }";
+
+        var parser = Helper.PrepareParser(code);
+        var program = parser.Parse();
+
+
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+
+        var interpreter = new InterpreterVisitor("main", builtinFunctionsProvider);
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
+
+        using var consoleOutput = new ConsoleOutput();
+        semanticAnalyzer.Visit(program);
+        interpreter.Visit(program);
+        consoleOutput.GetOutput().ShouldBe("from else\nshould be printed\n");
+    }
+
+    [Fact]
     public void TestLackOfMainFunction()
     {
         const string code = @"
@@ -680,7 +933,7 @@ public class InterpreterUnitTests
 
         Assert.Throws<LackOfMainFunctionException>(() => interpreter.Visit(program));
     }
-    
+
     [Fact]
     public void TestWhileInf()
     {
