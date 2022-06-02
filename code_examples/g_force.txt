@@ -13,4 +13,3 @@ main() -> void {
     print("Earth on g equals:")
     print(calculateGForce(earthMass, earthR))
 }
-

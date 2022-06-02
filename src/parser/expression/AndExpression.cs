@@ -4,12 +4,12 @@ using si_unit_interpreter.parser.type;
 
 namespace si_unit_interpreter.parser.expression;
 
-public class LogicFactor : IExpression
+public class AndExpression : IExpression
 {
     public readonly IExpression Left;
     public readonly IExpression Right;
 
-    public LogicFactor(IExpression left, IExpression right)
+    public AndExpression(IExpression left, IExpression right)
     {
         Left = left;
         Right = right;

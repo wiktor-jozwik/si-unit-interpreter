@@ -1,3 +1,4 @@
+using si_unit_interpreter.exceptions.semantic_analyzer;
 using si_unit_interpreter.parser;
 using si_unit_interpreter.parser.expression;
 using si_unit_interpreter.parser.statement;
@@ -114,6 +115,10 @@ public class SemanticAnalyzerVisitor : IVisitor
 
     public void Visit(Parameter element)
     {
+        if (_semanticFunctionCallContext!.Parameters.ContainsKey(element.Name))
+        {
+            throw new NotUniqueParametersNamesException(_semanticFunctionCallContext.FunctionName, element.Name);
+        }
         _semanticFunctionCallContext!.Parameters[element.Name] = element.Type;
     }
 }

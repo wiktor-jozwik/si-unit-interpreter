@@ -1,32 +1,26 @@
 using si_unit_interpreter.interpreter.interpreter;
 using si_unit_interpreter.interpreter.semantic_analyzer;
-using si_unit_interpreter.lexer;
 using si_unit_interpreter.parser;
 
 namespace si_unit_interpreter.interpreter;
 
 public class Interpreter
 {
-    private readonly StreamReader _streamReader;
+    private readonly TopLevel _program;
 
-    public Interpreter(StreamReader streamReader)
+    public Interpreter(TopLevel program)
     {
-        _streamReader = streamReader;
+        _program = program;
     }
 
     public void Run()
     {
-        var lexer = new CommentFilteredLexer(_streamReader);
-        var parser = new Parser(lexer);
-        
         var builtInFunctionsProvider = new BuiltInFunctionsProvider();
         
         var semanticAnalyzerVisitor = new SemanticAnalyzerVisitor(builtInFunctionsProvider);
         var interpreterVisitor = new InterpreterVisitor("main", builtInFunctionsProvider);
         
-        var topLevelObject = parser.Parse();
-
-        semanticAnalyzerVisitor.Visit(topLevelObject);
-        interpreterVisitor.Visit(topLevelObject);
+        semanticAnalyzerVisitor.Visit(_program);
+        interpreterVisitor.Visit(_program);
     }
 }

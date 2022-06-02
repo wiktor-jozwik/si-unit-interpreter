@@ -105,7 +105,7 @@ public class TypeAnalyzerVisitor : ITypeVisitor
         return returnedType;
     }
 
-    public IType Visit(Expression element)
+    public IType Visit(OrExpression element)
     {
         // only valid for two booleans
 
@@ -117,7 +117,7 @@ public class TypeAnalyzerVisitor : ITypeVisitor
         throw new UnpermittedOperationException(leftType, "||", rightType);
     }
 
-    public IType Visit(LogicFactor element)
+    public IType Visit(AndExpression element)
     {
         // only valid for two booleans
 

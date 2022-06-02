@@ -21,8 +21,8 @@ public interface IInterpreterVisitor
     dynamic? Visit(AssignStatement element);
     dynamic? Visit(ReturnStatement element);
     dynamic? Visit(Parameter element);
-    dynamic? Visit(Expression element);
-    dynamic? Visit(LogicFactor element);
+    dynamic? Visit(OrExpression element);
+    dynamic? Visit(AndExpression element);
     dynamic? Visit(EqualExpression element);
     dynamic? Visit(NotEqualExpression element);
     dynamic? Visit(GreaterThanExpression element);

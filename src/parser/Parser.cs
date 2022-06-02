@@ -133,6 +133,11 @@ public class Parser
                 _lexer.Token.Position);
         }
 
+        if (_functions.ContainsKey(functionName))
+        {
+            throw new FunctionAlreadyDefinedException(functionName);
+        }
+
         _functions[functionName] = new FunctionStatement(parameters, returnType, statements);
 
         return true;
@@ -143,7 +148,14 @@ public class Parser
         var parameters = new List<Parameter>();
         var parameter = TryParseParameter();
 
-        if (parameter != null) parameters.Add(parameter);
+        if (parameter != null)
+        {
+            parameters.Add(parameter);
+        }
+        else
+        {
+            return parameters;
+        }
 
         while (_CheckAndConsume(TokenType.COMMA))
         {
@@ -174,6 +186,13 @@ public class Parser
         }
 
         var variableType = TryParseVariableType();
+        if (variableType == null)
+        {
+            throw new ParserException(
+                new HashSet<TokenType> {TokenType.STRING_TYPE, TokenType.BOOL_TYPE, TokenType.LEFT_SQUARE_BRACKET},
+                _lexer.Token.Type,
+                _lexer.Token.Position);
+        }
 
         return new Parameter(identifier, variableType);
     }
@@ -312,6 +331,11 @@ public class Parser
                 _lexer.Token.Position);
         }
 
+        if (_units.ContainsKey(unitName))
+        {
+            throw new UnitAlreadyDefinedException(unitName);
+        }
+
         _units[unitName] = unitType;
 
         return true;
@@ -332,7 +356,17 @@ public class Parser
 
         var identifier = _GetValueOfTokenAndPrepareNext();
 
-        return TryParseRestOfFunctionCall(identifier) ?? TryParseAssignStatement(identifier);
+        var restOfFunctionCall = TryParseRestOfFunctionCall(identifier);
+        var assignStatement = TryParseAssignStatement(identifier);
+
+        if (restOfFunctionCall == null && assignStatement == null)
+        {
+            throw new ParserException(
+                new HashSet<TokenType> {TokenType.LEFT_PARENTHESES, TokenType.ASSIGNMENT_OPERATOR}, _lexer.Token.Type,
+                _lexer.Token.Position);
+        }
+
+        return restOfFunctionCall ?? assignStatement;
     }
 
     private FunctionCall? TryParseRestOfFunctionCall(string identifier)
@@ -428,7 +462,7 @@ public class Parser
     {
         if (!_CheckAndConsume(TokenType.IF)) return null;
 
-        var (condition, statements) = TryParseIfConditionAndBlock();
+        var (condition, statements) = ParseIfConditionAndBlock();
 
         var ifElseIfStatements = new List<ElseIfStatement>();
         var ifElseStatement = new Block();
@@ -437,7 +471,7 @@ public class Parser
         {
             if (_CheckAndConsume(TokenType.IF))
             {
-                var (elseIfCondition, elseIfStatements) = TryParseIfConditionAndBlock();
+                var (elseIfCondition, elseIfStatements) = ParseIfConditionAndBlock();
 
                 ifElseIfStatements.Add(new ElseIfStatement(elseIfCondition, elseIfStatements));
             }
@@ -453,7 +487,7 @@ public class Parser
         return new IfStatement(condition, statements, ifElseIfStatements, ifElseStatement);
     }
 
-    private (IExpression, Block) TryParseIfConditionAndBlock()
+    private (IExpression, Block) ParseIfConditionAndBlock()
     {
         if (!_CheckAndConsume(TokenType.LEFT_PARENTHESES))
         {
@@ -534,7 +568,7 @@ public class Parser
                 throw new ParserException(_expressionTokenSet, _lexer.Token.Type, _lexer.Token.Position);
             }
 
-            leftLogicFactor = new Expression(leftLogicFactor, rightLogicFactor);
+            leftLogicFactor = new OrExpression(leftLogicFactor, rightLogicFactor);
         }
 
         return leftLogicFactor;
@@ -554,7 +588,7 @@ public class Parser
                 throw new ParserException(_expressionTokenSet, _lexer.Token.Type, _lexer.Token.Position);
             }
 
-            leftExpressionComparison = new LogicFactor(leftExpressionComparison, rightExpressionComparison);
+            leftExpressionComparison = new AndExpression(leftExpressionComparison, rightExpressionComparison);
         }
 
         return leftExpressionComparison;

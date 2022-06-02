@@ -13,6 +13,7 @@ namespace si_unit_interpreter.interpreter.interpreter;
 
 public class InterpreterVisitor : IInterpreterVisitor
 {
+    // stos function call contextow
     private readonly FunctionCallContext _functionCallContext = new();
     private readonly Dictionary<string, FunctionStatement> _functions = new();
 
@@ -49,8 +50,10 @@ public class InterpreterVisitor : IInterpreterVisitor
 
     public dynamic? Visit(FunctionStatement element)
     {
+        // do wyrzucenia???
         _functionCallContext.Scopes.AddLast(new Scope());
 
+        // to w function call
         var parameterIndex = 0;
         foreach (var parameter in element.Parameters)
         {
@@ -124,11 +127,10 @@ public class InterpreterVisitor : IInterpreterVisitor
 
         foreach (var elseIfStatement in element.ElseIfStatements)
         {
-            var elseIfValue = elseIfStatement.Accept(this);
-            if (elseIfValue != null)
-            {
-                return elseIfValue;
-            }
+            var elseIfCondition = elseIfStatement.Condition.Accept(this);
+            if (!elseIfCondition) continue;
+            
+            return elseIfStatement.Accept(this);
         }
 
         _functionCallContext.Scopes.AddLast(new Scope());
@@ -147,8 +149,7 @@ public class InterpreterVisitor : IInterpreterVisitor
         var elseIfStatementValue = element.Statements.Accept(this);
         _functionCallContext.Scopes.RemoveLast();
 
-        // return evaluated valued or true just to mark that elseIf was processed
-        return elseIfStatementValue == null ? true : elseIfStatementValue;
+        return elseIfStatementValue;
     }
 
     public dynamic? Visit(WhileStatement element)
@@ -213,7 +214,9 @@ public class InterpreterVisitor : IInterpreterVisitor
 
         if (_functions.TryGetValue(name, out var functionStatement))
         {
+            // functionStatement ma parametry a one maja nazwy wiec zamiast ParameterScope -> Scope
             _functionCallContext.ParameterScopes.AddLast(new ParameterScope());
+            // powolanie nowego function call contextu, umieszczenie parametrow
             foreach (var argument in element.Arguments)
             {
                 var argumentValue = argument.Accept(this);
@@ -223,24 +226,24 @@ public class InterpreterVisitor : IInterpreterVisitor
 
             var functionValue = functionStatement.Accept(this);
             _functionCallContext.ParameterScopes.RemoveLast();
-            // TODO
             return functionValue;
         }
 
         return null;
     }
 
+    // czy potrzebne?
     public dynamic Visit(Parameter element)
     {
         return element.Name;
     }
 
-    public dynamic? Visit(Expression element)
+    public dynamic? Visit(OrExpression element)
     {
         return element.Left.Accept(this) || element.Right.Accept(this);
     }
 
-    public dynamic? Visit(LogicFactor element)
+    public dynamic? Visit(AndExpression element)
     {
         return element.Left.Accept(this) && element.Right.Accept(this);
     }
@@ -324,6 +327,8 @@ public class InterpreterVisitor : IInterpreterVisitor
         return null;
     }
 
+    
+    // dodac obiekt z value i unitTypem?
     public dynamic Visit(BoolLiteral element)
     {
         return element.Value;

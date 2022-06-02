@@ -1,4 +1,6 @@
 using si_unit_interpreter.interpreter;
+using si_unit_interpreter.lexer;
+using si_unit_interpreter.parser;
 
 namespace si_unit_interpreter;
 
@@ -15,10 +17,19 @@ public class MainProcessor
     {
         ValidateInput();
         var codePath = _args[0];
-        StreamReader streamReader;
         try
         {
-            streamReader = new StreamReader(codePath);  
+            TopLevel program; 
+            using (var streamReader = new StreamReader(codePath))
+            {
+                var lexer = new CommentFilteredLexer(streamReader);
+                var parser = new Parser(lexer);
+                program = parser.Parse();
+
+            }  
+            var interpreter = new Interpreter(program);
+
+            interpreter.Run();
         }
         catch(Exception ex)
         {
@@ -28,10 +39,6 @@ public class MainProcessor
             }
             throw;
         }
-
-        var interpreter = new Interpreter(streamReader);
-
-        interpreter.Run();
     }
 
     private void ValidateInput()

@@ -776,7 +776,7 @@ public class ParserUnitTests
     }
 
     [Fact]
-    [Trait("Category", "Expression")]
+    [Trait("Category", "OrExpression")]
     public void TestLogicExpression()
     {
         const string code = @"
@@ -799,13 +799,13 @@ public class ParserUnitTests
                 ),
                 new NotEqualExpression(
                     new Identifier("firstVariable"),
-                    new Expression(
-                        new Expression(
-                            new LogicFactor(
+                    new OrExpression(
+                        new OrExpression(
+                            new AndExpression(
                                 new Identifier("www"),
                                 new Identifier("xyz")
                             ),
-                            new LogicFactor(
+                            new AndExpression(
                                 new EqualExpression(
                                     new Identifier("w"),
                                     new BoolLiteral(false)
@@ -825,7 +825,7 @@ public class ParserUnitTests
     }
 
     [Fact]
-    [Trait("Category", "Expression")]
+    [Trait("Category", "OrExpression")]
     public void TestComparisonExpression()
     {
         const string code = @"
@@ -846,7 +846,7 @@ public class ParserUnitTests
                     "x",
                     new BoolType()
                 ),
-                new LogicFactor(
+                new AndExpression(
                     new GreaterThanExpression(
                         new Identifier(
                             "x"
@@ -877,7 +877,7 @@ public class ParserUnitTests
     }
 
     [Fact]
-    [Trait("Category", "Expression")]
+    [Trait("Category", "OrExpression")]
     public void TestAdditiveAndMultiplicativeExpression()
     {
         const string code = @"
@@ -945,7 +945,7 @@ public class ParserUnitTests
     }
 
     [Fact]
-    [Trait("Category", "Expression")]
+    [Trait("Category", "OrExpression")]
     public void TestExpressionWithParentheses()
     {
         const string code = @"
@@ -998,7 +998,7 @@ public class ParserUnitTests
 
 
     [Fact]
-    [Trait("Category", "Expression")]
+    [Trait("Category", "OrExpression")]
     public void TestNegateExpression()
     {
         const string code = @"
@@ -1019,7 +1019,7 @@ public class ParserUnitTests
                     "x",
                     new BoolType()
                 ),
-                new LogicFactor(
+                new AndExpression(
                     new SmallerThanExpression(
                         new MinusExpression(
                             new FloatLiteral(
@@ -1056,7 +1056,7 @@ public class ParserUnitTests
     }
 
     [Fact]
-    [Trait("Category", "Expression")]
+    [Trait("Category", "OrExpression")]
     public void TestExpressionWithFunctionCalls()
     {
         const string code = @"
@@ -2036,5 +2036,73 @@ public class ParserUnitTests
             parser.Parse());
         Assert.Equal("Expected RIGHT_SQUARE_BRACKET token" +
                      " but received DIVISION_OPERATOR on row 2 and column 39", e.Message);
+    }
+    
+    [Fact]
+    [Trait("Category", "Error")]
+    public void TestParameterEndingWithColon()
+    {
+        const string code = @"
+                            fn(v:)
+                            ";
+
+        var parser = Helper.PrepareParser(code);
+        var e = Assert.Throws<ParserException>(() =>
+            parser.Parse());
+        Assert.Equal("Expected STRING_TYPE or BOOL_TYPE or LEFT_SQUARE_BRACKET token" +
+                     " but received RIGHT_PARENTHESES on row 2 and column 34", e.Message);
+    }
+    
+    [Fact]
+    [Trait("Category", "Error")]
+    public void TestLackOfRestOfFunctionCallAndAssignStatement()
+    {
+        const string code = @"
+                            fn() -> void {
+                                a
+                            }
+                            ";
+
+        var parser = Helper.PrepareParser(code);
+        var e = Assert.Throws<ParserException>(() =>
+            parser.Parse());
+        Assert.Equal("Expected LEFT_PARENTHESES or ASSIGNMENT_OPERATOR token" +
+                     " but received RIGHT_CURLY_BRACE on row 4 and column 29", e.Message);
+    }
+    
+    [Fact]
+    [Trait("Category", "Error")]
+    public void TestSameFunctionNameDefinition()
+    {
+        const string code = @"
+                            fn() -> [] {
+                                return 5
+                            }
+                            fn() -> [s] {
+                                return 5 [s]
+                            }
+                            ";
+
+        var parser = Helper.PrepareParser(code);
+
+        var e = Assert.Throws<FunctionAlreadyDefinedException>(() =>
+            parser.Parse());
+        Assert.Equal("'fn' function is already defined", e.Message);
+    }
+    
+    [Fact]
+    [Trait("Category", "Error")]
+    public void TestSameUnitNameDefinition()
+    {
+        const string code = @"
+                            unit a: [m*s^-2]
+                            unit a: [m*s^-1]
+                            ";
+
+        var parser = Helper.PrepareParser(code);
+
+        var e = Assert.Throws<UnitAlreadyDefinedException>(() =>
+            parser.Parse());
+        Assert.Equal("'a' unit is already defined", e.Message);
     }
 }

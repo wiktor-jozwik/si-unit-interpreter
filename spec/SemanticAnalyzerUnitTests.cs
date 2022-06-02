@@ -261,7 +261,28 @@ public class SemanticAnalyzerUnitTests
             semanticAnalyzer.Visit(program));
         Assert.Equal("'zzz' is already declared", e.Message);
     }
+    
+    [Fact]
+    public void TestTwoSameParameters()
+    {
+        const string code = @"
+                            fun(zzz: [], zzz: [s]) -> void {
+                                return zzz + 5 [s]
+                            }
+                            main() -> void {
+                                let x: [] = fun(5, 5 [s])
+                                }
+                            }";
 
+        var parser = Helper.PrepareParser(code);
+        var program = parser.Parse();
+
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
+        var e = Assert.Throws<NotUniqueParametersNamesException>(() =>
+            semanticAnalyzer.Visit(program));
+        Assert.Equal("'fun' got two or more 'zzz' parameters", e.Message);
+    }
 
     [Fact]
     public void TestUsageOfVariableInWrongScope()

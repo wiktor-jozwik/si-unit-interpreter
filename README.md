@@ -44,10 +44,10 @@
 
 - Przykłady operacji na zmiennych z typami jednostek
   - ```
-    let t1: [s] = 5
-    let s1: [m] = 12
+    let t1: [s] = 5 [s]
+    let s1: [m] = 12 [m]
     let v1: [m*s^-1] = s1 / t1
-    let v2: [m*s^-1] = 10
+    let v2: [m*s^-1] = 10 [m*s^-1]
     let deltaV = v2 - v1
     ```
   - ```
@@ -90,13 +90,13 @@
 ### Funkcje
   - Użycie funkcji z wykorzystaniem argumentów z jednostkami SI oraz zmiennej skalarnej
     ```
-    fn calculateVelocityData(v1: [m*s^-1], v2: [m*s^-1], scalar: []) -> [m*s^-1] {
+    calculateVelocityData(v1: [m*s^-1], v2: [m*s^-1], scalar: []) -> [m*s^-1] {
       return (v2-v1) * scalar
     }
     ```
   - Użycie funkcji z resztą zmiennych
     ```
-    fn printMass(m: [kg], shouldPrintMass: bool, printText: string) -> void {
+    printMass(m: [kg], shouldPrintMass: bool, printText: string) -> void {
       if (shouldPrintMass) {
         print(printText)
         print(m)
@@ -105,9 +105,9 @@
     ```
   - Generalna składnia funkcji:
     ```
-    fn functionName(arg1: unit|string|bool, arg2: unit|string|bool, arg3: unit|string|bool, ...) -> unit|void|string|bool {
+    functionName(arg1: unit|string|bool, arg2: unit|string|bool, arg3: unit|string|bool, ...) -> unit|void|string|bool {
       code block
-      return ... // if not void
+      return ... // or just return
     }
     ```
   
@@ -118,13 +118,13 @@
 ### Przykład użycia zawierający wszystkie elementy języka:
 - ```
   unit N: [kg*m*s^-2]
-  let G: [N*m^2*kg^-2] = 6.6732e-11
+  let G: [N*m^2*kg^-2] = 6.6732e-11 [N*m^2*kg^-2]
   
-  fn calculateGForce(m1: [kg], m2: [kg], distance: [m]) -> [N] {
+  calculateGForce(m1: [kg], m2: [kg], distance: [m]) -> [N] {
     return G * earthMass * sunMass / (earthSunDistance * earthSunDistance)
   }
   
-  fn printGForceInLoop(gForce: [N], i: [], shouldPrint: bool, printText: string) -> void {
+  printGForceInLoop(gForce: [N], i: [], shouldPrint: bool, printText: string) -> void {
     if (shouldPrint) {
       while (i > 0) {
         print(i)
@@ -134,8 +134,7 @@
       }
     }
   }
-
-
+  main() -> void {
   let earthMass: [kg] = 5.9722e24 [kg]
   let sunMass: [kg] = 1.989e30 [kg]
   let earthSunDistance: [m] = 149.24e9 [m]
@@ -147,6 +146,7 @@
   let printText: string = "GForce is: "
   
   printGForceInLoop(gForce, i, shouldPrint, printText)
+  }
   ```
 
 ### Właściwie operacje

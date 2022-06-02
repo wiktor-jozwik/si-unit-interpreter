@@ -31,8 +31,8 @@ public interface ITypeVisitor
     IType Visit(MultiplicateExpression element);
     IType Visit(MinusExpression element);
     IType Visit(NotExpression element);
-    IType Visit(Expression element);
+    IType Visit(OrExpression element);
     IType Visit(FunctionCall element);
     IType Visit(Identifier element);
-    IType Visit(LogicFactor element);
+    IType Visit(AndExpression element);
 }
