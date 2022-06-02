@@ -1,11 +1,10 @@
 unit N: [kg*m*s^-2]
-let G: [N*m^2*kg^-2] = 6.6732e-11
 
-fn calculateGForce(m1: [kg], m2: [kg], distance: [m]) -> [N] {
+calculateGForce(m1: [kg], m2: [kg], distance: [m]) -> [N] {
     return G * earthMass * sunMass / (earthSunDistance * earthSunDistance)
 }
 
-fn printGForceInLoop(gForce: [N], i: [], shouldPrint: bool, printText: string) -> void {
+printGForceInLoop(gForce: [N], i: [], shouldPrint: bool, printText: string) -> void {
     if (shouldPrint) {
         while (i > 0) {
             print(i)
@@ -17,15 +16,19 @@ fn printGForceInLoop(gForce: [N], i: [], shouldPrint: bool, printText: string) -
     }
 }
 
+main() -> void {
+    let G: [N*m^2*kg^-2] = 6.6732e-11
+    
+    let earthMass: [kg] = 5.9722e24
+    let sunMass: [kg] = 1.989e30
+    let earthSunDistance: [m] = 149.24e9
+    
+    let gForce: [N] = calculateGForce(earthMass, sunMass, earthSunDistance)
+    
+    let i: [] = 10
+    let shouldPrint: bool = true
+    let printText: string = "GForce is: "
+    
+    printGForceInLoop(gForce, i, shouldPrint, printText)
+}
 
-let earthMass: [kg] = 5.9722e24
-let sunMass: [kg] = 1.989e30
-let earthSunDistance: [m] = 149.24e9
-
-let gForce: [N] = calculateGForce(earthMass, sunMass, earthSunDistance)
-
-let i: [] = 10
-let shouldPrint: bool = true
-let printText: string = "GForce is: "
-
-printGForceInLoop(gForce, i, shouldPrint, printText)

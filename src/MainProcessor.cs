@@ -1,5 +1,3 @@
-using si_unit_interpreter.input;
-
 namespace si_unit_interpreter;
 
 public class MainProcessor
@@ -14,11 +12,12 @@ public class MainProcessor
     public void Run()
     {
         ValidateInput();
-        var lines = new InputHandler().GetInput(_args[0]);
 
-        foreach (var line in lines)
+        using var sr = new StreamReader(_args[0]);
+
+        while (!sr.EndOfStream)
         {
-            Console.WriteLine(line);
+            Console.Write((char) sr.Read());
         }
     }
 
