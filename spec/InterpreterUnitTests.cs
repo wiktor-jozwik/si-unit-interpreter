@@ -680,4 +680,27 @@ public class InterpreterUnitTests
 
         Assert.Throws<LackOfMainFunctionException>(() => interpreter.Visit(program));
     }
+    
+    [Fact]
+    public void TestWhileInf()
+    {
+        const string code = @"
+                            main() -> void {
+                                while(6 >= 3) {
+                                    print(5)
+                                }
+                            }";
+
+        var parser = Helper.PrepareParser(code);
+        var program = parser.Parse();
+
+
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+
+        var interpreter = new InterpreterVisitor("main", builtinFunctionsProvider);
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
+        semanticAnalyzer.Visit(program);
+
+        Assert.Throws<MaxNumberIterationReachedException>(() => interpreter.Visit(program));
+    }
 }

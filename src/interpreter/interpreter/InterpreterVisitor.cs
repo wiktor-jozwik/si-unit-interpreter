@@ -17,11 +17,14 @@ public class InterpreterVisitor : IInterpreterVisitor
 
     private readonly string _mainFunctionName;
     private readonly Dictionary<string, Func<dynamic, dynamic>> _oneArgumentFunctions;
+    private readonly int _maxIterationAllowed;
 
-    public InterpreterVisitor(string mainFunctionName, BuiltInFunctionsProvider builtInFunctionsProvider)
+    public InterpreterVisitor(string mainFunctionName, BuiltInFunctionsProvider builtInFunctionsProvider,
+        int maxIterationAllowed = 1_000_000)
     {
         _mainFunctionName = mainFunctionName;
         _oneArgumentFunctions = builtInFunctionsProvider.GetOneArgumentFunctions();
+        _maxIterationAllowed = maxIterationAllowed;
     }
 
     public dynamic Visit(TopLevel element)
@@ -129,6 +132,7 @@ public class InterpreterVisitor : IInterpreterVisitor
     {
         var conditionValue = element.Condition.Accept(this);
         dynamic? value = null;
+        var iteration = 0;
         while (conditionValue)
         {
             _functionCallContext.Scopes.AddLast(new Scope());
@@ -136,6 +140,11 @@ public class InterpreterVisitor : IInterpreterVisitor
             _functionCallContext.Scopes.RemoveLast();
 
             conditionValue = element.Condition.Accept(this);
+            iteration += 1;
+            if (iteration >= _maxIterationAllowed)
+            {
+                throw new MaxNumberIterationReachedException();
+            }
         }
 
         return value;

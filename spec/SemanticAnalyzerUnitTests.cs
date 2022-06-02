@@ -422,6 +422,28 @@ public class SemanticAnalyzerUnitTests
             semanticAnalyzer.Visit(program));
         Assert.Equal("'i' is not defined", e.Message);
     }
+    
+    [Fact]
+    public void TestTryingToAccessVariableDeclaredInIf()
+    {
+        const string code = @"
+                            main() -> void {
+                                if(2 > 5) {
+                                    let y: [] = 5
+                                }
+                                y = 10
+                            }";
+
+        var parser = Helper.PrepareParser(code);
+        var program = parser.Parse();
+
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
+
+        var e = Assert.Throws<VariableUndeclaredException>(() =>
+            semanticAnalyzer.Visit(program));
+        Assert.Equal("'y' is not defined", e.Message);
+    }
 
     [Fact]
     public void TestVariableUndeclaredInWhileCondition()
