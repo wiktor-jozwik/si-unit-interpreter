@@ -7,7 +7,7 @@ using si_unit_interpreter.parser.expression.multiplicative;
 using si_unit_interpreter.parser.expression.negate;
 using si_unit_interpreter.parser.statement;
 
-namespace si_unit_interpreter.interpreter;
+namespace si_unit_interpreter.interpreter.interpreter;
 
 public interface IInterpreterVisitor
 {

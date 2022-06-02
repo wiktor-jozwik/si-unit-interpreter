@@ -51,7 +51,7 @@ public class InterpreterVisitor : IInterpreterVisitor
         foreach (var parameter in element.Parameters)
         {
             _functionCallContext.Scopes.Last().Variables[parameter.Accept(this)] =
-                _functionCallContext.ParameterScopes.Last()[parameterIndex];
+                _functionCallContext.ParameterScopes.Last().Parameters[parameterIndex];
             parameterIndex++;
         }
 
@@ -175,12 +175,12 @@ public class InterpreterVisitor : IInterpreterVisitor
 
         if (_functions.TryGetValue(name, out var functionStatement))
         {
-            _functionCallContext.ParameterScopes.AddLast(new List<dynamic>());
+            _functionCallContext.ParameterScopes.AddLast(new ParameterScope());
             foreach (var argument in element.Arguments)
             {
                 var argumentValue = argument.Accept(this);
 
-                _functionCallContext.ParameterScopes.Last().Add(argumentValue);
+                _functionCallContext.ParameterScopes.Last().Parameters.Add(argumentValue);
             }
 
             var functionValue = functionStatement.Accept(this);

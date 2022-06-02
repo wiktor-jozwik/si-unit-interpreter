@@ -1,4 +1,4 @@
-namespace si_unit_interpreter.interpreter;
+namespace si_unit_interpreter.interpreter.interpreter;
 
 public class Scope
 {
