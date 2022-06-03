@@ -2446,21 +2446,4 @@ public class SemanticAnalyzerUnitTests
             semanticAnalyzer.Visit(program));
         Assert.Equal("'print' function is already defined", e.Message);
     }
-    
-    [Fact]
-    public void TestWrongNumberOfArgumentsToBuiltIn()
-    {
-        const string code = @"
-unit N: [kg*m/s^2]
-                            }";
-
-        var parser = Helper.PrepareParser(code);
-        var program = parser.Parse();
-
-        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
-        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
-        var e = Assert.Throws<WrongNumberOfArgumentsException>(() =>
-            semanticAnalyzer.Visit(program));
-        Assert.Equal("'print' function was invoked with 2 argument(s) but expected 1 argument(s)", e.Message);
-    }
 }

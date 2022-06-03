@@ -19,9 +19,9 @@
     - **[]** - brak jednostki(zmienna skalarna)
 
 - Typy danych:
-    - unit (zrzesza typy całkowite **int** oraz zmiennoprzecinkowe **float**)
-    - string
-    - bool
+    - **unit** (zrzesza typy całkowite **int** oraz zmiennoprzecinkowe **float**)
+    - **string**
+    - **bool**
 
 - Zmienne skalarne, napisy lub booleany
     - `let x: [] = 5`
@@ -45,13 +45,13 @@
   ```
 
 - Przykłady operacji na zmiennych z typami jednostek
-  - ```
+    - ```
       let t1: [s] = 5 [s]
       let s1: [m] = 12 [m]
       let v1: [m*s^-1] = s1 / t1 let v2: [m*s^-1] = 10 [m*s^-1]
       let deltaV = v2 - v1
     ```
-  - ```
+    - ```
     unit J: [kg*m^2*s^-2]
     
     let mass: [kg] = 10 [kg]
@@ -240,8 +240,8 @@
 - **!** _bool_
 - **-** _unit_
 
-(same_unit wtedy gdy oba typy **unit** mają tą
-samą jednostkę np. [s] i [s])
+(same_unit - gdy oba typy **unit** mają tą samą jednostkę np. [s] i [s])
+
 - Reszta operacji jest niedozwolona
 
 #### Błędy
@@ -660,18 +660,29 @@ Wejście programu to ścieżka do pliku z kodem w wyżej zdefiniowanym języku, 
 zależał od tego co znajdzie się w kodzie dostarczonym przez użytkownika. Błędy obsłużone przez interpreter również będą
 pokazywane w konsoli.
 
-### Opis architektury systemu
+### Opis działania systemu
+
+Po uruchomieniu programu z podaniem ścieżki zostaje wywołana klasa `Program`, która to wywołuje `MainProcessor`
+przekazując do niej podane argumenty, przekazane przez użytkownika. Klasa ta powołuje do życia `Lexer`, a w
+zadazie `CommentFilteredLexer`,
+(klasa `CommentFilteredLexer` niczym oprócz odfiltrowania komentarzy nie różni się od klasy `Lexer`) oraz `Parser`, do
+którego instancja klasy `CommentFilteredLexer` zostaje przekazana. Plik zostaje wczytany przy pomocy klasy wbudowanej w
+C# `StreamReader` i podany do `Parser`a. `Parser` pyta `Lexer` o kolejny `Token` i buduje z nich odpowiednie obiekty. Po
+przeanalizowaniu całego kodu zwracane jest drzewo obiektów programu. Drzewo to, którego korzeniem jest obiekt
+klasy `TopLeveL` przekazywane jest dalej do klasy `Interpreter`. Tutaj odbywa się analiza semantyczna kodu - to czy
+zdefiniowane działania przez użytkownika mają rzeczywiście sens. Powołany zostaje do życia obiekt
+klasy `SemanticAnalyzerVisitor`, który analizuje kod pod względem semantycznym. Został zastosowany wzorzec wizytatora,
+aby w łatwy sposób móc przejść po drzewie obiektów. Gdy analiza semantyczna powiedzie się bez błędów to
+obiekt `TopLevel` zostaje przekazany do klasy `InterpreterVisitor` i tutaj odbywa się interpretowanie i działanie na
+kodzie, który dostarczył użytkownik.
 
 ### Opis elementów systemu
 
 - Lexer - tworzy tokeny na podstawie dostarczonych znaków
-- Parser - otrzymuje kolejne tokeny dostarczając znaki Lexerowi, buduje strukture obiektów przekazywaną do analizatora
+- Parser - otrzymuje kolejne tokeny po dostarczeniu kodu Lexerowi, buduje strukture obiektów przekazywaną do analizatora
   semantycznego i interpretera
-- Analizator semantyczny - weryfikuje poprawność semantyczną dostarczonego kodu - czy ma on sens
+- Analizator semantyczny - weryfikuje poprawność semantyczną dostarczonego kodu (analizuje czy kod ma sens)
 - Interpreter - realizuje funkcjonalności języka na podstawie dostarczonej struktury obiektów przez Parser
-
-### Opis działania systemu
-
 
 ### Opis testowania
 
@@ -688,7 +699,6 @@ pokazywane w konsoli.
     - czy jest limit iteracji pętli
     - czy działa rekursja
     - czy typ zwracany się zgadza
-
 
 ### Założenia techniczne
 

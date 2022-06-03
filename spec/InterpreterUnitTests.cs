@@ -558,7 +558,7 @@ public class InterpreterUnitTests
                             }
 
                             main() -> void {
-                                countFrom(15)
+                                countFrom(4)
                             }";
 
         var parser = Helper.PrepareParser(code);
@@ -573,7 +573,7 @@ public class InterpreterUnitTests
         using var consoleOutput = new ConsoleOutput();
         semanticAnalyzer.Visit(program);
         interpreter.Visit(program);
-        consoleOutput.GetOutput().ShouldBe("0\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n");
+        consoleOutput.GetOutput().ShouldBe("4\n3\n2\n1\n0\n");
     }
 
     [Fact]

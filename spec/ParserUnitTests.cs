@@ -1607,7 +1607,7 @@ public class ParserUnitTests
 
         var e = Assert.Throws<ParserException>(() =>
             parser.Parse());
-        Assert.Equal("Expected RIGHT_SQUARE_BRACKET token" +
+        Assert.Equal("Expected RIGHT_SQUARE_BRACKET or MULTIPLICATION_OPERATOR or POWER_OPERATOR token" +
                      " but received ETX on row 3 and column 29", e.Message);
     }
 
@@ -2034,7 +2034,7 @@ public class ParserUnitTests
         var parser = Helper.PrepareParser(code);
         var e = Assert.Throws<ParserException>(() =>
             parser.Parse());
-        Assert.Equal("Expected RIGHT_SQUARE_BRACKET token" +
+        Assert.Equal("Expected RIGHT_SQUARE_BRACKET or MULTIPLICATION_OPERATOR or POWER_OPERATOR token" +
                      " but received DIVISION_OPERATOR on row 2 and column 39", e.Message);
     }
     
