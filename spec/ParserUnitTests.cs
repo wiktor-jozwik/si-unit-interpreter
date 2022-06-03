@@ -2105,4 +2105,20 @@ public class ParserUnitTests
             parser.Parse());
         Assert.Equal("'a' unit is already defined", e.Message);
     }
+    
+    [Fact]
+    [Trait("Category", "Error")]
+    public void TestInvalidTokenInUnitDeclaration()
+    {
+        const string code = @"
+                            unit a: [m*s/2]
+                            ";
+
+        var parser = Helper.PrepareParser(code);
+
+        var e = Assert.Throws<ParserException>(() =>
+            parser.Parse());
+        Assert.Equal("Expected RIGHT_SQUARE_BRACKET or MULTIPLICATION_OPERATOR or POWER_OPERATOR token" +
+                     " but received DIVISION_OPERATOR on row 2 and column 41", e.Message);
+    }
 }

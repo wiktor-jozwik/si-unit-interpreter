@@ -1,0 +1,23 @@
+getDistance(x: []) -> [m] {
+    // 1/2
+    return 5 [m] / x
+}
+getDuration(x: []) -> [s] {
+    // 25
+    return 5 [s] * x
+}
+
+calculateVelocity(distance: [m], duration: [s]) -> [m*s^-1] {
+    // 1/2 / 25
+    return distance / duration
+}
+
+main() -> void {
+    let x: [m] = getDistance(10)
+    let y: [s] = getDuration(5)
+    let v1: [m*s^-1] = calculateVelocity(getDistance(10), getDuration(5))
+    let v2: [m*s^-1] = calculateVelocity(x, y)
+    
+    print(v1)
+    print(v2)
+}

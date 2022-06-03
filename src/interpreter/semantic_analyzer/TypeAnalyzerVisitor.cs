@@ -44,12 +44,16 @@ public class TypeAnalyzerVisitor : ITypeVisitor
         var name = element.Parameter.Name;
         var variableType = element.Parameter.Type;
 
-        if (
-            _GetAllScopesOfCurrentFunctionCall()
-            .Any(scope => scope.Variables.Any(variables => variables.Key.Contains(name)))
-        )
+        foreach (var scope in _GetAllScopesOfCurrentFunctionCall())
         {
-            throw new VariableRedeclarationException(name);
+            foreach (var variable in scope.Variables)
+            {
+                if (variable.Key == name)
+                {
+                    throw new VariableRedeclarationException(name);
+
+                }
+            }
         }
 
         var typeExpression = element.Expression.Accept(this);
@@ -72,11 +76,6 @@ public class TypeAnalyzerVisitor : ITypeVisitor
     public IType Visit(ReturnStatement element)
     {
         var functionName = _GetNameOfCurrentFunctionName();
-
-        // if (_builtInFunctions.TryGetValue(functionName, out var type))
-        // {
-        //     return type;
-        // }
 
         if (!_functions.TryGetValue(functionName, out var function))
         {

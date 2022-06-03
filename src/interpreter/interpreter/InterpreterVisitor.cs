@@ -288,7 +288,14 @@ public class InterpreterVisitor : IInterpreterVisitor
 
     public dynamic? Visit(DivideExpression element)
     {
-        return (double) element.Left.Accept(this)! / element.Right.Accept(this);
+        var right = element.Right.Accept(this);
+
+        if (right == 0)
+        {
+            throw new ZeroDivisionError();
+        }
+
+        return (double) element.Left.Accept(this)! / right;
     }
 
     public dynamic? Visit(MinusExpression element)

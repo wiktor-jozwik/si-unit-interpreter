@@ -218,7 +218,12 @@ public class Parser
 
         if (!_CheckAndConsume(TokenType.RIGHT_SQUARE_BRACKET))
         {
-            throw new ParserException(new HashSet<TokenType> {TokenType.RIGHT_SQUARE_BRACKET}, _lexer.Token.Type,
+            throw new ParserException(
+                new HashSet<TokenType>
+                {
+                    TokenType.RIGHT_SQUARE_BRACKET, TokenType.MULTIPLICATION_OPERATOR,
+                    TokenType.POWER_OPERATOR
+                }, _lexer.Token.Type,
                 _lexer.Token.Position);
         }
 

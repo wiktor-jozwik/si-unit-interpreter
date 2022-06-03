@@ -2310,6 +2310,27 @@ public class SemanticAnalyzerUnitTests
             semanticAnalyzer.Visit(program));
         Assert.Equal("'boolean' requires bool type but received []", e.Message);
     }
+    
+    [Fact]
+    public void TestInvalidReturn()
+    {
+        const string code = @"
+                            getX() -> [m] {
+                                return 20 [s]
+                            }
+                            main() -> void {
+                                let x: [m] = getX()
+                            }";
+
+        var parser = Helper.PrepareParser(code);
+        var program = parser.Parse();
+
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
+        var e = Assert.Throws<NotValidReturnTypeException>(() =>
+            semanticAnalyzer.Visit(program));
+        Assert.Equal("'getX' return requires [m] type but returned [s]", e.Message);
+    }
 
     [Fact]
     public void TestReAssigningBooleansValid()
@@ -2430,8 +2451,7 @@ public class SemanticAnalyzerUnitTests
     public void TestWrongNumberOfArgumentsToBuiltIn()
     {
         const string code = @"
-                            main() -> void {
-                                print(25 [kg], 10 [s])
+unit N: [kg*m/s^2]
                             }";
 
         var parser = Helper.PrepareParser(code);

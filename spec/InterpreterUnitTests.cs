@@ -541,6 +541,40 @@ public class InterpreterUnitTests
         interpreter.Visit(program);
         consoleOutput.GetOutput().ShouldBe("0\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n");
     }
+    
+    
+    [Fact]
+    public void TestWhileInFunctionWhichTakeVariableFromParameter2()
+    {
+        const string code = @"
+                            countFrom(from: []) -> void {
+                                let x: [] = 0
+                                if (true) {
+                                    while (x <= from) {
+                                        print(from)
+                                        from = from - 1
+                                    }
+                                }
+                            }
+
+                            main() -> void {
+                                countFrom(15)
+                            }";
+
+        var parser = Helper.PrepareParser(code);
+        var program = parser.Parse();
+
+
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+
+        var interpreter = new InterpreterVisitor("main", builtinFunctionsProvider);
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
+
+        using var consoleOutput = new ConsoleOutput();
+        semanticAnalyzer.Visit(program);
+        interpreter.Visit(program);
+        consoleOutput.GetOutput().ShouldBe("0\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n");
+    }
 
     [Fact]
     public void TestRecursiveFunction()
@@ -602,49 +636,6 @@ public class InterpreterUnitTests
         semanticAnalyzer.Visit(program);
         interpreter.Visit(program);
         consoleOutput.GetOutput().ShouldBe("60 [kg]\n50 [kg]\n");
-    }
-
-    [Fact]
-    public void TestPassingTwoArgumentsToFunction()
-    {
-        const string code = @"
-                            getDistance(x: []) -> [m] {
-                                // 1/2
-                                return 5 [m] / x
-                            }
-                            getDuration(x: []) -> [s] {
-                                // 25
-                                return 5 [s] * x
-                            }
-                            
-                            calculateVelocity(distance: [m], duration: [s]) -> [m*s^-1] {
-                                // 1/2 / 25
-                                return distance / duration
-                            }
-
-                            main() -> void {
-                                let x: [m] = getDistance(10)
-                                let y: [s] = getDuration(5)
-                                let v1: [m*s^-1] = calculateVelocity(getDistance(10), getDuration(5))
-                                let v2: [m*s^-1] = calculateVelocity(x, y)
-
-                                print(v1)
-                                print(v2)
-                            }";
-
-        var parser = Helper.PrepareParser(code);
-        var program = parser.Parse();
-
-
-        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
-
-        var interpreter = new InterpreterVisitor("main", builtinFunctionsProvider);
-        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
-
-        using var consoleOutput = new ConsoleOutput();
-        semanticAnalyzer.Visit(program);
-        interpreter.Visit(program);
-        consoleOutput.GetOutput().ShouldBe("0.02 [m*s^-1]\n0.02 [m*s^-1]\n");
     }
 
     [Fact]
@@ -1004,5 +995,52 @@ public class InterpreterUnitTests
         semanticAnalyzer.Visit(program);
 
         Assert.Throws<MaxNumberIterationReachedException>(() => interpreter.Visit(program));
+    }
+    
+    [Fact]
+    public void TestDivideBy0()
+    {
+        const string code = @"
+                            main() -> void {
+                                let x: [] = 5 / 0
+                            }";
+
+        var parser = Helper.PrepareParser(code);
+        var program = parser.Parse();
+
+
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+
+        var interpreter = new InterpreterVisitor("main", builtinFunctionsProvider);
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
+        semanticAnalyzer.Visit(program);
+
+        Assert.Throws<ZeroDivisionError>(() => interpreter.Visit(program));
+    }
+    
+    [Fact]
+    public void TestDivideBy0FromExpression()
+    {
+        const string code = @"
+                            getZ() -> [] {
+                                return 5 - 5
+                            }
+                            main() -> void {
+                                let y: [] = 10
+                                let z: [] = getZ()
+                                let x: [] = y / z
+                            }";
+
+        var parser = Helper.PrepareParser(code);
+        var program = parser.Parse();
+
+
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+
+        var interpreter = new InterpreterVisitor("main", builtinFunctionsProvider);
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
+        semanticAnalyzer.Visit(program);
+
+        Assert.Throws<ZeroDivisionError>(() => interpreter.Visit(program));
     }
 }
