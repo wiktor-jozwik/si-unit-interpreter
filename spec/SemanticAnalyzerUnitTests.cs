@@ -1,3 +1,4 @@
+using si_unit_interpreter.exceptions.parser;
 using si_unit_interpreter.exceptions.semantic_analyzer;
 using si_unit_interpreter.interpreter;
 using si_unit_interpreter.interpreter.semantic_analyzer;
@@ -2375,5 +2376,71 @@ public class SemanticAnalyzerUnitTests
         var e = Assert.Throws<VariableUndeclaredException>(() =>
             semanticAnalyzer.Visit(program));
         Assert.Equal("'x' is not defined", e.Message);
+    }
+    
+    [Fact]
+    public void TestRunningFunctionFromFunction()
+    {
+        const string code = @"
+                            getX(var: [K]) -> [K] {
+                                return 20 [K] - var - z
+                            }
+                            getY(w: [K]) -> [K] {
+                                let z: [K] = 270 [K] + w
+                                return getX(z)
+                            }
+                            main() -> void {
+                                let x: [K] = getY(25 [K])
+
+                                print(x)
+                            }";
+
+        var parser = Helper.PrepareParser(code);
+        var program = parser.Parse();
+
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
+        var e = Assert.Throws<VariableUndeclaredException>(() =>
+            semanticAnalyzer.Visit(program));
+        Assert.Equal("'z' is not defined", e.Message);
+    }
+    
+    [Fact]
+    public void TestDefiningFunctionAsBuiltIn()
+    {
+        const string code = @"
+                            print(var: [kg]) -> [kg] {
+                                return 20 [K] - var - z
+                            }
+                            main() -> void {
+                                print(25 [kg])
+                            }";
+
+        var parser = Helper.PrepareParser(code);
+        var program = parser.Parse();
+
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
+        var e = Assert.Throws<FunctionAlreadyDefinedException>(() =>
+            semanticAnalyzer.Visit(program));
+        Assert.Equal("'print' function is already defined", e.Message);
+    }
+    
+    [Fact]
+    public void TestWrongNumberOfArgumentsToBuiltIn()
+    {
+        const string code = @"
+                            main() -> void {
+                                print(25 [kg], 10 [s])
+                            }";
+
+        var parser = Helper.PrepareParser(code);
+        var program = parser.Parse();
+
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
+        var e = Assert.Throws<WrongNumberOfArgumentsException>(() =>
+            semanticAnalyzer.Visit(program));
+        Assert.Equal("'print' function was invoked with 2 argument(s) but expected 1 argument(s)", e.Message);
     }
 }

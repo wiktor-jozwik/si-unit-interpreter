@@ -15,18 +15,15 @@ public class TypeAnalyzerVisitor : ITypeVisitor
 {
     private readonly LinkedList<SemanticFunctionCallContext> _semanticFunctionCallContexts;
     private readonly Dictionary<string, FunctionStatement> _functions;
-    private readonly Dictionary<string, IType> _builtInFunctions;
     private readonly IDictionary<string, UnitType> _units;
     private readonly IDictionary<string, UnitType> _defaultSiUnits;
 
     public TypeAnalyzerVisitor(LinkedList<SemanticFunctionCallContext> semanticFunctionCallContexts,
         Dictionary<string, FunctionStatement> functions,
-        Dictionary<string, IType> builtInFunctions,
         IDictionary<string, UnitType> units)
     {
         _semanticFunctionCallContexts = semanticFunctionCallContexts;
         _functions = functions;
-        _builtInFunctions = builtInFunctions;
         _units = units;
 
         // init SI units
@@ -76,10 +73,10 @@ public class TypeAnalyzerVisitor : ITypeVisitor
     {
         var functionName = _GetNameOfCurrentFunctionName();
 
-        if (_builtInFunctions.TryGetValue(functionName, out var type))
-        {
-            return type;
-        }
+        // if (_builtInFunctions.TryGetValue(functionName, out var type))
+        // {
+        //     return type;
+        // }
 
         if (!_functions.TryGetValue(functionName, out var function))
         {
@@ -327,11 +324,6 @@ public class TypeAnalyzerVisitor : ITypeVisitor
     {
         var name = element.Name;
 
-        if (_builtInFunctions.TryGetValue(name, out var type))
-        {
-            return type;
-        }
-
         if (_functions.TryGetValue(name, out var function))
         {
             var expectedNumberOfArguments = function.Parameters.Count;
@@ -387,6 +379,8 @@ public class TypeAnalyzerVisitor : ITypeVisitor
 
         if (_IsBool(leftType) && _IsBool(rightType)) return;
         if (_IsString(leftType) && _IsString(rightType)) return;
+
+        if (_IsLiteral(leftType) || _IsLiteral(rightType)) return;
 
         throw new TypeMismatchException(name, leftType, rightType);
     }
@@ -538,6 +532,11 @@ public class TypeAnalyzerVisitor : ITypeVisitor
     private static bool _IsBool(IType type)
     {
         return type.GetType() == typeof(BoolType);
+    }
+    
+    private static bool _IsLiteral(IType type)
+    {
+        return type.GetType() == typeof(LiteralType);
     }
 
     private LinkedList<SemanticScope> _GetAllScopesOfCurrentFunctionCall()

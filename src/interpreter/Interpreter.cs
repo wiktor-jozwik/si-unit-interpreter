@@ -15,10 +15,11 @@ public class Interpreter
 
     public void Run()
     {
+        const string mainFunctionName = "main";
         var builtInFunctionsProvider = new BuiltInFunctionsProvider();
         
         var semanticAnalyzerVisitor = new SemanticAnalyzerVisitor(builtInFunctionsProvider);
-        var interpreterVisitor = new InterpreterVisitor("main", builtInFunctionsProvider);
+        var interpreterVisitor = new InterpreterVisitor(mainFunctionName, builtInFunctionsProvider);
         
         semanticAnalyzerVisitor.Visit(_program);
         interpreterVisitor.Visit(_program);

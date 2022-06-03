@@ -14,17 +14,16 @@ namespace si_unit_interpreter.interpreter.interpreter;
 public class InterpreterVisitor : IInterpreterVisitor
 {
     private readonly LinkedList<FunctionCallContext> _functionCallContexts = new();
-    private readonly Dictionary<string, FunctionStatement> _functions = new();
+    private readonly Dictionary<string, FunctionStatement> _functions;
 
     private readonly string _mainFunctionName;
-    private readonly Dictionary<string, Func<dynamic, dynamic>> _oneArgumentFunctions;
     private readonly int _maxIterationAllowed;
 
     public InterpreterVisitor(string mainFunctionName, BuiltInFunctionsProvider builtInFunctionsProvider,
         int maxIterationAllowed = 1_000_000)
     {
+        _functions = builtInFunctionsProvider.GetBuiltInFunctions();
         _mainFunctionName = mainFunctionName;
-        _oneArgumentFunctions = builtInFunctionsProvider.GetOneArgumentFunctions();
         _maxIterationAllowed = maxIterationAllowed;
     }
 
@@ -92,7 +91,8 @@ public class InterpreterVisitor : IInterpreterVisitor
     {
         var variableValue = element.Expression.Accept(this);
 
-        _GetLastScopeOfCurrentFunctionCall().Variables[element.Parameter.Name] = variableValue!;
+        _GetLastScopeOfCurrentFunctionCall().Variables[element.Parameter.Name] =
+            new LiteralValue(variableValue!, _TryGetVariableUnitType(element.Parameter.Type));
 
         return null;
     }
@@ -114,7 +114,7 @@ public class InterpreterVisitor : IInterpreterVisitor
         {
             var elseIfCondition = elseIfStatement.Condition.Accept(this);
             if (!elseIfCondition) continue;
-            
+
             return elseIfStatement.Accept(this);
         }
 
@@ -169,10 +169,11 @@ public class InterpreterVisitor : IInterpreterVisitor
         var name = element.Identifier.Name;
         foreach (var scope in _GetAllScopesOfCurrentFunctionCall())
         {
-            if (scope.Variables.ContainsKey(name))
+            if (scope.Variables.TryGetValue(name, out var literalValue))
             {
                 var variableValue = element.Expression.Accept(this);
-                scope.Variables[name] = variableValue!;
+                literalValue.Value = variableValue!;
+                scope.Variables[name] = literalValue;
             }
         }
 
@@ -188,37 +189,46 @@ public class InterpreterVisitor : IInterpreterVisitor
     {
         var name = element.Name;
 
-        if (_oneArgumentFunctions.TryGetValue(name, out var function))
-        {
-            var arguments = element.Arguments;
-            var argValue = arguments[0].Accept(this);
-            function(argValue);
-            return null;
-        }
+        if (!_functions.TryGetValue(name, out var functionStatement)) return null;
 
-        if (_functions.TryGetValue(name, out var functionStatement))
+        var argumentsValues = new List<LiteralValue>();
+
+        foreach (var argument in element.Arguments)
         {
-            var argumentsValues = element.Arguments.Select(arg => arg.Accept(this)).ToList();
-            
-            _AddNewEmptyFunctionCallContext();
-            foreach (var (argumentValue, functionParameter) in argumentsValues.Zip(functionStatement.Parameters))
+            var argumentValue = argument.Accept(this);
+
+            if (argument.GetType() == typeof(Identifier))
             {
-                _GetLastScopeOfCurrentFunctionCall().Variables[functionParameter.Name] = argumentValue!;
+                var argumentName = ((Identifier) argument).Name;
+                foreach (var scope in _GetAllScopesOfCurrentFunctionCall())
+                {
+                    scope.Variables.TryGetValue(argumentName, out var literalValue);
+                    {
+                        argumentsValues.Add(literalValue!.Copy());
+                        break;
+                    }
+                }
             }
-            
-            var functionValue = functionStatement.Accept(this);
-            
-            _RemoveLastFunctionCallContext();
-            return functionValue;
+            else if (argument.GetType() == typeof(FunctionCall))
+            {
+                argumentsValues.Add(new LiteralValue(argumentValue!, _TryGetVariableUnitType(_functions[((FunctionCall) argument).Name].ReturnType)));
+            }
+            else
+            {
+                argumentsValues.Add(new LiteralValue(argumentValue, null));
+            }
         }
 
-        return null;
-    }
+        _AddNewEmptyFunctionCallContext();
+        foreach (var (argumentValue, functionParameter) in argumentsValues.Zip(functionStatement.Parameters))
+        {
+            _GetLastScopeOfCurrentFunctionCall().Variables[functionParameter.Name] = argumentValue;
+        }
 
-    // czy potrzebne?
-    public dynamic Visit(Parameter element)
-    {
-        return element.Name;
+        var functionValue = functionStatement.Accept(this);
+        _RemoveLastFunctionCallContext();
+
+        return functionValue;
     }
 
     public dynamic? Visit(OrExpression element)
@@ -299,9 +309,9 @@ public class InterpreterVisitor : IInterpreterVisitor
 
         while (scopeClone.Count > 0)
         {
-            if (scopeClone.Last().Variables.TryGetValue(name, out var value))
+            if (scopeClone.Last().Variables.TryGetValue(name, out var variable))
             {
-                return value;
+                return variable.Value;
             }
 
             scopeClone.RemoveLast();
@@ -310,8 +320,6 @@ public class InterpreterVisitor : IInterpreterVisitor
         return null;
     }
 
-    
-    // dodac obiekt z value i unitTypem?
     public dynamic Visit(BoolLiteral element)
     {
         return element.Value;
@@ -332,6 +340,31 @@ public class InterpreterVisitor : IInterpreterVisitor
         return element.Value;
     }
 
+    public dynamic? Visit(BuiltInFunction element)
+    {
+        var literalValue = _GetLastScopeOfCurrentFunctionCall().Variables[element.Name];
+        element.Function(literalValue);
+        return null;
+    }
+
+    public dynamic Visit(Parameter element)
+    {
+        // as it's not needed
+        throw new NotImplementedException();
+    }
+
+    // private
+
+    private UnitType? _TryGetVariableUnitType(IType type)
+    {
+        if (type.GetType() == typeof(UnitType))
+        {
+            return (UnitType) type;
+        }
+
+        return null;
+    }
+
     private void _AddNewEmptyFunctionCallContext()
     {
         var functionCallContext = new FunctionCallContext();
@@ -348,7 +381,7 @@ public class InterpreterVisitor : IInterpreterVisitor
     {
         _functionCallContexts.Last().Scopes.AddLast(new Scope());
     }
-    
+
     private void _RemoveLastScopeFromCurrentFunctionCallContext()
     {
         _functionCallContexts.Last().Scopes.RemoveLast();

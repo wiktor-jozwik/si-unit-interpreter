@@ -17,4 +17,5 @@ public interface IVisitor
     void Visit(ReturnStatement element);
     void Visit(FunctionCall element);
     void Visit(Parameter element);
+    void Visit(BuiltInFunction element);
 }

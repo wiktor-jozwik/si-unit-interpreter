@@ -22,7 +22,7 @@ public class InterpreterAcceptanceTests
 
         using var consoleOutput = new ConsoleOutput();
         mainProcessor.Run();
-        consoleOutput.GetOutput().ShouldBe("Earth on g equals:\n9.791001719715803\n");
+        consoleOutput.GetOutput().ShouldBe("Earth on g equals:\n9.791001719715803 [m*s^-2]\n");
     }
 
     [Fact]
@@ -41,7 +41,7 @@ public class InterpreterAcceptanceTests
 
         using var consoleOutput = new ConsoleOutput();
         mainProcessor.Run();
-        consoleOutput.GetOutput().ShouldBe("1.7699774792265277\n");
+        consoleOutput.GetOutput().ShouldBe("1.7699774792265277 [A]\n");
     }
     
     [Fact]
@@ -60,6 +60,6 @@ public class InterpreterAcceptanceTests
 
         using var consoleOutput = new ConsoleOutput();
         mainProcessor.Run();
-        consoleOutput.GetOutput().ShouldBe("Energy equals: \n20\n");
+        consoleOutput.GetOutput().ShouldBe("Energy equals: \n20 [J]\n");
     }
 }

@@ -1,6 +1,4 @@
-using si_unit_interpreter.interpreter.interpreter;
-
-namespace si_unit_interpreter.interpreter;
+namespace si_unit_interpreter.interpreter.interpreter;
 
 public interface IInterpreterVisitable
 {

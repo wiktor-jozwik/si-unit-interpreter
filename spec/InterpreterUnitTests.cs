@@ -37,7 +37,7 @@ public class InterpreterUnitTests
         using var consoleOutput = new ConsoleOutput();
         semanticAnalyzer.Visit(program);
         interpreter.Visit(program);
-        consoleOutput.GetOutput().ShouldBe("-0.3125\n");
+        consoleOutput.GetOutput().ShouldBe("-0.3125 [m*s^-1]\n");
     }
 
     [Fact]
@@ -62,6 +62,55 @@ public class InterpreterUnitTests
         semanticAnalyzer.Visit(program);
         interpreter.Visit(program);
         consoleOutput.GetOutput().ShouldBe("5.333332321625854E+32\n");
+    }
+    
+    [Fact]
+    public void TestPrint()
+    {
+        const string code = @"
+                            main() -> void {
+                                let x: [m*s^-1] = 2 [m*s^-1]
+                                print(x)
+                            }";
+
+        var parser = Helper.PrepareParser(code);
+        var program = parser.Parse();
+
+
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+
+        var interpreter = new InterpreterVisitor("main", builtinFunctionsProvider);
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
+
+        using var consoleOutput = new ConsoleOutput();
+        semanticAnalyzer.Visit(program);
+        interpreter.Visit(program);
+        consoleOutput.GetOutput().ShouldBe("2 [m*s^-1]\n");
+    }
+    
+    [Fact]
+    public void TestNotPrintUnit()
+    {
+        const string code = @"
+                            main() -> void {
+                                let x: [m] = 2 [m]
+                                let y: [s] = 5 [s]
+                                print(x / y)
+                            }";
+
+        var parser = Helper.PrepareParser(code);
+        var program = parser.Parse();
+
+
+        var builtinFunctionsProvider = new BuiltInFunctionsProvider();
+
+        var interpreter = new InterpreterVisitor("main", builtinFunctionsProvider);
+        var semanticAnalyzer = new SemanticAnalyzerVisitor(builtinFunctionsProvider);
+
+        using var consoleOutput = new ConsoleOutput();
+        semanticAnalyzer.Visit(program);
+        interpreter.Visit(program);
+        consoleOutput.GetOutput().ShouldBe("0.4\n");
     }
 
     [Fact]
@@ -321,7 +370,7 @@ public class InterpreterUnitTests
                             }
 
                             main() -> void {
-                                let x: [] = getAcetylocholinoesterazaValue() / 6 [mol]
+                                let x: [mol] = getAcetylocholinoesterazaValue() / 6
                                 print(x)
                             }";
 
@@ -337,7 +386,7 @@ public class InterpreterUnitTests
         using var consoleOutput = new ConsoleOutput();
         semanticAnalyzer.Visit(program);
         interpreter.Visit(program);
-        consoleOutput.GetOutput().ShouldBe("10\n");
+        consoleOutput.GetOutput().ShouldBe("10 [mol]\n");
     }
 
     [Fact]
@@ -394,7 +443,7 @@ public class InterpreterUnitTests
         using var consoleOutput = new ConsoleOutput();
         semanticAnalyzer.Visit(program);
         interpreter.Visit(program);
-        consoleOutput.GetOutput().ShouldBe("210\n");
+        consoleOutput.GetOutput().ShouldBe("210 [m]\n");
     }
 
     [Fact]
@@ -425,7 +474,7 @@ public class InterpreterUnitTests
         using var consoleOutput = new ConsoleOutput();
         semanticAnalyzer.Visit(program);
         interpreter.Visit(program);
-        consoleOutput.GetOutput().ShouldBe("x is more than 10 meters\n10.01\n");
+        consoleOutput.GetOutput().ShouldBe("x is more than 10 meters\n10.01 [m]\n");
     }
 
     [Fact]
@@ -459,7 +508,7 @@ public class InterpreterUnitTests
         using var consoleOutput = new ConsoleOutput();
         semanticAnalyzer.Visit(program);
         interpreter.Visit(program);
-        consoleOutput.GetOutput().ShouldBe("x is less than 10 meters\n9.99\n");
+        consoleOutput.GetOutput().ShouldBe("x is less than 10 meters\n9.99 [m]\n");
     }
 
     [Fact]
@@ -552,7 +601,7 @@ public class InterpreterUnitTests
         using var consoleOutput = new ConsoleOutput();
         semanticAnalyzer.Visit(program);
         interpreter.Visit(program);
-        consoleOutput.GetOutput().ShouldBe("60\n50\n");
+        consoleOutput.GetOutput().ShouldBe("60 [kg]\n50 [kg]\n");
     }
 
     [Fact]
@@ -595,21 +644,22 @@ public class InterpreterUnitTests
         using var consoleOutput = new ConsoleOutput();
         semanticAnalyzer.Visit(program);
         interpreter.Visit(program);
-        consoleOutput.GetOutput().ShouldBe("0.02\n0.02\n");
+        consoleOutput.GetOutput().ShouldBe("0.02 [m*s^-1]\n0.02 [m*s^-1]\n");
     }
 
     [Fact]
     public void TestRunningFunctionFromFunction()
     {
         const string code = @"
-                            getX(var: [s]) -> [s] {
-                                return 20 [s] - var
+                            getX(var: [K]) -> [K] {
+                                return 20 [K] - var
                             }
-                            getY(w: [s]) -> [s] {
-                                return getX(w)
+                            getY(w: [K]) -> [K] {
+                                let z: [K] = 270 [K] + w
+                                return getX(z)
                             }
                             main() -> void {
-                                let x: [s] = getY(25 [s])
+                                let x: [K] = getY(25 [K])
 
                                 print(x)
                             }";
@@ -626,9 +676,8 @@ public class InterpreterUnitTests
         using var consoleOutput = new ConsoleOutput();
         semanticAnalyzer.Visit(program);
         interpreter.Visit(program);
-        consoleOutput.GetOutput().ShouldBe("-5\n");
+        consoleOutput.GetOutput().ShouldBe("-275 [K]\n");
     }
-
 
     [Fact]
     public void TestDifferentFunctionsOrder()
@@ -658,7 +707,7 @@ public class InterpreterUnitTests
         using var consoleOutput = new ConsoleOutput();
         semanticAnalyzer.Visit(program);
         interpreter.Visit(program);
-        consoleOutput.GetOutput().ShouldBe("-5\n");
+        consoleOutput.GetOutput().ShouldBe("-5 [s]\n");
     }
 
     [Fact]
@@ -687,7 +736,7 @@ public class InterpreterUnitTests
         using var consoleOutput = new ConsoleOutput();
         semanticAnalyzer.Visit(program);
         interpreter.Visit(program);
-        consoleOutput.GetOutput().ShouldBe("60\n");
+        consoleOutput.GetOutput().ShouldBe("60 [s]\n");
     }
 
     [Fact]
@@ -753,14 +802,14 @@ public class InterpreterUnitTests
     {
         const string code = @"
                             main() -> void {
-                                let x: [s] = 16 [s]
-                                let y: [s] = 10 [s]
-                                while (x >= 0 [s]) {
-                                    if (x - y <= 0 [s]) {
+                                let x: [kg] = 16 [kg]
+                                let y: [kg] = 10 [kg]
+                                while (x >= 0 [kg]) {
+                                    if (x - y <= 0 [kg]) {
                                         print(""returning"")
                                         return
                                     } 
-                                    x = x - 1 [s]
+                                    x = x - 1 [kg]
                                     print(x)
                                 }
 
@@ -778,7 +827,7 @@ public class InterpreterUnitTests
         using var consoleOutput = new ConsoleOutput();
         semanticAnalyzer.Visit(program);
         interpreter.Visit(program);
-        consoleOutput.GetOutput().ShouldBe("15\n14\n13\n12\n11\n10\nreturning\n");
+        consoleOutput.GetOutput().ShouldBe("15 [kg]\n14 [kg]\n13 [kg]\n12 [kg]\n11 [kg]\n10 [kg]\nreturning\n");
     }
 
     [Fact]
@@ -816,7 +865,7 @@ public class InterpreterUnitTests
         using var consoleOutput = new ConsoleOutput();
         semanticAnalyzer.Visit(program);
         interpreter.Visit(program);
-        consoleOutput.GetOutput().ShouldBe("13\n12\n11\n10\nreturning\n10\n");
+        consoleOutput.GetOutput().ShouldBe("13 [s]\n12 [s]\n11 [s]\n10 [s]\nreturning\n10 [s]\n");
     }
 
     [Fact]

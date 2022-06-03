@@ -1,36 +1,47 @@
+using si_unit_interpreter.parser.statement;
 using si_unit_interpreter.parser.type;
 
 namespace si_unit_interpreter.interpreter;
 
 public class BuiltInFunctionsProvider
 {
-    private readonly Dictionary<string, Func<dynamic, dynamic>> _oneArgumentFunctions;
-    private readonly Dictionary<string, IType> _oneArgumentFunctionReturnTypes;
+    private readonly Dictionary<string, FunctionStatement> _builtInFunctions = new();
 
     public BuiltInFunctionsProvider()
     {
-        _oneArgumentFunctions = new Dictionary<string, Func<dynamic, dynamic>>
-        {
-            ["print"] = value =>
+        _builtInFunctions["print"] = new FunctionStatement(
+            new List<Parameter>
             {
-                Console.WriteLine($"{value}");
-                return null!;
+                new(
+                    "printable",
+                    new LiteralType()
+                )
             },
-        };
+            new VoidType(),
+            new Block(
+                new List<IStatement>
+                {
+                    new BuiltInFunction(
+                        literalValue =>
+                        {
+                            var printoutString = $"{literalValue.Value}";
+                            if (literalValue.UnitType != null && literalValue.UnitType.Units.Count != 0)
+                            {
+                                printoutString += $" {literalValue.UnitType.Format()}";
+                            }
 
-        _oneArgumentFunctionReturnTypes = new Dictionary<string, IType>()
-        {
-            ["print"] = new VoidType()
-        };
+                            Console.WriteLine(printoutString);
+                            return null!;
+                        },
+                        "printable"
+                    )
+                }
+            )
+        );
     }
 
-    public Dictionary<string, Func<dynamic, dynamic>> GetOneArgumentFunctions()
+    public Dictionary<string, FunctionStatement> GetBuiltInFunctions()
     {
-        return _oneArgumentFunctions;
-    }
-
-    public Dictionary<string, IType> GetOneArgumentFunctionReturnTypes()
-    {
-        return _oneArgumentFunctionReturnTypes;
+        return _builtInFunctions;
     }
 }

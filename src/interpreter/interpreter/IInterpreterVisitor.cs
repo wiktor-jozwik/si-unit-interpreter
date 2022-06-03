@@ -41,4 +41,5 @@ public interface IInterpreterVisitor
     dynamic? Visit(FloatLiteral element);
     dynamic? Visit(IntLiteral element);
     dynamic? Visit(StringLiteral element);
+    dynamic? Visit(BuiltInFunction element);
 }
