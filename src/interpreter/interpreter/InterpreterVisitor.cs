@@ -19,6 +19,8 @@ public class InterpreterVisitor : IInterpreterVisitor
     private readonly string _mainFunctionName;
     private readonly int _maxIterationAllowed;
 
+    private bool _isReturning = false; 
+
     public InterpreterVisitor(string mainFunctionName, BuiltInFunctionsProvider builtInFunctionsProvider,
         int maxIterationAllowed = 1_000_000)
     {
@@ -59,16 +61,6 @@ public class InterpreterVisitor : IInterpreterVisitor
                 throw new LackOfValidReturnException();
             }
         }
-        else
-        {
-            if (functionReturnValue.GetType() == typeof(VoidReturn))
-            {
-                if (element.ReturnType.GetType() != typeof(VoidType))
-                {
-                    throw new LackOfValidReturnException();
-                }
-            }
-        }
 
         return functionReturnValue;
     }
@@ -78,7 +70,7 @@ public class InterpreterVisitor : IInterpreterVisitor
         foreach (var statement in element.Statements)
         {
             var blockValue = statement.Accept(this);
-            if (blockValue != null)
+            if (_isReturning)
             {
                 return blockValue;
             }
@@ -148,7 +140,7 @@ public class InterpreterVisitor : IInterpreterVisitor
             value = element.Statements.Accept(this);
             _RemoveLastScopeFromCurrentFunctionCallContext();
 
-            if (value != null)
+            if (_isReturning)
             {
                 return value;
             }
@@ -173,7 +165,7 @@ public class InterpreterVisitor : IInterpreterVisitor
             {
                 var variableValue = element.Expression.Accept(this);
                 literalValue.Value = variableValue!;
-                scope.Variables[name] = literalValue;
+                scope.Variables[name].Value = literalValue.Value;
             }
         }
 
@@ -182,7 +174,9 @@ public class InterpreterVisitor : IInterpreterVisitor
 
     public dynamic? Visit(ReturnStatement element)
     {
-        return element.Expression == null ? new VoidReturn() : element.Expression?.Accept(this);
+        var returnValue = element.Expression?.Accept(this);
+        _isReturning = true;
+        return returnValue;
     }
 
     public dynamic? Visit(FunctionCall element)
@@ -227,6 +221,7 @@ public class InterpreterVisitor : IInterpreterVisitor
 
         var functionValue = functionStatement.Accept(this);
         _RemoveLastFunctionCallContext();
+        _isReturning = false;
 
         return functionValue;
     }

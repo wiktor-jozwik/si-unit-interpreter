@@ -739,7 +739,9 @@ public class InterpreterUnitTests
                                 let y: [kg] = 18.5 [kg]
                                 if (x != y) {
                                     print(""x != y"")
-                                    return
+                                    return ()
+                                    print(x)
+                                    print(x)
                                 } else {
                                     print(""x == y"")
                                 }
@@ -898,12 +900,18 @@ public class InterpreterUnitTests
     public void TestReturnFromElse()
     {
         const string code = @"
+                            getX() -> [] {
+                                return 5
+                            }
                             main() -> void {
                                 if (2 [m] > 5 [m]) {
                                     print(""from if"")
                                 } else {
                                     print(""from else"")
                                     return
+                                    print(""from else"")
+                                    print(""from else"")
+
                                 }
                                 print(""should not be printed"")
                             }";

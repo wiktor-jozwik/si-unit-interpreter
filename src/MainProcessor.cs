@@ -37,7 +37,7 @@ public class MainProcessor
             {
                 Console.WriteLine($"File or directory {codePath} was not found.");
             }
-            throw;
+            Console.WriteLine(ex.Message);
         }
     }
 

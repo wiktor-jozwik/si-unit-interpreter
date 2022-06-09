@@ -456,7 +456,13 @@ public class Parser
 
     private IStatement? TryParseReturnStatement()
     {
+        var returnRow = _lexer.Token.Position.RowNumber;
         if (!_CheckAndConsume(TokenType.RETURN)) return null;
+
+        if (_lexer.Token.Position.RowNumber != returnRow)
+        {
+            return new ReturnStatement(null);
+        }
 
         var expression = TryParseExpression();
 
