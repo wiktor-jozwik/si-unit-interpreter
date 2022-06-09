@@ -2,8 +2,8 @@ namespace si_unit_interpreter.exceptions.lexer;
 
 public class NumberExceededSizeException : Exception
 {
-    public NumberExceededSizeException(string message)
-        : base(message)
+    public NumberExceededSizeException(long maxIntSize)
+        : base($"Number can be up to: {maxIntSize}")
     {
     }
 }

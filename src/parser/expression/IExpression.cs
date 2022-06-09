@@ -1,5 +1,7 @@
-using si_unit_interpreter.parser.statement;
+using si_unit_interpreter.interpreter.interpreter;
 
 namespace si_unit_interpreter.parser.expression;
 
-public interface IExpression: IStatement {}
+public interface IExpression : ITypeCheck, IInterpreterVisitable
+{
+}

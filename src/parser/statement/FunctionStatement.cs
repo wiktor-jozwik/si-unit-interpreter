@@ -1,8 +1,10 @@
+using si_unit_interpreter.interpreter.interpreter;
+using si_unit_interpreter.interpreter.semantic_analyzer;
 using si_unit_interpreter.parser.type;
 
 namespace si_unit_interpreter.parser.statement;
 
-public class FunctionStatement: IStatement
+public class FunctionStatement : IStatement
 {
     public readonly IList<Parameter> Parameters;
     public readonly IType ReturnType;
@@ -13,5 +15,15 @@ public class FunctionStatement: IStatement
         Parameters = parameters;
         ReturnType = returnType;
         Statements = statements;
+    }
+
+    public void Accept(IVisitor visitor)
+    {
+        visitor.Visit(this);
+    }
+    
+    public dynamic? Accept(IInterpreterVisitor visitor)
+    {
+        return visitor.Visit(this);
     }
 }

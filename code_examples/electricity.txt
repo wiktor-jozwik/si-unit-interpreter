@@ -1,0 +1,18 @@
+unit R: [kg*m^2*s^-3*A^-2]
+unit V: [kg*m^2*A^-1*s^-3]
+
+calculateElectricity(resistance: [R], voltage: [V]) -> [A] {
+    return voltage / resistance
+}
+
+getR() -> [R] {
+    return 128.77 [R]
+}
+
+getV() -> [V] {
+    return 227.92 [V]
+}
+
+main() -> void {
+    print(calculateElectricity(getR(), getV()))
+}
