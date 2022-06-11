@@ -50,16 +50,16 @@
       let s1: [m] = 12 [m]
       let v1: [m*s^-1] = s1 / t1 let v2: [m*s^-1] = 10 [m*s^-1]
       let deltaV = v2 - v1
-    ```
+  
     - ```
-    unit J: [kg*m^2*s^-2]
+      unit J: [kg*m^2*s^-2]
     
-    let mass: [kg] = 10 [kg]
-    let duration: [s] = 10 [s]
-    let distance: [m] = 20 [m]
+      let mass: [kg] = 10 [kg]
+      let duration: [s] = 10 [s]
+      let distance: [m] = 20 [m]
     
-    let speed: [m*s^-1] = distance / duration let energy: [J] = mass * speed*speed / 2
-    ```
+      let speed: [m*s^-1] = distance / duration let energy: [J] = mass * speed*speed / 2
+      ```
 
 ### Komentarze
 
